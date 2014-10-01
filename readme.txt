@@ -16,7 +16,7 @@ This plugin allows you to offer a number of courses to your visitors. The visito
 
 Documentation: http://incrediblebytes.com/educator-wp-documentation/
 
-This is an beta version and I would be very pleased to receive feedback.
+This is a beta version and I would be very pleased to receive feedback.
 
 This plugin has gone through a very reasonable amount of testing.
 
