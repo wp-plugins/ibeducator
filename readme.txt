@@ -39,7 +39,7 @@ Coming soon.
 
 == Screenshots ==
 
-Coming soon.
+1. **Overview** - The plugin adds "Courses", "Lessons" and "Educator" sections to the admin menu.
 
 == Changelog ==
 
