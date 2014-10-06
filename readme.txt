@@ -40,6 +40,10 @@ Coming soon.
 == Screenshots ==
 
 1. **Overview** - The plugin adds "Courses", "Lessons" and "Educator" sections to the admin menu.
+2. **Course price** - The course price field can be found on the course edit screen. Set this to 0 if you want to offer the course for free.
+3. **Select a course** - Assign each lesson to one of the courses.
+4. **Quiz** - Quiz UI is located on the edit lesson screen.
+5. **Pages** - Assign the pages that will be used by the plugin.
 
 == Changelog ==
 
