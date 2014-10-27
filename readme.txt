@@ -4,7 +4,7 @@ Donate link: http://incrediblebytes.com
 Tags: learning management system, lms, learning, online courses
 Requires at least: 4.0
 Tested up to: 4.0
-Stable tag: 0.9.9
+Stable tag: 0.9.10
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -46,6 +46,10 @@ Coming soon.
 5. **Pages** - Assign the pages that will be used by the plugin.
 
 == Changelog ==
+
+= 0.9.10 =
+* Plugin checks for the version number in the database, and upgrades it's structure (DB, custom post types, taxonomies, etc) when user updates it in WordPress admin.
+* Please make sure that you check verion 0.9.9 changelog, as it's very important.
 
 = 0.9.9 =
 * Fixed a couple of bugs.
