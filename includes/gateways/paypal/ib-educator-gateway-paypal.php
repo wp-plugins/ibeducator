@@ -1,6 +1,6 @@
 <?php
 
-class IBEdu_Gateway_Paypal extends IBEdu_Payment_Gateway {
+class IB_Educator_Gateway_Paypal extends IB_Educator_Payment_Gateway {
 	protected $business_email;
 	protected $live_url;
 	protected $test_url;
@@ -19,24 +19,27 @@ class IBEdu_Gateway_Paypal extends IBEdu_Payment_Gateway {
 		$this->init_options( array(
 			'business_email' => array(
 				'type'  => 'text',
-				'label' => __( 'Business Email', 'ibeducator' )
+				'label' => __( 'Business Email', 'ibeducator' ),
+				'id'    => 'ib-edu-business-email',
 			),
 
 			'test' => array(
 				'type'        => 'checkbox',
 				'label'       => __( 'Test', 'ibeducator' ),
-				'description' => __( 'If checked, Educator will use PayPal sandbox URL and PayPal payments will be in testing mode.', 'ibeducator' )
+				'description' => __( 'If checked, Educator will use PayPal sandbox URL and PayPal payments will be in testing mode.', 'ibeducator' ),
+				'id'          => 'ib-edu-test',
 			),
 
 			'thankyou_message' => array(
 				'type'  => 'textarea',
-				'label' => __( 'Thank you message', 'ibeducator' )
+				'label' => __( 'Thank you message', 'ibeducator' ),
+				'id'    => 'ib-edu-thankyou-message',
 			),
 		) );
 
-		add_action( 'ibedu_pay_' . $this->get_id(), array( $this, 'pay_page' ) );
-		add_action( 'ibedu_thankyou_' . $this->get_id(), array( $this, 'thankyou_page' ) );
-		add_action( 'ibedu_process_request', array( $this, 'process_ipn' ) );
+		add_action( 'ib_educator_pay_' . $this->get_id(), array( $this, 'pay_page' ) );
+		add_action( 'ib_educator_thankyou_' . $this->get_id(), array( $this, 'thankyou_page' ) );
+		add_action( 'ib_educator_request_paypalipn', array( $this, 'process_ipn' ) );
 	}
 
 	/**
@@ -49,7 +52,7 @@ class IBEdu_Gateway_Paypal extends IBEdu_Payment_Gateway {
 			$user_id = get_current_user_id();
 		}
 		
-		$api = IBEdu_API::get_instance();
+		$api = IB_Educator::get_instance();
 		
 		// Add payment
 		$payment = $api->add_payment( array(
@@ -58,12 +61,12 @@ class IBEdu_Gateway_Paypal extends IBEdu_Payment_Gateway {
 			'payment_status'  => 'pending',
 			'payment_gateway' => $this->get_id(),
 			'amount'          => number_format( get_post_meta( $course_id, '_ibedu_price', true ), 2 ),
-			'currency'        => ibedu_currency()
+			'currency'        => ib_edu_get_currency()
 		) );
 
 		return array(
 			'status'   => 'success',
-			'redirect' => ibedu_endpoint_url( 'edu-pay', ( $payment->ID ? $payment->ID : '' ), get_permalink( ibedu_page_id( 'payment' ) ) )
+			'redirect' => ib_edu_get_endpoint_url( 'edu-pay', ( $payment->ID ? $payment->ID : '' ), get_permalink( ib_edu_page_id( 'payment' ) ) )
 		);
 	}
 
@@ -78,7 +81,7 @@ class IBEdu_Gateway_Paypal extends IBEdu_Payment_Gateway {
 			return;
 		}
 
-		$payment = IBEdu_Payment::get_instance( $payment_id );
+		$payment = IB_Educator_Payment::get_instance( $payment_id );
 
 		if ( ! $payment->ID ) {
 			return;
@@ -92,10 +95,10 @@ class IBEdu_Gateway_Paypal extends IBEdu_Payment_Gateway {
 
 		$amount = number_format( $payment->amount, 2, '.', '' );
 		$return_url = '';
-		$payment_page_id = ibedu_page_id( 'payment' );
+		$payment_page_id = ib_edu_page_id( 'payment' );
 
 		if ( $payment_page_id ) {
-			$return_url = ibedu_endpoint_url( 'edu-thankyou', ( $payment->ID ? $payment->ID : '' ), get_permalink( $payment_page_id ) );
+			$return_url = ib_edu_get_endpoint_url( 'edu-thankyou', ( $payment->ID ? $payment->ID : '' ), get_permalink( $payment_page_id ) );
 		}
 
 		echo '<form id="ibedu-paypal-form" action="' . esc_url( $action_url ) . '" method="post">';
@@ -103,8 +106,8 @@ class IBEdu_Gateway_Paypal extends IBEdu_Payment_Gateway {
 		echo '<input type="hidden" name="charset" value="utf-8">';
 		echo '<input type="hidden" name="business" value="' . esc_attr( $this->get_option( 'business_email' ) ) . '">';
 		echo '<input type="hidden" name="return" value="' . esc_url( $return_url ) . '">';
-		echo '<input type="hidden" name="notify_url" value="' . esc_url( ibedu_api_url( 'paypalipn' ) ) . '">';
-		echo '<input type="hidden" name="currency_code" value="' . ibedu_currency() . '">';
+		echo '<input type="hidden" name="notify_url" value="' . esc_url( ib_edu_request_url( 'paypalipn' ) ) . '">';
+		echo '<input type="hidden" name="currency_code" value="' . ib_edu_get_currency() . '">';
 		echo '<input type="hidden" name="item_name" value="' . esc_attr( $course->post_title ) . '">';
 		echo '<input type="hidden" name="item_number" value="' . absint( $payment->ID ) . '">';
 		echo '<input type="hidden" name="amount" value="' . $amount . '">';
@@ -129,17 +132,17 @@ class IBEdu_Gateway_Paypal extends IBEdu_Payment_Gateway {
 		}
 
 		// Show link to student courses page.
-		$student_courses_page = get_post( ibedu_page_id( 'student_courses' ) );
+		$student_courses_page = get_post( ib_edu_page_id( 'student_courses' ) );
 		
 		if ( $student_courses_page ) {
 			echo '<p>' . sprintf( __( 'Go to %s page', 'ibeducator' ), '<a href="' . esc_url( get_permalink( $student_courses_page->ID ) ) . '">' . esc_html( $student_courses_page->post_title ) . '</a>' ) . '</p>';
 		}
 	}
 
-	public function process_ipn( $request ) {
+	public function process_ipn() {
 		$debug = 0;
 		$log_file = IBEDUCATOR_PLUGIN_DIR . 'ipn.log';
-
+		
 		// Read POST data
 		// reading posted data directly from $_POST causes serialization
 		// issues with array data in POST. Reading raw POST data from input stream instead.
@@ -243,7 +246,7 @@ class IBEdu_Gateway_Paypal extends IBEdu_Payment_Gateway {
 					return;
 				}
 
-				$payment = IBEdu_Payment::get_instance( $payment_id );
+				$payment = IB_Educator_Payment::get_instance( $payment_id );
 
 				if ( ! $payment->ID ) {
 					return;
@@ -264,7 +267,7 @@ class IBEdu_Gateway_Paypal extends IBEdu_Payment_Gateway {
 						$payment->save();
 
 						// Add entry.
-						$entry = IBEdu_Entry::get_instance();
+						$entry = IB_Educator_Entry::get_instance();
 						$entry->course_id = $payment->course_id;
 						$entry->user_id = $payment->user_id;
 						$entry->payment_id = $payment->ID;

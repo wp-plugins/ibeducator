@@ -3,7 +3,7 @@
 
 	if ( ( $thankyou = get_query_var( 'edu-thankyou' ) ) ) {
 		if ( is_numeric( $thankyou ) ) {
-			$payment = IBEdu_Payment::get_instance( $thankyou );
+			$payment = IB_Educator_Payment::get_instance( $thankyou );
 			if ( ! $payment->ID ) return;
 			$course = get_post( $payment->course_id );
 			if ( ! $course ) return;
@@ -28,28 +28,28 @@
 							?>
 						</td>
 						<td>
-							<?php echo ibedu_format_price( get_post_meta( $course->ID, '_ibedu_price', true ) ); ?>
+							<?php echo ib_edu_format_course_price( get_post_meta( $course->ID, '_ibedu_price', true ) ); ?>
 						</td>
 					</tr>
 
 					<tr class="amount-total">
 						<td><?php _e( 'Total', 'ibeducator' ); ?></td>
-						<td><?php echo ibedu_format_price( $payment->amount ); ?></td>
+						<td><?php echo ib_edu_format_course_price( $payment->amount ); ?></td>
 					</tr>
 				</tbody>
 			</table>
 			<?php
 
 			if ( $payment->ID && $payment->user_id == $user_id ) {
-				do_action( 'ibedu_thankyou_' . $payment->payment_gateway );
+				do_action( 'ib_educator_thankyou_' . $payment->payment_gateway );
 			}
 		}
 	} else if ( ( $pay = get_query_var( 'edu-pay' ) ) ) {
 		if ( is_numeric( $pay ) ) {
-			$payment = IBEdu_Payment::get_instance( $pay );
+			$payment = IB_Educator_Payment::get_instance( $pay );
 
 			if ( $payment->ID && $payment->user_id == $user_id ) {
-				do_action( 'ibedu_pay_' . $payment->payment_gateway );
+				do_action( 'ib_educator_pay_' . $payment->payment_gateway );
 			}
 		}
 	} else {
@@ -69,52 +69,62 @@
 			<?php
 				$course_price = get_post_meta( $course->ID, '_ibedu_price', true );
 				// Check, whether to allow the student to pay for this course.
-				$api = IBEdu_API::get_instance();
+				$api = IB_Educator::get_instance();
 				$access_status = $api->get_access_status( $course_id, $user_id );
 			?>
 			<?php if ( in_array( $access_status, array( 'course_complete', 'forbidden' ) ) ) : ?>
 				<?php
-					$gateways = IBEdu_Main::get_gateways();
+					$gateways = IB_Educator_Main::get_gateways();
 					$logged_in = is_user_logged_in();
-				?>
-				<?php if ( ! $logged_in ) {
-					$login_url = wp_login_url( ibedu_endpoint_url( 'edu-course', $course_id, get_permalink() ) );
-					echo '<p>' . __( 'Already have an account?', 'ibeducator' ) . ' <a href="' . $login_url . '">' . __( 'Log in', 'ibeducator' ) . '</a></p>';
-				} ?>
 
-				<?php
+					if ( ! $logged_in ) {
+						$login_url = apply_filters( 'ib_educator_login_url', '' );
+
+						if ( empty( $login_url ) ) {
+							$login_url = wp_login_url( ib_edu_get_endpoint_url( 'edu-course', $course_id, get_permalink() ) );
+						}
+
+						echo '<p>' . __( 'Already have an account?', 'ibeducator' ) . ' <a href="' . esc_url( $login_url ) . '">' . __( 'Log in', 'ibeducator' ) . '</a></p>';
+					}
+					
 					$account_username = isset( $_POST['account_username'] ) ? $_POST['account_username'] : '';
 					$account_email = isset( $_POST['account_email'] ) ? $_POST['account_email'] : '';
-					$errors = ibedu_message( 'payment_errors' );
+					$errors = ib_edu_message( 'payment_errors' );
+					$error_fields = array();
 
 					if ( is_array( $errors ) ) {
 						foreach ( $errors as $error ) {
 							switch ( $error ) {
 								case 'account_info_empty':
 									echo '<div class="ibedu-message error">' . __( 'Please enter your username and email.', 'ibeducator' ) . '</div>';
+									$error_fields[] = 'account_username';
 									break;
 
 								case 'username_exists':
 									echo '<div class="ibedu-message error">' . sprintf( __( 'Username &quot;%s&quot; is not available.', 'ibeducator' ), esc_html( $account_username ) ) . '</div>';
+									$error_fields[] = 'account_username';
 									break;
 
 								case 'email_exists':
 									echo '<div class="ibedu-message error">' . __( 'A user with your email already exists.', 'ibeducator' ) . '</div>';
+									$error_fields[] = 'account_email';
 									break;
 
 								case 'invalid_email':
 									echo '<div class="ibedu-message error">' . __( 'Please check if you entered your email correctly.', 'ibeducator' ) . '</div>';
+									$error_fields[] = 'account_email';
 									break;
 
 								case 'empty_payment_method':
 									echo '<div class="ibedu-message error">' . __( 'Please select a payment method.', 'ibeducator' ) . '</div>';
+									$error_fields[] = 'payment_method';
 									break;
 							}
 						}
 					}
 				?>
 
-				<form id="ibedu-payment-form" class="ibedu-form" action="<?php echo ibedu_endpoint_url( 'edu-action', 'payment', get_permalink() ); ?>" method="post">
+				<form id="ibedu-payment-form" class="ibedu-form" action="<?php echo ib_edu_get_endpoint_url( 'edu-action', 'payment', get_permalink() ); ?>" method="post">
 					<?php wp_nonce_field( 'ibedu_submit_payment' ); ?>
 					<input type="hidden" name="course_id" value="<?php echo $course_id; ?>">
 
@@ -122,17 +132,17 @@
 					<fieldset>
 						<legend><?php _e( 'Create an Account', 'ibeducator' ); ?></legend>
 
-						<div class="ibedu-form-field">
-							<label><?php _e( 'Username', 'ibeducator' ); ?> <span class="required">*</span></label>
+						<div class="ibedu-form-field<?php if ( in_array( 'account_username', $error_fields ) ) echo ' error'; ?>">
+							<label for="ibedu-username"><?php _e( 'Username', 'ibeducator' ); ?> <span class="required">*</span></label>
 							<div class="ibedu-form-control">
-								<input type="text" name="account_username" value="<?php echo esc_attr( $account_username ); ?>">
+								<input type="text" id="ibedu-username" name="account_username" value="<?php echo esc_attr( $account_username ); ?>">
 							</div>
 						</div>
 
-						<div class="ibedu-form-field">
-							<label><?php _e( 'Email', 'ibeducator' ); ?> <span class="required">*</span></label>
+						<div class="ibedu-form-field<?php if ( in_array( 'account_email', $error_fields ) ) echo ' error'; ?>">
+							<label for="ibedu-email"><?php _e( 'Email', 'ibeducator' ); ?> <span class="required">*</span></label>
 							<div class="ibedu-form-control">
-								<input type="text" name="account_email" value="<?php echo esc_attr( $account_email ); ?>">
+								<input type="text" id="ibedu-email" name="account_email" value="<?php echo esc_attr( $account_email ); ?>">
 							</div>
 						</div>
 					</fieldset>
@@ -159,7 +169,7 @@
 							<div class="ibedu-form-control">
 								<?php
 									if ( $course_price ) {
-										echo ibedu_format_price( $course_price );
+										echo ib_edu_format_course_price( $course_price );
 									} else {
 										_e( 'Free', 'ibeducator' );
 									}
@@ -168,7 +178,7 @@
 						</div>
 
 						<?php if ( $course_price && ! empty( $gateways ) ) : ?>
-						<div class="ibedu-form-field">
+						<div class="ibedu-form-field<?php if ( in_array( 'payment_method', $error_fields ) ) echo ' error'; ?>">
 							<label><?php _e( 'Payment Method', 'ibeducator' ); ?> <span class="required">*</span></label>
 							<div class="ibedu-form-control">
 								<ul class="ibedu-payment-method">
@@ -198,7 +208,7 @@
 					</div>
 				</form>
 			<?php else : ?>
-				<p><?php echo ibedu_get_access_status_message( $access_status ); ?></p>
+				<p><?php echo ib_edu_get_access_status_message( $access_status ); ?></p>
 			<?php endif; ?>
 		<?php else : // if $course ?>
 			<p><?php _e( 'Please select a course to continue.', 'ibeducator' ); ?></p>

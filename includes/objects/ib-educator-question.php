@@ -1,22 +1,24 @@
 <?php
 
-class IBEdu_Question {
+class IB_Educator_Question {
 	public $ID = 0;
 	public $lesson_id = 0;
 	public $question = '';
 	public $question_type = '';
 	public $menu_order = 0;
+	protected $table_name;
 
 	/**
 	 * Get instance.
 	 *
 	 * @param mixed $data
-	 * @return IBEdu_Payment
+	 * @return IB_Educator_Payment
 	 */
 	public static function get_instance( $data = null ) {
 		if ( is_numeric( $data ) ) {
 			global $wpdb;
-			$data = $wpdb->get_row( $wpdb->prepare( 'SELECT * FROM ' . $wpdb->prefix . 'ibedu_questions WHERE ID = %d', $data ) );
+			$tables = ib_edu_table_names();
+			$data = $wpdb->get_row( $wpdb->prepare( "SELECT * FROM " . $tables['questions'] . " WHERE ID = %d", $data ) );
 		}
 
 		return new self( $data );
@@ -28,6 +30,9 @@ class IBEdu_Question {
 	 * @param array $data
 	 */
 	public function __construct( $data ) {
+		$tables = ib_edu_table_names();
+		$this->table_name = $tables['questions'];
+
 		if ( ! empty( $data ) ) {
 			$this->ID = $data->ID;
 			$this->lesson_id = $data->lesson_id;
@@ -55,7 +60,7 @@ class IBEdu_Question {
 
 		if ( is_numeric( $this->ID ) && $this->ID > 0 ) {
 			$affected_rows = $wpdb->update(
-				$wpdb->prefix . 'ibedu_questions',
+				$this->table_name,
 				$data,
 				array( 'ID' => $this->ID ),
 				$data_format,
@@ -63,7 +68,7 @@ class IBEdu_Question {
 			);
 		} else {
 			$affected_rows = $wpdb->insert(
-				$wpdb->prefix . 'ibedu_questions',
+				$this->table_name,
 				$data,
 				$data_format
 			);
@@ -81,7 +86,7 @@ class IBEdu_Question {
 	public function delete() {
 		global $wpdb;
 		
-		if ( $wpdb->delete( $wpdb->prefix . 'ibedu_questions', array( 'ID' => $this->ID ), array( '%d' ) ) ) {
+		if ( $wpdb->delete( $this->table_name, array( 'ID' => $this->ID ), array( '%d' ) ) ) {
 			return true;
 		}
 

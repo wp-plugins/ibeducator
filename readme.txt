@@ -47,6 +47,15 @@ Coming soon.
 
 == Changelog ==
 
+= 0.9.9 =
+* Fixed a couple of bugs.
+* Added ability to assign courses to categories.
+* Added difficulty levels: beginner, intermediate, advanced.
+* Many changes to API functions, actions and filters. Please refer to the documentation (http://incrediblebytes.com/educator-wp-documentation/).
+* API (functions, actions and filters) is almost stable.
+* Code refactoring.
+* PLEASE HAVE A LOOK AT http://incrediblebytes.com/update-educator-wp/ before updating.
+
 = 0.9.0 =
 * Beta version release.
 

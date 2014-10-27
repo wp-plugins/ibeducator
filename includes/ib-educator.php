@@ -1,13 +1,33 @@
 <?php
 
-class IBEdu_API {
+class IB_Educator {
 	private static $instance = null;
-	private function __construct() {}
+	private $payments;
+	private $entries;
+	private $questions;
+	private $choices;
+	private $answers;
+	private $grades;
+
+	/**
+	 * Constructor.
+	 *
+	 * @access private
+	 */
+	private function __construct() {
+		$tables = ib_edu_table_names();
+		$this->payments = $tables['payments'];
+		$this->entries = $tables['entries'];
+		$this->questions = $tables['questions'];
+		$this->choices = $tables['choices'];
+		$this->answers = $tables['answers'];
+		$this->grades = $tables['grades'];
+	}
 
 	/**
 	 * Get instance.
 	 *
-	 * @return IBEdu_API
+	 * @return IB_Educator
 	 */
 	public static function get_instance() {
 		if ( ! self::$instance ) {
@@ -27,9 +47,9 @@ class IBEdu_API {
 	public function get_access_status( $course_id, $user_id ) {
 		global $wpdb;
 		$status = '';
-		$sql = 'SELECT ep.course_id, ep.user_id, ep.payment_status, ee.entry_status FROM ' . $wpdb->prefix . 'ibedu_payments ep
-			LEFT JOIN ' . $wpdb->prefix . 'ibedu_entries ee ON ee.payment_id=ep.ID
-			WHERE ep.course_id=%d AND ep.user_id=%d';
+		$sql = "SELECT ep.course_id, ep.user_id, ep.payment_status, ee.entry_status FROM {$this->payments} ep
+			LEFT JOIN {$this->entries} ee ON ee.payment_id=ep.ID
+			WHERE ep.course_id=%d AND ep.user_id=%d";
 		$results = $wpdb->get_results( $wpdb->prepare( $sql, $course_id, $user_id ) );
 		$has_complete = false;
 		$has_cancelled = false;
@@ -75,11 +95,11 @@ class IBEdu_API {
 	 * Save payment to database.
 	 *
 	 * @param array $data
-	 * @return IBEdu_Payment
+	 * @return IB_Educator_Payment
 	 */
 	public function add_payment( $data ) {
 		// Record payment.
-		$payment = IBEdu_Payment::get_instance();
+		$payment = IB_Educator_Payment::get_instance();
 		$payment->course_id = $data['course_id'];
 		$payment->user_id = $data['user_id'];
 		$payment->payment_gateway = $data['payment_gateway'];
@@ -94,11 +114,11 @@ class IBEdu_API {
 	 * Get entry from database.
 	 *
 	 * @param array $args
-	 * @return false|IBEdu_Entry
+	 * @return false|IB_Educator_Entry
 	 */
 	public function get_entry( $args ) {
 		global $wpdb;
-		$sql = 'SELECT * FROM ' . $wpdb->prefix . 'ibedu_entries WHERE 1';
+		$sql = "SELECT * FROM {$this->entries} WHERE 1";
 
 		// Filter by payment_id.
 		if ( isset( $args['payment_id'] ) ) {
@@ -123,7 +143,7 @@ class IBEdu_API {
 		$row = $wpdb->get_row( $sql );
 
 		if ( $row ) {
-			return IBEdu_Entry::get_instance( $row );
+			return IB_Educator_Entry::get_instance( $row );
 		}
 
 		return false;
@@ -133,11 +153,11 @@ class IBEdu_API {
 	 * Get entries.
 	 *
 	 * @param array $args
-	 * @return false|array of IBEdu_Entry objects
+	 * @return false|array of IB_Educator_Entry objects
 	 */
 	public function get_entries( $args ) {
 		global $wpdb;
-		$sql = 'SELECT * FROM ' . $wpdb->prefix . 'ibedu_entries WHERE 1';
+		$sql = "SELECT * FROM {$this->entries} WHERE 1";
 
 		// Filter by course_id.
 		if ( isset( $args['course_id'] ) ) {
@@ -178,7 +198,7 @@ class IBEdu_API {
 		$entries = $wpdb->get_results( $sql . ' ORDER BY entry_date DESC' . $pagination_sql );
 
 		if ( $entries ) {
-			$entries = array_map( array( 'IBEdu_Entry', 'get_instance' ), $entries );
+			$entries = array_map( array( 'IB_Educator_Entry', 'get_instance' ), $entries );
 		}
 
 		if ( $has_pagination ) {
@@ -200,7 +220,7 @@ class IBEdu_API {
 	public function get_entries_count( $args = array() ) {
 		global $wpdb;
 
-		$sql = 'SELECT entry_status, count(1) as num_rows FROM ' . $wpdb->prefix . 'ibedu_entries WHERE 1';
+		$sql = "SELECT entry_status, count(1) as num_rows FROM {$this->entries} WHERE 1";
 
 		// Filter by course_id.
 		if ( isset( $args['course_id'] ) ) {
@@ -267,9 +287,9 @@ class IBEdu_API {
 				}
 
 				return array(
-					'entries' => $entries,
-					'courses'     => $posts,
-					'statuses'    => $statuses
+					'entries'  => $entries,
+					'courses'  => $posts,
+					'statuses' => $statuses
 				);
 			}
 		}
@@ -328,10 +348,11 @@ class IBEdu_API {
 		if ( ! is_numeric( $course_id ) ) return false;
 
 		return new WP_Query( array(
-			'post_type'  => 'ibedu_lesson',
-			'orderby'    => 'menu_order',
-			'order'      => 'ASC',
-			'meta_query' => array(
+			'post_type'      => 'ibedu_lesson',
+			'orderby'        => 'menu_order',
+			'order'          => 'ASC',
+			'posts_per_page' => -1,
+			'meta_query'     => array(
 				array( 'key' => '_ibedu_course', 'value' => $course_id, 'compare' => '=' )
 			)
 		) );
@@ -361,11 +382,11 @@ class IBEdu_API {
 	 * Get payments.
 	 *
 	 * @param array $args
-	 * @return false|array of IBEdu_Payment objects
+	 * @return false|array of IB_Educator_Payment objects
 	 */
 	public function get_payments( $args ) {
 		global $wpdb;
-		$sql = 'SELECT * FROM ' . $wpdb->prefix . 'ibedu_payments WHERE 1';
+		$sql = "SELECT * FROM {$this->payments} WHERE 1";
 
 		// Filter by user_id.
 		if ( isset( $args['user_id'] ) ) {
@@ -399,7 +420,7 @@ class IBEdu_API {
 		$payments = $wpdb->get_results( $sql . ' ORDER BY payment_date DESC' . $pagination_sql );
 
 		if ( $payments ) {
-			$payments = array_map( array( 'IBEdu_Payment', 'get_instance' ), $payments );
+			$payments = array_map( array( 'IB_Educator_Payment', 'get_instance' ), $payments );
 		}
 
 		if ( $has_pagination ) {
@@ -417,7 +438,7 @@ class IBEdu_API {
 	 */
 	public function get_payments_count() {
 		global $wpdb;
-		return $wpdb->get_results( "SELECT payment_status, count(1) as num_rows FROM {$wpdb->prefix}ibedu_payments GROUP BY payment_status", OBJECT_K );
+		return $wpdb->get_results( "SELECT payment_status, count(1) as num_rows FROM {$this->payments} GROUP BY payment_status", OBJECT_K );
 	}
 
 	/**
@@ -435,11 +456,11 @@ class IBEdu_API {
 	 * Get quiz questions.
 	 *
 	 * @param array $args
-	 * @return false|array of IBEdu_Question objects
+	 * @return false|array of IB_Educator_Question objects
 	 */
 	public function get_questions( $args ) {
 		global $wpdb;
-		$sql = 'SELECT * FROM ' . $wpdb->prefix . 'ibedu_questions WHERE 1';
+		$sql = "SELECT * FROM {$this->questions} WHERE 1";
 
 		if ( isset( $args['lesson_id'] ) ) {
 			$sql .= ' AND lesson_id=' . absint( $args['lesson_id'] );
@@ -449,7 +470,7 @@ class IBEdu_API {
 		$questions = $wpdb->get_results( $sql );
 
 		if ( $questions ) {
-			$questions = array_map( array( 'IBEdu_Question', 'get_instance' ), $questions );
+			$questions = array_map( array( 'IB_Educator_Question', 'get_instance' ), $questions );
 		}
 
 		return $questions;
@@ -464,7 +485,7 @@ class IBEdu_API {
 	public function get_choices( $lesson_id, $sorted = false ) {
 		global $wpdb;
 		$choices = $wpdb->get_results( $wpdb->prepare(
-			"SELECT * FROM {$wpdb->prefix}ibedu_choices WHERE question_id IN (SELECT question_id FROM {$wpdb->prefix}ibedu_questions WHERE lesson_id = %d) ORDER BY menu_order ASC",
+			"SELECT * FROM {$this->choices} WHERE question_id IN (SELECT question_id FROM {$this->questions} WHERE lesson_id = %d) ORDER BY menu_order ASC",
 			$lesson_id
 		) );
 
@@ -500,7 +521,7 @@ class IBEdu_API {
 
 		return $wpdb->get_results( $wpdb->prepare(
 			"SELECT ID, choice_text, correct, menu_order "
-			. "FROM {$wpdb->prefix}ibedu_choices "
+			. "FROM {$this->choices} "
 			. "WHERE question_id = %d "
 			. "ORDER BY menu_order ASC",
 			$question_id
@@ -517,7 +538,7 @@ class IBEdu_API {
 		global $wpdb;
 
 		$wpdb->insert(
-			$wpdb->prefix . 'ibedu_choices',
+			$this->choices,
 			array(
 				'question_id' => $data['question_id'],
 				'choice_text' => $data['choice_text'],
@@ -540,7 +561,7 @@ class IBEdu_API {
 		global $wpdb;
 
 		return $wpdb->update(
-			$wpdb->prefix . 'ibedu_choices',
+			$this->choices,
 			array(
 				'choice_text' => $data['choice_text'],
 				'correct'     => $data['correct'],
@@ -562,7 +583,7 @@ class IBEdu_API {
 		global $wpdb;
 
 		return $wpdb->delete(
-			$wpdb->prefix . 'ibedu_choices',
+			$this->choices,
 			array( 'ID' => $choice_id ),
 			array( '%d' )
 		);
@@ -578,7 +599,7 @@ class IBEdu_API {
 		global $wpdb;
 
 		return $wpdb->delete(
-			$wpdb->prefix . 'ibedu_choices',
+			$this->choices,
 			array( 'question_id' => $question_id ),
 			array( '%d' )
 		);
@@ -605,7 +626,7 @@ class IBEdu_API {
 			$data_format[] = '%s';
 		}
 
-		return $wpdb->insert( $wpdb->prefix . 'ibedu_answers', $insert_data, $data_format );
+		return $wpdb->insert( $this->answers, $insert_data, $data_format );
 	}
 
 	/**
@@ -621,8 +642,8 @@ class IBEdu_API {
 		return $wpdb->get_results(
 			$wpdb->prepare(
 				"SELECT question_id, ID, entry_id, question_id, choice_id, correct, answer_text "
-				. "FROM {$wpdb->prefix}ibedu_answers "
-				. "WHERE entry_id = %d AND question_id IN (SELECT question_id FROM {$wpdb->prefix}ibedu_questions WHERE lesson_id = %d)",
+				. "FROM {$this->answers} "
+				. "WHERE entry_id = %d AND question_id IN (SELECT question_id FROM {$this->questions} WHERE lesson_id = %d)",
 				$entry_id,
 				$lesson_id
 			),
@@ -640,7 +661,7 @@ class IBEdu_API {
 		global $wpdb;
 
 		return $wpdb->insert(
-			$wpdb->prefix . 'ibedu_grades',
+			$this->grades,
 			array(
 				'lesson_id' => $data['lesson_id'],
 				'entry_id'  => $data['entry_id'],
@@ -677,7 +698,7 @@ class IBEdu_API {
 		}
 
 		return $wpdb->update(
-			"{$wpdb->prefix}ibedu_grades",
+			$this->grades,
 			$insert_data,
 			array( 'ID' => $grade_id ),
 			$insert_format,
@@ -696,7 +717,7 @@ class IBEdu_API {
 		global $wpdb;
 
 		$submitted = $wpdb->get_var( $wpdb->prepare(
-			"SELECT COUNT(1) FROM {$wpdb->prefix}ibedu_grades WHERE lesson_id=%d AND entry_id=%d LIMIT 1",
+			"SELECT COUNT(1) FROM {$this->grades} WHERE lesson_id=%d AND entry_id=%d LIMIT 1",
 			$lesson_id,
 			$entry_id
 		) );
@@ -715,9 +736,16 @@ class IBEdu_API {
 		global $wpdb;
 
 		return $wpdb->get_row( $wpdb->prepare(
-			"SELECT * FROM {$wpdb->prefix}ibedu_grades WHERE lesson_id=%d AND entry_id=%d",
+			"SELECT * FROM {$this->grades} WHERE lesson_id=%d AND entry_id=%d",
 			$lesson_id,
 			$entry_id
 		) );
+	}
+}
+
+class IBEdu_API {
+	public static function get_instance() {
+		_ib_edu_deprecated_function( 'IBEdu_API::get_instance()', '0.9.0', 'IB_Educator::get_instance()' );
+		return IB_Educator::get_instance();
 	}
 }

@@ -3,12 +3,12 @@
 
 	if ( ! $entry_id ) return;
 
-	$entry = IBEdu_Entry::get_instance( $entry_id );
+	$entry = IB_Educator_Entry::get_instance( $entry_id );
 
 	if ( ! $entry->ID ) return;
 
-	$api = IBEdu_API::get_instance();
-	$statuses = IBEdu_Entry::get_statuses();
+	$api = IB_Educator::get_instance();
+	$statuses = IB_Educator_Entry::get_statuses();
 
 	if ( ! current_user_can( 'edit_ibedu_course', $entry->course_id ) ) {
 		echo '<p>' . __( 'Access denied', 'ibeducator' ) . '</p>';
@@ -27,7 +27,7 @@
 	</div>
 	<?php endif; ?>
 
-	<form id="edu_edit_entry_form" class="ibedu-admin-form" action="<?php echo admin_url( 'admin.php?page=ibedu_entries&edu-action=edit-entry&entry_id=' . $entry_id ); ?>" method="post">
+	<form id="edu_edit_entry_form" class="ibedu-admin-form" action="<?php echo admin_url( 'admin.php?page=ib_educator_entries&edu-action=edit-entry&entry_id=' . $entry_id ); ?>" method="post">
 		<?php wp_nonce_field( 'ibedu_edit_entry_' . $entry->ID ); ?>
 		
 		<div class="ibedu-field">

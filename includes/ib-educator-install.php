@@ -1,12 +1,27 @@
 <?php
 
-class IBEdu_Install {
-	public function __construct() {}
+class IB_Educator_Install {
+	private $payments;
+	private $entries;
+	private $questions;
+	private $choices;
+	private $answers;
+	private $grades;
+
+	public function __construct() {
+		$tables = ib_edu_table_names();
+		$this->payments = $tables['payments'];
+		$this->entries = $tables['entries'];
+		$this->questions = $tables['questions'];
+		$this->choices = $tables['choices'];
+		$this->answers = $tables['answers'];
+		$this->grades = $tables['grades'];
+	}
 
 	/**
 	 * Install.
 	 */
-	public function install() {
+	public function activate() {
 		// Setup database tables.
 		$this->setup_tables();
 
@@ -14,9 +29,8 @@ class IBEdu_Install {
 		$this->setup_roles();
 
 		// Add post types and endpoints to flush rewrite rules properly.
-		IBEdu_Main::register_post_types();
-		IBEdu_Main::add_rewrite_endpoints();
-		IBEdu_Request::add_rewrite_endpoint();
+		IB_Educator_Main::register_post_types();
+		IB_Educator_Main::add_rewrite_endpoints();
 
 		// Flush rewrite rules
 		flush_rewrite_rules();
@@ -50,7 +64,7 @@ class IBEdu_Install {
 			}
 
 			// Entries and payments.
-			$sql = "CREATE TABLE {$wpdb->prefix}ibedu_entries (
+			$sql = "CREATE TABLE {$this->entries} (
   ID bigint(20) unsigned NOT NULL auto_increment,
   course_id bigint(20) unsigned NOT NULL,
   user_id bigint(20) unsigned NOT NULL,
@@ -62,7 +76,7 @@ class IBEdu_Install {
   PRIMARY KEY  (ID),
   KEY record_status (entry_status)
 ) $charset_collate;
-CREATE TABLE {$wpdb->prefix}ibedu_payments (
+CREATE TABLE {$this->payments} (
   ID bigint(20) unsigned NOT NULL auto_increment,
   user_id bigint(20) unsigned NOT NULL,
   course_id bigint(20) unsigned NOT NULL,
@@ -77,7 +91,7 @@ CREATE TABLE {$wpdb->prefix}ibedu_payments (
 ) $charset_collate;";
 
 			// Quiz.
-			$sql .= "CREATE TABLE {$wpdb->prefix}ibedu_questions (
+			$sql .= "CREATE TABLE {$this->questions} (
   ID bigint(20) unsigned NOT NULL auto_increment,
   lesson_id bigint(20) unsigned NOT NULL,
   question text default NULL,
@@ -86,7 +100,7 @@ CREATE TABLE {$wpdb->prefix}ibedu_payments (
   PRIMARY KEY  (ID),
   KEY lesson_id (lesson_id)
 ) $charset_collate;
-CREATE TABLE {$wpdb->prefix}ibedu_choices (
+CREATE TABLE {$this->choices} (
   ID bigint(20) unsigned NOT NULL auto_increment,
   question_id bigint(20) unsigned NOT NULL,
   choice_text text default NULL,
@@ -96,7 +110,7 @@ CREATE TABLE {$wpdb->prefix}ibedu_choices (
   KEY question_id (question_id),
   KEY menu_order (menu_order)
 ) $charset_collate;
-CREATE TABLE {$wpdb->prefix}ibedu_answers (
+CREATE TABLE {$this->answers} (
   ID bigint(20) unsigned NOT NULL auto_increment,
   question_id bigint(20) unsigned NOT NULL,
   entry_id bigint(20) unsigned NOT NULL,
@@ -106,7 +120,7 @@ CREATE TABLE {$wpdb->prefix}ibedu_answers (
   PRIMARY KEY  (ID),
   KEY entry_id (entry_id)
 ) $charset_collate;
-CREATE TABLE {$wpdb->prefix}ibedu_grades (
+CREATE TABLE {$this->grades} (
   ID bigint(20) unsigned NOT NULL auto_increment,
   lesson_id bigint(20) unsigned NOT NULL,
   entry_id bigint(20) unsigned NOT NULL,
@@ -215,7 +229,7 @@ CREATE TABLE {$wpdb->prefix}ibedu_grades (
 					'publish_ibedu_courses',
 					'delete_ibedu_courses',
 					'delete_published_ibedu_courses',
-					'edit_published_ibedu_courses'
+					'edit_published_ibedu_courses',
 				);
 
 				// Lesson capabilities.
@@ -224,7 +238,7 @@ CREATE TABLE {$wpdb->prefix}ibedu_grades (
 					'publish_ibedu_lessons',
 					'delete_ibedu_lessons',
 					'delete_published_ibedu_lessons',
-					'edit_published_ibedu_lessons'
+					'edit_published_ibedu_lessons',
 				);
 				break;
 		}

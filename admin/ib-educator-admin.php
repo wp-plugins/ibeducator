@@ -1,56 +1,55 @@
 <?php
 
-class IBEdu_Admin {
+class IB_Educator_Admin {
 	/**
 	 * Initialize admin.
 	 */
 	public static function init() {
 		// Enqueue scripts and stylesheets.
-		add_action( 'admin_enqueue_scripts', array( 'IBEdu_Admin', 'enqueue_scripts_styles' ), 9 );
+		add_action( 'admin_enqueue_scripts', array( 'IB_Educator_Admin', 'enqueue_scripts_styles' ), 9 );
 
 		// Add meta boxes.
-		add_action( 'add_meta_boxes', array( 'IBEdu_Admin', 'add_meta_boxes' ) );
+		add_action( 'add_meta_boxes', array( 'IB_Educator_Admin', 'add_meta_boxes' ) );
 
 		// Save lesson meta box.
-		add_action( 'save_post', array( 'IBEdu_Admin', 'save_lesson_meta_box' ), 10, 3 );
+		add_action( 'save_post', array( 'IB_Educator_Admin', 'save_lesson_meta_box' ), 10, 3 );
 
 		// Save course meta box.
-		add_action( 'save_post', array( 'IBEdu_Admin', 'save_course_meta_box' ), 10, 3 );
+		add_action( 'save_post', array( 'IB_Educator_Admin', 'save_course_meta_box' ), 10, 3 );
 
 		// Order lessons by menu_order in lessons list admin screen.
-		add_action( 'pre_get_posts', array( 'IBEdu_Admin', 'lessons_menu_order' ) );
+		add_action( 'pre_get_posts', array( 'IB_Educator_Admin', 'lessons_menu_order' ) );
 
 		// Add the course column name to lessons list admin screen.		
-		add_filter( 'manage_ibedu_lesson_posts_columns', array( 'IBEdu_Admin', 'lessons_columns' ) );
+		add_filter( 'manage_ibedu_lesson_posts_columns', array( 'IB_Educator_Admin', 'lessons_columns' ) );
 
 		// Add the course column content to lessons list admin screen.
-		add_filter( 'manage_ibedu_lesson_posts_custom_column', array( 'IBEdu_Admin', 'lessons_column_output' ), 10, 2 );
+		add_filter( 'manage_ibedu_lesson_posts_custom_column', array( 'IB_Educator_Admin', 'lessons_column_output' ), 10, 2 );
 
 		// Add filters controls to the lessons list admin screen.
-		add_filter( 'restrict_manage_posts', array( 'IBEdu_Admin', 'lessons_add_filters' ) );
+		add_filter( 'restrict_manage_posts', array( 'IB_Educator_Admin', 'lessons_add_filters' ) );
 
 		// Filter lessons list admin screen (by course).
-		add_filter( 'pre_get_posts', array( 'IBEdu_Admin', 'lessons_parse_filters' ) );
+		add_filter( 'pre_get_posts', array( 'IB_Educator_Admin', 'lessons_parse_filters' ) );
 
 		// Admin menu.
-		add_action( 'admin_menu', array( 'IBEdu_Admin', 'admin_menu' ), 9 );
+		add_action( 'admin_menu', array( 'IB_Educator_Admin', 'admin_menu' ), 9 );
 
 		// Settings.
-		add_action( 'admin_init', array( 'IBEdu_Admin', 'setup_settings' ) );
-		add_action( 'admin_init', array( 'IBEdu_Admin', 'admin_actions' ) );
+		add_action( 'admin_init', array( 'IB_Educator_Admin', 'setup_settings' ) );
+		add_action( 'admin_init', array( 'IB_Educator_Admin', 'admin_actions' ) );
 
 		// AJAX actions.
-		add_action( 'wp_ajax_ibedu_delete_payment', array( 'IBEdu_Admin', 'admin_payments_delete' ) );
-		add_action( 'wp_ajax_ibedu_delete_entry', array( 'IBEdu_Admin', 'admin_entries_delete' ) );
+		add_action( 'wp_ajax_ibedu_delete_payment', array( 'IB_Educator_Admin', 'admin_payments_delete' ) );
+		add_action( 'wp_ajax_ibedu_delete_entry', array( 'IB_Educator_Admin', 'admin_entries_delete' ) );
 	}
 
 	/**
 	 * Enqueue scripts and styles.
 	 */
 	public static function enqueue_scripts_styles() {
-		$screen = get_current_screen();
-
-		wp_enqueue_style( 'ibedu-admin', IBEDUCATOR_PLUGIN_URL . 'admin/css/ibedu-admin.css', array(), '1.0' );
+		//$screen = get_current_screen();
+		wp_enqueue_style( 'ib-educator-admin', IBEDUCATOR_PLUGIN_URL . 'admin/css/admin.css', array(), '1.0' );
 	}
 
 	/**
@@ -61,7 +60,7 @@ class IBEdu_Admin {
 		add_meta_box(
 			'ibedu_course_meta',
 			__( 'Course Settings', 'ibeducator' ),
-			array( 'IBEdu_Admin', 'course_meta_box' ),
+			array( 'IB_Educator_Admin', 'course_meta_box' ),
 			'ibedu_course'
 		);
 
@@ -69,7 +68,7 @@ class IBEdu_Admin {
 		add_meta_box(
 			'ibedu_lesson_meta',
 			__( 'Lesson Settings', 'ibeducator' ),
-			array( 'IBEdu_Admin', 'lesson_meta_box' ),
+			array( 'IB_Educator_Admin', 'lesson_meta_box' ),
 			'ibedu_lesson'
 		);
 	}
@@ -90,6 +89,24 @@ class IBEdu_Admin {
 				<input type="text" id="ibedu_price" name="_ibedu_price" value="<?php echo esc_attr( $price ); ?>">
 			</div>
 		</div>
+
+		<div class="ibedu-field">
+			<div class="ibedu-label"><label for="ibedu_difficulty"><?php _e( 'Difficulty', 'ibeducator' ); ?></label></div>
+			<div class="ibedu-control">
+				<?php
+					$difficulty = get_post_meta( $post->ID, '_ib_educator_difficulty', true );
+					$difficulty_levels = ib_edu_get_difficulty_levels();
+				?>
+				<select name="_ib_educator_difficulty">
+					<option value=""><?php _e( 'None', 'ibeducator' ); ?></option>
+					<?php
+						foreach ( $difficulty_levels as $key => $label ) {
+							echo '<option value="' . esc_attr( $key ) . '"' . ( $key == $difficulty ? ' selected="selected"' : '' ) . '>' . esc_html( $label ) . '</option>';
+						}
+					?>
+				</select>
+			</div>
+		</div>
 		<?php
 	}
 
@@ -102,7 +119,7 @@ class IBEdu_Admin {
 		wp_nonce_field( 'ibedu_lesson_meta_box', 'ibedu_lesson_meta_box_nonce' );
 
 		$value = get_post_meta( $post->ID, '_ibedu_course', true );
-		$courses = get_posts( array( 'post_type' => 'ibedu_course' ) );
+		$courses = get_posts( array( 'post_type' => 'ibedu_course', 'posts_per_page' => -1 ) );
 		?>
 		<?php if ( ! empty( $courses ) ) : ?>
 		<div class="ibedu-field">
@@ -140,8 +157,16 @@ class IBEdu_Admin {
 			return;
 		}
 
+		// Course price.
 		$price = ( isset( $_POST['_ibedu_price'] ) && is_numeric( $_POST['_ibedu_price'] ) ) ? $_POST['_ibedu_price'] : '';
 		update_post_meta( $post_id, '_ibedu_price', $price );
+
+		// Course difficulty.
+		$difficulty = ( isset( $_POST['_ib_educator_difficulty'] ) ) ? $_POST['_ib_educator_difficulty'] : '';
+
+		if ( empty( $difficulty ) || array_key_exists( $difficulty, ib_edu_get_difficulty_levels() ) ) {
+			update_post_meta( $post_id, '_ib_educator_difficulty', $difficulty );
+		}
 	}
 
 	/**
@@ -225,7 +250,8 @@ class IBEdu_Admin {
 
 		if ( 'ibedu_lesson' == $screen->post_type ) {
 			$args = array(
-				'post_type' => 'ibedu_course',
+				'post_type'      => 'ibedu_course',
+				'posts_per_page' => -1,
 			);
 
 			if ( ! current_user_can( 'edit_others_ibedu_lessons' ) ) {
@@ -276,43 +302,43 @@ class IBEdu_Admin {
 			__( 'Educator', 'ibeducator' ),
 			__( 'Educator', 'ibeducator' ),
 			'manage_educator',
-			'ibedu_admin',
-			array( 'IBEdu_Admin', 'admin_index' )
+			'ib_educator_admin',
+			array( 'IB_Educator_Admin', 'admin_index' )
 		);
 
 		add_submenu_page(
-			'ibedu_admin',
+			'ib_educator_admin',
 			__( 'Educator Settings', 'ibeducator' ),
 			__( 'Settings', 'ibeducator' ),
 			'manage_educator',
-			'ibedu_admin'
+			'ib_educator_admin'
 		);
 
 		add_submenu_page(
-			'ibedu_admin',
+			'ib_educator_admin',
 			__( 'Educator Payments', 'ibeducator' ),
 			__( 'Payments', 'ibeducator' ),
 			'manage_educator',
-			'ibedu_payments',
-			array( 'IBEdu_Admin', 'admin_payments' )
+			'ib_educator_payments',
+			array( 'IB_Educator_Admin', 'admin_payments' )
 		);
 
 		if ( current_user_can( 'manage_educator' ) ) {
 			add_submenu_page(
-				'ibedu_admin',
+				'ib_educator_admin',
 				__( 'Educator Entries', 'ibeducator' ),
 				__( 'Entries', 'ibeducator' ),
 				'manage_educator',
-				'ibedu_entries',
-				array( 'IBEdu_Admin', 'admin_entries' )
+				'ib_educator_entries',
+				array( 'IB_Educator_Admin', 'admin_entries' )
 			);
 		} else if ( current_user_can( 'ibedu_edit_entries' ) ) {
 			add_menu_page(
 				__( 'Educator Entries', 'ibeducator' ),
 				__( 'Entries', 'ibeducator' ),
 				'ibedu_edit_entries',
-				'ibedu_entries',
-				array( 'IBEdu_Admin', 'admin_entries' )
+				'ib_educator_entries',
+				array( 'IB_Educator_Admin', 'admin_entries' )
 			);
 		}
 	}
@@ -324,14 +350,14 @@ class IBEdu_Admin {
 		add_settings_section(
 			'ibedu_pages',
 			'',
-			array( 'IBEdu_Admin', 'general_settings' ),
+			array( 'IB_Educator_Admin', 'general_settings' ),
 			'ibedu_pages'
 		);
 
 		add_settings_field(
 			'student_courses',
 			__( 'Student\'s Courses', 'ibeducator' ),
-			array( 'IBEdu_Admin', 'setting_select_page' ),
+			array( 'IB_Educator_Admin', 'setting_select_page' ),
 			'ibedu_pages',
 			'ibedu_pages',
 			array(
@@ -344,7 +370,7 @@ class IBEdu_Admin {
 		add_settings_field(
 			'payment',
 			__( 'Payment', 'ibeducator' ),
-			array( 'IBEdu_Admin', 'setting_select_page' ),
+			array( 'IB_Educator_Admin', 'setting_select_page' ),
 			'ibedu_pages',
 			'ibedu_pages',
 			array(
@@ -354,7 +380,7 @@ class IBEdu_Admin {
 			)
 		);
 
-		register_setting( 'ibedu_pages', 'ibedu_pages', array( 'IBEdu_Admin', 'general_settings_validate' ) );
+		register_setting( 'ibedu_pages', 'ibedu_pages', array( 'IB_Educator_Admin', 'general_settings_validate' ) );
 	}
 
 	/**
@@ -384,7 +410,7 @@ class IBEdu_Admin {
 	}
 
 	/**
-	 * Setting form control: select page
+	 * Setting form control: select page.
 	 *
 	 * @param array $args
 	 */
@@ -432,7 +458,7 @@ class IBEdu_Admin {
 		?>
 		<h2 class="nav-tab-wrapper">
 		<?php foreach ( $tabs as $tab_key => $tab_name ) : ?>
-		<a class="nav-tab<?php if ( $tab_key == $current_tab ) echo ' nav-tab-active'; ?>" href="<?php echo admin_url( 'admin.php?page=ibedu_admin&tab=' . $tab_key ); ?>"><?php echo $tab_name; ?></a>
+		<a class="nav-tab<?php if ( $tab_key == $current_tab ) echo ' nav-tab-active'; ?>" href="<?php echo admin_url( 'admin.php?page=ib_educator_admin&tab=' . $tab_key ); ?>"><?php echo $tab_name; ?></a>
 		<?php endforeach; ?>
 		</h2>
 		<?php
@@ -472,19 +498,19 @@ class IBEdu_Admin {
 	 */
 	public static function admin_actions() {
 		if ( isset( $_GET['edu-action'] ) ) {
-			require_once IBEDUCATOR_PLUGIN_DIR . 'admin/class.ibedu-admin-actions.php';
+			require_once IBEDUCATOR_PLUGIN_DIR . 'admin/ib-educator-admin-actions.php';
 
 			switch ( $_GET['edu-action'] ) {
 				case 'edit-entry':
-					IBEdu_Admin_Actions::edit_entry();
+					IB_Educator_Admin_Actions::edit_entry();
 					break;
 
 				case 'edit-payment':
-					IBEdu_Admin_Actions::edit_payment();
+					IB_Educator_Admin_Actions::edit_payment();
 					break;
 
 				case 'edit-payment-gateway':
-					IBEdu_Admin_Actions::edit_payment_gateway();
+					IB_Educator_Admin_Actions::edit_payment_gateway();
 					break;
 			}
 		}
@@ -505,7 +531,7 @@ class IBEdu_Admin {
 		}
 
 		$response = '';
-		$payment = IBEdu_Payment::get_instance( $payment_id );
+		$payment = IB_Educator_Payment::get_instance( $payment_id );
 
 		if ( $payment && $payment->delete() ) {
 			$response = 'success';
@@ -532,7 +558,7 @@ class IBEdu_Admin {
 		}
 
 		$response = '';
-		$entry = IBEdu_Entry::get_instance( $entry_id );
+		$entry = IB_Educator_Entry::get_instance( $entry_id );
 
 		if ( $entry && $entry->delete() ) {
 			$response = 'success';

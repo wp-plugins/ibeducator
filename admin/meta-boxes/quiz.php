@@ -83,7 +83,7 @@
 </script>
 
 <?php
-	$api = IBEdu_API::get_instance();
+	$api = IB_Educator::get_instance();
 
 	// Create questions JSON.
 	$questions_js = '[';

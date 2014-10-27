@@ -1,5 +1,5 @@
 <?php
-	$api = IBEdu_API::get_instance();
+	$api = IB_Educator::get_instance();
 
 	// Get entry data for the current student. Entry status must be "inprogress".
 	$entry = $api->get_entry( array(
@@ -17,7 +17,7 @@
 <?php if ( $questions ) : ?>
 	<?php
 		$message = get_query_var( 'edu-message' );
-		if ( ! $message ) $message = ibedu_message( 'quiz' );
+		if ( ! $message ) $message = ib_edu_message( 'quiz' );
 
 		if ( $message ) {
 			switch ( $message ) {
@@ -44,7 +44,7 @@
 			<p class="grade">
 				<?php
 					if ( 'approved' == $grade->status ) {
-						printf( __( 'You scored %s for this quiz.', 'ibeducator' ), '<strong>' . ibedu_format_grade( $grade->grade ) . '</strong>' );
+						printf( __( 'You scored %s for this quiz.', 'ibeducator' ), '<strong>' . ib_edu_format_grade( $grade->grade ) . '</strong>' );
 					} else {
 						_e( 'Your grade is pending.', 'ibeducator' );
 					}
@@ -65,7 +65,7 @@
 		<?php //if ( ! $quiz_submitted ) : ?>
 		<h3 class="ibedu-quiz-title"><?php _e( 'Quiz', 'ibeducator' ); ?></h3>
 
-		<form id="ibedu-quiz-form" class="ibedu-form" method="post" action="<?php echo esc_url( ibedu_endpoint_url( 'edu-action', 'submit-quiz', get_permalink() ) ); ?>">
+		<form id="ibedu-quiz-form" class="ibedu-form" method="post" action="<?php echo esc_url( ib_edu_get_endpoint_url( 'edu-action', 'submit-quiz', get_permalink() ) ); ?>">
 			<?php wp_nonce_field( 'ibedu_submit_quiz_' . $lesson_id ); ?>
 			<input type="hidden" name="submit_quiz" value="1">
 

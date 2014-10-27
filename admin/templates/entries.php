@@ -1,11 +1,11 @@
 <?php
-	$api = IBEdu_API::get_instance();
+	$api = IB_Educator::get_instance();
 	$page = isset( $_GET['paged'] ) ? absint( $_GET['paged'] ) : 1;
 	$args = array(
 		'per_page' => 10,
 		'page'     => $page
 	);
-	$statuses = IBEdu_Entry::get_statuses();
+	$statuses = IB_Educator_Entry::get_statuses();
 	$status = isset( $_GET['status'] ) && array_key_exists( $_GET['status'], $statuses ) ? $_GET['status'] : '';
 
 	if ( ! empty( $status ) ) {
@@ -34,13 +34,13 @@
 	<h2><?php _e( 'Educator Entries', 'ibeducator' ); ?></h2>
 
 	<ul class="subsubsub ibedu-subnav">
-		<li><a href="<?php echo admin_url( 'admin.php?page=ibedu_entries' ); ?>"<?php if ( empty( $status ) ) echo ' class="current"'; ?>><?php _e( 'All', 'ibeducator' ); ?></a> | </li>
+		<li><a href="<?php echo admin_url( 'admin.php?page=ib_educator_entries' ); ?>"<?php if ( empty( $status ) ) echo ' class="current"'; ?>><?php _e( 'All', 'ibeducator' ); ?></a> | </li>
 		<?php
 			$i = 1;
 
 			foreach ( $statuses as $key => $label ) {
 				$count = isset( $entries_count[ $key ] ) ? $entries_count[ $key ]->num_rows : 0;
-				echo '<li><a href="' . admin_url( 'admin.php?page=ibedu_entries&status=' . $key ) . '"' . ( $key == $status ? ' class="current"' : '' ) . '>' . $label . ' <span class="count">(' . intval( $count ) . ')</span></a>' . ( $i < count( $statuses ) ? ' | ' : '' ) . '</li>';
+				echo '<li><a href="' . admin_url( 'admin.php?page=ib_educator_entries&status=' . $key ) . '"' . ( $key == $status ? ' class="current"' : '' ) . '>' . $label . ' <span class="count">(' . intval( $count ) . ')</span></a>' . ( $i < count( $statuses ) ? ' | ' : '' ) . '</li>';
 				++$i;
 			}
 		?>
@@ -62,7 +62,7 @@
 		<?php
 			$student = get_user_by( 'id', $entry->user_id );
 			$course = get_post( $entry->course_id );
-			$payment = IBEdu_Payment::get_instance( $entry->payment_id );
+			$payment = IB_Educator_Payment::get_instance( $entry->payment_id );
 			$username = '';
 
 			if ( $student->first_name && $student->last_name ) {
@@ -76,11 +76,11 @@
 			<td><?php echo esc_html( $username ) . ' (#' . absint( $student->ID ) . ')'; ?></td>
 			<td><?php echo esc_html( $course->post_title ); ?></td>
 			<td><?php echo sanitize_title( $entry->entry_status ); ?></td>
-			<td><?php echo ibedu_format_grade( $entry->grade ); ?></td>
+			<td><?php echo ib_edu_format_grade( $entry->grade ); ?></td>
 			<td>
 				<?php
-					echo '<a class="ibedu-item-edit" href="' . admin_url( 'admin.php?page=ibedu_entries&edu-action=edit-entry&entry_id=' . absint( $entry->ID ) ) . '">' . __( 'Edit', 'ibeducator' ) . '</a>';
-					echo ' | <a class="ibedu-item-progress" data-entry_id="' . absint( $entry->ID ) . '" href="' . admin_url( 'admin.php?page=ibedu_entries&edu-action=entry-progress&entry_id=' . absint( $entry->ID ) ) . '">' . __( 'Progress', 'ibeducator' ) . '</a>';
+					echo '<a class="ibedu-item-edit" href="' . admin_url( 'admin.php?page=ib_educator_entries&edu-action=edit-entry&entry_id=' . absint( $entry->ID ) ) . '">' . __( 'Edit', 'ibeducator' ) . '</a>';
+					echo ' | <a class="ibedu-item-progress" data-entry_id="' . absint( $entry->ID ) . '" href="' . admin_url( 'admin.php?page=ib_educator_entries&edu-action=entry-progress&entry_id=' . absint( $entry->ID ) ) . '">' . __( 'Progress', 'ibeducator' ) . '</a>';
 
 					if ( current_user_can( 'manage_educator' ) ) {
 						echo ' | <a class="ibedu-item-delete" data-entry_id="' . absint( $entry->ID ) . '" data-wpnonce="' . wp_create_nonce( 'ibedu_delete_entry_' . absint( $entry->ID ) ) . '" href="' . admin_url( 'admin-ajax.php' ) . '">' . __( 'Delete', 'ibeducator' ) . '</a>';

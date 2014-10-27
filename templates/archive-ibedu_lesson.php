@@ -6,7 +6,7 @@
 	/**
 	 * Add HTML before output of educator's content.
 	 */
-	do_action( 'ibedu_before_main_loop', 'archive' );
+	do_action( 'ib_educator_before_main_loop', 'archive' );
 ?>
 
 <header class="page-header">
@@ -23,14 +23,14 @@
 	/**
 	 * Add HTML after output of educator's content.
 	 */
-	do_action( 'ibedu_after_main_loop', 'archive' );
+	do_action( 'ib_educator_after_main_loop', 'archive' );
 ?>
 
 <?php
 	/**
 	 * Add sidebar.
 	 */
-	do_action( 'ibedu_sidebar' );
+	do_action( 'ib_educator_sidebar' );
 ?>
 
 <?php get_footer( 'ibeducator' ); ?>

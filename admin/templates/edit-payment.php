@@ -8,11 +8,11 @@
 		return;
 	}
 
-	$payment = IBEdu_Payment::get_instance( $payment_id );
+	$payment = IB_Educator_Payment::get_instance( $payment_id );
 
 	if ( ! $payment->ID ) return;
 
-	$payment_statuses = IBEdu_Payment::get_statuses();
+	$payment_statuses = IB_Educator_Payment::get_statuses();
 
 	$student = get_user_by( 'id', $payment->user_id );
 	$course = get_post( $payment->course_id );
@@ -26,7 +26,7 @@
 	</div>
 	<?php endif; ?>
 
-	<form id="edu_edit_payment_form" class="ibedu-admin-form" action="<?php echo admin_url( 'admin.php?page=ibedu_payments&edu-action=edit-payment&payment_id=' . $payment_id ); ?>" method="post">
+	<form id="edu_edit_payment_form" class="ibedu-admin-form" action="<?php echo admin_url( 'admin.php?page=ib_educator_payments&edu-action=edit-payment&payment_id=' . $payment_id ); ?>" method="post">
 		<?php wp_nonce_field( 'ibedu_edit_payment_' . $payment->ID ); ?>
 
 		<div class="ibedu-field">

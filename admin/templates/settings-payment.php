@@ -1,8 +1,8 @@
 <?php
 	// Get all gateway objects
-	$gateways = IBEdu_Main::get_gateways();
+	$gateways = IB_Educator_Main::get_gateways();
 	$gateway_id = '';
-
+	
 	if ( isset( $_GET['gateway_id'] ) ) {
 		$gateway_id = $_GET['gateway_id'];
 	} elseif ( isset( $_POST['gateway_id'] ) ) {
@@ -33,7 +33,7 @@
 	</div>
 	<?php endif; ?>
 
-	<?php IBEdu_Admin::settings_tabs( 'payment' ); ?>
+	<?php IB_Educator_Admin::settings_tabs( 'payment' ); ?>
 
 	<ul class="ibedu-tabs">
 		<li class="title"><span><?php _e( 'Payment Gateways:', 'ibeducator' ); ?></span></li>
@@ -41,13 +41,13 @@
 			<?php if ( $gateway_id == $id ) : ?>
 			<li class="active"><span><?php echo $obj->get_title(); ?></span></li>
 			<?php else : ?>
-			<li><a href="<?php echo admin_url( 'admin.php?page=ibedu_admin&tab=payment&gateway_id=' . $id ); ?>"><?php echo $obj->get_title(); ?></a></li>
+			<li><a href="<?php echo admin_url( 'admin.php?page=ib_educator_admin&tab=payment&gateway_id=' . $id ); ?>"><?php echo $obj->get_title(); ?></a></li>
 			<?php endif; ?>
 		<?php endforeach; ?>
 	</ul>
 
-	<form action="<?php echo admin_url( 'admin.php?page=ibedu_admin&edu-action=edit-payment-gateway&tab=payment' ); ?>" method="post">
-		<?php wp_nonce_field( 'ibedu_payments_settings' ); ?>
+	<form action="<?php echo admin_url( 'admin.php?page=ib_educator_admin&edu-action=edit-payment-gateway&tab=payment' ); ?>" method="post">
+		<?php wp_nonce_field( 'ib_educator_payments_settings' ); ?>
 
 		<input type="hidden" name="gateway_id" value="<?php echo esc_attr( $gateway_id ); ?>">
 

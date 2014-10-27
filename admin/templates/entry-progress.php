@@ -3,11 +3,11 @@
 
 	if ( ! $entry_id ) return;
 
-	$entry = IBEdu_Entry::get_instance( $entry_id );
+	$entry = IB_Educator_Entry::get_instance( $entry_id );
 
 	if ( ! $entry->ID ) return;
 
-	$api = IBEdu_API::get_instance();
+	$api = IB_Educator::get_instance();
 
 	// Verify capabilities.
 	if ( ! current_user_can( 'edit_ibedu_course', $entry->course_id ) ) {
@@ -166,13 +166,13 @@
 			<div class="form-row">
 				<div class="label"><?php _e( 'Average Grade', 'ibeducator' ); ?></div>
 				<div class="field">
-					<?php echo ibedu_format_grade( $suggested_grade / $num_quizzes ); ?>
+					<?php echo ib_edu_format_grade( $suggested_grade / $num_quizzes ); ?>
 				</div>
 			</div>
 			<div class="form-row">
 				<div class="label"><?php _e( 'Final Grade', 'ibeducator' ); ?></div>
 				<div class="field">
-					<a href="<?php echo admin_url( 'admin.php?page=ibedu_entries&edu-action=edit-entry&entry_id=' . $entry_id ); ?>" target="_new"><?php echo ibedu_format_grade( $entry->grade ); ?></a>
+					<a href="<?php echo admin_url( 'admin.php?page=ib_educator_entries&edu-action=edit-entry&entry_id=' . $entry_id ); ?>" target="_new"><?php echo ib_edu_format_grade( $entry->grade ); ?></a>
 				</div>
 			</div>
 		</div>

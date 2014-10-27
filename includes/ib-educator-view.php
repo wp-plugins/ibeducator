@@ -1,6 +1,6 @@
 <?php
 
-class IBEdu_View {
+class IB_Educator_View {
 	static private $theme_dir = 'ibeducator';
 
 	/**

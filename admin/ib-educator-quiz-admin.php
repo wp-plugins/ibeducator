@@ -1,23 +1,23 @@
 <?php
 
-class IBEdu_Quiz_Admin {
+class IB_Educator_Quiz_Admin {
 	/**
 	 * Initialize the quiz admin.
 	 */
 	public static function init() {
 		// Enqueue scripts and stylesheets.
-		add_action( 'admin_enqueue_scripts', array( 'IBEdu_Quiz_Admin', 'enqueue_scripts_styles' ), 9 );
+		add_action( 'admin_enqueue_scripts', array( 'IB_Educator_Quiz_Admin', 'enqueue_scripts_styles' ), 9 );
 
 		// Add meta box.
-		add_action( 'add_meta_boxes', array( 'IBEdu_Quiz_Admin', 'add_meta_boxes' ) );
+		add_action( 'add_meta_boxes', array( 'IB_Educator_Quiz_Admin', 'add_meta_boxes' ) );
 
 		// Indicate that the post has a quiz.
-		add_action( 'save_post', array( 'IBEdu_Quiz_Admin', 'set_quiz' ), 10, 3 );
+		add_action( 'save_post', array( 'IB_Educator_Quiz_Admin', 'set_quiz' ), 10, 3 );
 
 		// AJAX actions.
-		add_action( 'wp_ajax_ibedu_quiz_question', array( 'IBEdu_Quiz_Admin', 'quiz_question' ) );
-		add_action( 'wp_ajax_ibedu_sort_questions', array( 'IBEdu_Quiz_Admin', 'sort_questions' ) );
-		add_action( 'wp_ajax_ibedu_quiz_grade', array( 'IBEdu_Quiz_Admin', 'quiz_grade' ) );
+		add_action( 'wp_ajax_ibedu_quiz_question', array( 'IB_Educator_Quiz_Admin', 'quiz_question' ) );
+		add_action( 'wp_ajax_ibedu_sort_questions', array( 'IB_Educator_Quiz_Admin', 'sort_questions' ) );
+		add_action( 'wp_ajax_ibedu_quiz_grade', array( 'IB_Educator_Quiz_Admin', 'quiz_grade' ) );
 	}
 
 	/**
@@ -27,10 +27,10 @@ class IBEdu_Quiz_Admin {
 		$screen = get_current_screen();
 
 		if ( 'post' == $screen->base && 'ibedu_lesson' == $screen->post_type ) {
-			wp_enqueue_style( 'ibedu-quiz', IBEDUCATOR_PLUGIN_URL . 'admin/css/quiz.css', array(), '1.0' );
-			wp_enqueue_script( 'ibedu-quiz', IBEDUCATOR_PLUGIN_URL . 'admin/js/quiz.js', array( 'jquery', 'underscore', 'backbone' ), '1.0' );
-			wp_localize_script( 'ibedu-quiz', 'educatorQuizText', array(
-				'confirm_delete' => __( 'Are you sure you want to delete this item?', 'ibeducator' )
+			wp_enqueue_style( 'ib-educator-quiz', IBEDUCATOR_PLUGIN_URL . 'admin/css/quiz.css', array(), '1.0' );
+			wp_enqueue_script( 'ib-educator-quiz', IBEDUCATOR_PLUGIN_URL . 'admin/js/quiz.js', array( 'jquery', 'underscore', 'backbone' ), '1.0' );
+			wp_localize_script( 'ib-educator-quiz', 'educatorQuizText', array(
+				'confirm_delete' => __( 'Are you sure you want to delete this item?', 'ibeducator' ),
 			) );
 		}
 	}
@@ -43,7 +43,7 @@ class IBEdu_Quiz_Admin {
 		add_meta_box(
 			'ibedu_quiz',
 			__( 'Quiz', 'ibeducator' ),
-			array( 'IBEdu_Quiz_Admin', 'quiz_meta_box' ),
+			array( 'IB_Educator_Quiz_Admin', 'quiz_meta_box' ),
 			'ibedu_lesson'
 		);
 	}
@@ -65,7 +65,7 @@ class IBEdu_Quiz_Admin {
 	 * @return array Saved choices.
 	 */
 	protected static function save_question_choices( $question_id, $choices ) {
-		$api = IBEdu_API::get_instance();
+		$api = IB_Educator::get_instance();
 		$choice_ids = array();
 
 		foreach ( $choices as $choice ) {
@@ -77,7 +77,8 @@ class IBEdu_Quiz_Admin {
 		// Delete choices that are not sent by the user.
 		if ( ! empty( $choice_ids ) ) {
 			global $wpdb;
-			$wpdb->query($wpdb->prepare("DELETE FROM {$wpdb->prefix}ibedu_choices WHERE question_id=%d AND ID NOT IN (" . implode( ',', $choice_ids ) . ")", $question_id ));
+			$tables = ib_edu_table_names();
+			$wpdb->query( $wpdb->prepare( "DELETE FROM " . $tables['choices'] . " WHERE question_id=%d AND ID NOT IN (" . implode( ',', $choice_ids ) . ")", $question_id ) );
 		}
 
 		// Add choices to the question.
@@ -111,7 +112,7 @@ class IBEdu_Quiz_Admin {
 	 * AJAX: process quiz question admin requests.
 	 */
 	public static function quiz_question() {
-		$api = IBEdu_API::get_instance();
+		$api = IB_Educator::get_instance();
 
 		switch ( $_SERVER['REQUEST_METHOD'] ) {
 			case 'POST':
@@ -141,7 +142,7 @@ class IBEdu_Quiz_Admin {
 
 				// Verify nonce.
 				if ( $input ) {
-					$question = IBEdu_Question::get_instance();
+					$question = IB_Educator_Question::get_instance();
 
 					if ( isset( $input->lesson_id ) && is_numeric( $input->lesson_id ) ) {
 						$question->lesson_id = $input->lesson_id;
@@ -201,7 +202,7 @@ class IBEdu_Quiz_Admin {
 					exit;
 				}
 
-				$question = IBEdu_Question::get_instance( $question_id );
+				$question = IB_Educator_Question::get_instance( $question_id );
 
 				// Question found?
 				if ( ! $question->ID ) {
@@ -257,7 +258,7 @@ class IBEdu_Quiz_Admin {
 					exit;
 				}
 
-				$question = IBEdu_Question::get_instance( $question_id );
+				$question = IB_Educator_Question::get_instance( $question_id );
 
 				// Question found?
 				if ( ! $question->ID ) {
@@ -313,7 +314,7 @@ class IBEdu_Quiz_Admin {
 		}
 
 		$has_quiz = 0;
-		$questions = IBEdu_API::get_instance()->get_questions( array( 'lesson_id' => $post_id ) );
+		$questions = IB_Educator::get_instance()->get_questions( array( 'lesson_id' => $post_id ) );
 
 		if ( ! empty( $questions ) ) {
 			$has_quiz = 1;
@@ -335,7 +336,7 @@ class IBEdu_Quiz_Admin {
 		}
 
 		// Verify capabilities.
-		if ( ! ibedu_can_edit_lesson( get_current_user_id(), $lesson_id ) ) {
+		if ( ! ib_edu_user_can_edit_lesson( $lesson_id ) ) {
 			exit;
 		}
 		
@@ -345,10 +346,11 @@ class IBEdu_Quiz_Admin {
 		if ( $ids && $order ) {
 			foreach ( $ids as $key => $question_id ) {
 				if ( is_numeric( $question_id ) && isset( $order[ $key ] ) && is_numeric( $order[ $key ] ) ) {
+					$tables = ib_edu_table_names();
 					$wpdb->update(
-						$wpdb->prefix . 'ibedu_questions',
+						$tables['questions'],
 						array( 'menu_order' => $order[ $key ] ),
-						array( 'ID' => $question_id, 'lesson_id' => $lesson_id ),
+						array( 'ID' => $question_id, 'lesson_id' => $lesson_id ), // lesson_id is for access control
 						array( '%d' ),
 						array( '%d', '%d' )
 					);
@@ -364,7 +366,7 @@ class IBEdu_Quiz_Admin {
 	 */
 	public static function quiz_grade() {
 		global $wpdb;
-		$api = IBEdu_API::get_instance();
+		$api = IB_Educator::get_instance();
 		$entry_id = isset( $_POST['entry_id'] ) ? absint( $_POST['entry_id'] ) : 0;
 		$lesson_id = isset( $_POST['lesson_id'] ) ? absint( $_POST['lesson_id'] ) : 0;
 

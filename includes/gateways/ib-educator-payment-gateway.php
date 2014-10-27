@@ -1,6 +1,6 @@
 <?php
 
-abstract class IBEdu_Payment_Gateway {
+abstract class IB_Educator_Payment_Gateway {
 	protected $id = '';
 	protected $title = '';
 	protected $options = array();
@@ -46,10 +46,12 @@ abstract class IBEdu_Payment_Gateway {
 		$this->options['enabled'] = array(
 			'type'  => 'checkbox',
 			'label' => __( 'Enabled', 'ibeducator' ),
+			'id'    => 'ib-edu-enabled',
 		);
 		$this->options['default'] = array(
 			'type'  => 'checkbox',
 			'label' => __( 'Default', 'ibeducator' ),
+			'id'    => 'ib-edu-default',
 		);
 		$this->options = array_merge( $this->options, $options );
 		$values = get_option( 'ibedu_payment_gateways', array() );
@@ -108,13 +110,13 @@ abstract class IBEdu_Payment_Gateway {
 	 * Output gateway options form.
 	 */
 	public function admin_options_form() {
-		require_once( IBEDUCATOR_PLUGIN_DIR . 'includes/class.ibedu-form.php' );
+		require_once( IBEDUCATOR_PLUGIN_DIR . 'includes/ib-educator-form.php' );
 
 		foreach ( $this->options as $name => $data ) {
 			$method_name = 'field_' . $data['type'];
 
-			if ( method_exists( 'IBEdu_Form', $method_name ) ) {
-				echo call_user_func_array( array( 'IBEdu_Form', $method_name ), array( 'ibedu_' . $this->id . '_' . $name, $this->get_option( $name ), $data ) );
+			if ( method_exists( 'IB_Educator_Form', $method_name ) ) {
+				echo call_user_func_array( array( 'IB_Educator_Form', $method_name ), array( 'ibedu_' . $this->id . '_' . $name, $this->get_option( $name ), $data ) );
 			}
 		}
 	}
@@ -146,9 +148,9 @@ abstract class IBEdu_Payment_Gateway {
 		$redirect = '';
 
 		if ( isset( $args['value'] ) ) {
-			$redirect = ibedu_endpoint_url( 'edu-thankyou', $args['value'], get_permalink( ibedu_page_id( 'payment' ) ) );
+			$redirect = ib_edu_get_endpoint_url( 'edu-thankyou', $args['value'], get_permalink( ib_edu_page_id( 'payment' ) ) );
 		} else {
-			$redirect = ibedu_endpoint_url( 'edu-thankyou', '', get_permalink( ibedu_page_id( 'payment' ) ) );
+			$redirect = ib_edu_get_endpoint_url( 'edu-thankyou', '', get_permalink( ib_edu_page_id( 'payment' ) ) );
 		}
 
 		return $redirect;

@@ -1,6 +1,6 @@
 <?php
 	global $post;
-	$api = IBEdu_API::get_instance();
+	$api = IB_Educator::get_instance();
 	$user_id = get_current_user_id();
 	$courses = $api->get_student_courses( $user_id );
 	$pending_courses = $api->get_pending_courses( $user_id );
@@ -29,7 +29,7 @@
 				<tr>
 					<td class="title"><a href="<?php echo esc_url( get_permalink( $course->ID ) ); ?>"><?php echo esc_html( $course->post_title ); ?></a></td>
 					<td>
-						<form action="<?php echo esc_url( ibedu_endpoint_url( 'edu-action', 'cancel-payment', get_permalink() ) ); ?>" method="post">
+						<form action="<?php echo esc_url( ib_edu_get_endpoint_url( 'edu-action', 'cancel-payment', get_permalink() ) ); ?>" method="post">
 							<?php wp_nonce_field( 'ibedu_cancel_payment' ); ?>
 							<input type="hidden" name="payment_id" value="<?php echo absint( $course->edu_payment_id ); ?>">
 							<button type="submit"><?php _e( 'Cancel', 'ibeducator' ); ?></a>
@@ -85,7 +85,7 @@
 						?>
 						<tr>
 							<td><a class="title" href="<?php echo esc_url( get_permalink( $course->ID ) ); ?>"><?php echo esc_html( $course->post_title ); ?></a></td>
-							<td class="grade"><?php echo ibedu_format_grade( $entry->grade ); ?></td>
+							<td class="grade"><?php echo ib_edu_format_grade( $entry->grade ); ?></td>
 						</tr>
 						<?php
 					}

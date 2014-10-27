@@ -1,6 +1,6 @@
 <?php
 
-class IBEdu_Admin_Actions {
+class IB_Educator_Admin_Actions {
 	/**
 	 * Edit course entry.
 	 */
@@ -9,7 +9,7 @@ class IBEdu_Admin_Actions {
 
 		if ( ! $entry_id ) return;
 
-		$entry = IBEdu_Entry::get_instance( $entry_id );
+		$entry = IB_Educator_Entry::get_instance( $entry_id );
 
 		if ( ! $entry->ID ) return;
 
@@ -17,14 +17,14 @@ class IBEdu_Admin_Actions {
 			// Verify nonce.
 			check_admin_referer( 'ibedu_edit_entry_' . $entry_id );
 			
-			$api = IBEdu_API::get_instance();
+			$api = IB_Educator::get_instance();
 
 			// Capability check.
 			if ( ! current_user_can( 'manage_educator' ) && ! in_array( $entry->course_id, $api->get_lecturer_courses( get_current_user_id() ) ) ) {
 				return;
 			}
 
-			if ( isset( $_POST['entry_status'] ) && array_key_exists( $_POST['entry_status'], IBEdu_Entry::get_statuses() ) ) {
+			if ( isset( $_POST['entry_status'] ) && array_key_exists( $_POST['entry_status'], IB_Educator_Entry::get_statuses() ) ) {
 				$entry->entry_status = $_POST['entry_status'];
 			}
 
@@ -33,7 +33,7 @@ class IBEdu_Admin_Actions {
 			}
 
 			if ( $entry->save() ) {
-				wp_redirect( admin_url( 'admin.php?page=ibedu_entries&edu-action=edit-entry&entry_id=' . $entry_id . '&edu-message=saved' ) );
+				wp_redirect( admin_url( 'admin.php?page=ib_educator_entries&edu-action=edit-entry&entry_id=' . $entry_id . '&edu-message=saved' ) );
 				exit;
 			}
 		}
@@ -47,7 +47,7 @@ class IBEdu_Admin_Actions {
 
 		if ( ! $payment_id ) return;
 
-		$payment = IBEdu_Payment::get_instance( $payment_id );
+		$payment = IB_Educator_Payment::get_instance( $payment_id );
 
 		if ( ! $payment->ID ) return;
 
@@ -62,16 +62,16 @@ class IBEdu_Admin_Actions {
 				$payment->amount = $_POST['amount'];
 			}
 
-			if ( isset( $_POST['payment_status'] ) && array_key_exists( $_POST['payment_status'], IBEdu_Payment::get_statuses() ) ) {
+			if ( isset( $_POST['payment_status'] ) && array_key_exists( $_POST['payment_status'], IB_Educator_Payment::get_statuses() ) ) {
 				$payment->payment_status = $_POST['payment_status'];
 			}
 
 			if ( $payment->save() ) {
-				$api = IBEdu_API::get_instance();
+				$api = IB_Educator::get_instance();
 				$entry_saved = true;
 
 				if ( 'complete' == $payment->payment_status && ! $api->get_entry( array( 'payment_id' => $payment->ID ) ) ) {
-					$entry = IBEdu_Entry::get_instance();
+					$entry = IB_Educator_Entry::get_instance();
 					$entry->course_id = $payment->course_id;
 					$entry->user_id = $payment->user_id;
 					$entry->payment_id = $payment->ID;
@@ -81,7 +81,7 @@ class IBEdu_Admin_Actions {
 				}
 
 				if ( $entry_saved ) {
-					wp_redirect( admin_url( 'admin.php?page=ibedu_payments&edu-action=edit-payment&payment_id=' . $payment_id . '&edu-message=saved' ) );
+					wp_redirect( admin_url( 'admin.php?page=ib_educator_payments&edu-action=edit-payment&payment_id=' . $payment_id . '&edu-message=saved' ) );
 					exit;
 				}
 			}
@@ -97,9 +97,9 @@ class IBEdu_Admin_Actions {
 		$gateway_id = sanitize_title( $_POST['gateway_id'] );
 
 		// Verify nonce.
-		check_admin_referer( 'ibedu_payments_settings' );
+		check_admin_referer( 'ib_educator_payments_settings' );
 
-		$gateways = IBEdu_Main::get_gateways();
+		$gateways = IB_Educator_Main::get_gateways();
 
 		if ( ! isset( $gateways[ $gateway_id ] ) ) return;
 
@@ -115,6 +115,6 @@ class IBEdu_Admin_Actions {
 			$message = 'not_saved';
 		}
 
-		wp_redirect( admin_url( 'admin.php?page=ibedu_admin&tab=payment&gateway_id=' . $gateway_id . '&edu-message=' . $message ) );
+		wp_redirect( admin_url( 'admin.php?page=ib_educator_admin&tab=payment&gateway_id=' . $gateway_id . '&edu-message=' . $message ) );
 	}
 }

@@ -1,6 +1,6 @@
 <?php
 
-class IBEdu_Actions {
+class IB_Educator_Actions {
 	/**
 	 * Cancel student's payment for a course.
 	 */
@@ -16,12 +16,12 @@ class IBEdu_Actions {
 			return;
 		}
 
-		$payment = IBEdu_Payment::get_instance( $payment_id );
+		$payment = IB_Educator_Payment::get_instance( $payment_id );
 
 		// User may cancel his/her pending payments only.
 		if ( 'pending' == $payment->payment_status && $payment->user_id == get_current_user_id() ) {
 			if ( $payment->update_status( 'cancelled' ) ) {
-				wp_redirect( ibedu_endpoint_url( 'edu-message', 'payment-cancelled', get_permalink() ) );
+				wp_redirect( ib_edu_get_endpoint_url( 'edu-message', 'payment-cancelled', get_permalink() ) );
 				exit;
 			}
 		}
@@ -35,7 +35,7 @@ class IBEdu_Actions {
 
 		$lesson_id = get_the_ID();
 		$user_id = get_current_user_id();
-		$api = IBEdu_API::get_instance();
+		$api = IB_Educator::get_instance();
 
 		// Verify nonce.
 		check_admin_referer( 'ibedu_submit_quiz_' . $lesson_id );
@@ -46,7 +46,7 @@ class IBEdu_Actions {
 
 		// The student has to submit the answers to all questions.
 		if ( ! isset( $_POST['answers'] ) ) {
-			ibedu_message( 'quiz', 'empty-answers' );
+			ib_edu_message( 'quiz', 'empty-answers' );
 			return;
 		} else if ( is_array( $_POST['answers'] ) ) {
 			foreach ( $_POST['answers'] as $answer ) {
@@ -54,7 +54,7 @@ class IBEdu_Actions {
 			}
 
 			if ( $num_answers != $num_questions ) {
-				ibedu_message( 'quiz', 'empty-answers' );
+				ib_edu_message( 'quiz', 'empty-answers' );
 				return;
 			}
 		}
@@ -151,7 +151,7 @@ class IBEdu_Actions {
 
 			$api->add_quiz_grade( $grade_data );
 
-			wp_redirect( ibedu_endpoint_url( 'edu-message', 'quiz-submitted', get_permalink() ) );
+			wp_redirect( ib_edu_get_endpoint_url( 'edu-message', 'quiz-submitted', get_permalink() ) );
 			exit;
 		}
 	}
@@ -172,7 +172,7 @@ class IBEdu_Actions {
 		// Get the course price.
 		$course_price = get_post_meta( $course_id, '_ibedu_price', true );
 
-		// Create an account
+		// Create an account.
 		$errors = array();
 		$username = '';
 		$email = '';
@@ -198,7 +198,7 @@ class IBEdu_Actions {
 		}
 
 		// Get payment method.
-		$gateways = IBEdu_Main::get_gateways();
+		$gateways = IB_Educator_Main::get_gateways();
 
 		if ( ! isset( $_POST['payment_method'] ) || ! array_key_exists( $_POST['payment_method'], $gateways ) ) {
 			if ( $course_price ) {
@@ -228,18 +228,18 @@ class IBEdu_Actions {
 
 		// Any errors?
 		if ( ! empty( $errors ) ) {
-			ibedu_message( 'payment_errors', $errors );
+			ib_edu_message( 'payment_errors', $errors );
 			return;
 		}
 
-		$api = IBEdu_API::get_instance();
+		$api = IB_Educator::get_instance();
 		$access_status = $api->get_access_status( $course_id, $user_id );
 
 		// Student can pay for a course only if he/she completed this course or didn't register for it yet.
 		if ( in_array( $access_status, array( 'course_complete', 'forbidden' ) ) ) {
 			if ( ! $course_price ) {
 				// The course is free.
-				$payment = IBEdu_Payment::get_instance();
+				$payment = IB_Educator_Payment::get_instance();
 				$payment->course_id = $course_id;
 				$payment->user_id = $user_id;
 				$payment->amount = 0.00;
@@ -248,7 +248,7 @@ class IBEdu_Actions {
 				$payment->payment_date = date( 'Y-m-d H:i:s' );
 
 				if ( $payment->save() ) {
-					$entry = IBEdu_Entry::get_instance();
+					$entry = IB_Educator_Entry::get_instance();
 					$entry->course_id = $course_id;
 					$entry->user_id = $user_id;
 					$entry->payment_id = $payment->ID;

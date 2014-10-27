@@ -1,6 +1,6 @@
 <?php
 
-class IBEdu_Entry {
+class IB_Educator_Entry {
 	public $ID = 0;
 	public $course_id = 0;
 	public $user_id = 0;
@@ -9,17 +9,19 @@ class IBEdu_Entry {
 	public $entry_status = '';
 	public $entry_date = '';
 	public $complete_date = '';
+	protected $table_name;
 
 	/**
 	 * Get instance.
 	 *
 	 * @param mixed $data
-	 * @return IBEdu_Entry
+	 * @return IB_Educator_Entry
 	 */
 	public static function get_instance( $data = null ) {
 		if ( is_numeric( $data ) ) {
 			global $wpdb;
-			$data = $wpdb->get_row( $wpdb->prepare( 'SELECT * FROM ' . $wpdb->prefix . 'ibedu_entries WHERE ID = %d', $data ) );
+			$tables = ib_edu_table_names();
+			$data = $wpdb->get_row( $wpdb->prepare( "SELECT * FROM " . $tables['entries'] . " WHERE ID = %d", $data ) );
 		}
 
 		return new self( $data );
@@ -45,6 +47,10 @@ class IBEdu_Entry {
 	 * @param array $data
 	 */
 	public function __construct( $data ) {
+		global $wpdb;
+		$tables = ib_edu_table_names();
+		$this->table_name = $tables['entries'];
+
 		if ( ! empty( $data ) ) {
 			$this->ID = $data->ID;
 			$this->course_id = $data->course_id;
@@ -67,7 +73,7 @@ class IBEdu_Entry {
 
 		if ( is_numeric( $this->ID ) && $this->ID > 0 ) {
 			$affected_rows = $wpdb->update(
-				$wpdb->prefix . 'ibedu_entries',
+				$this->table_name,
 				array(
 					'course_id'     => $this->course_id,
 					'user_id'       => $this->user_id,
@@ -83,7 +89,7 @@ class IBEdu_Entry {
 			);
 		} else {
 			$affected_rows = $wpdb->insert(
-				$wpdb->prefix . 'ibedu_entries',
+				$this->table_name,
 				array(
 					'course_id'     => $this->course_id,
 					'user_id'       => $this->user_id,
@@ -109,7 +115,7 @@ class IBEdu_Entry {
 	public function delete() {
 		global $wpdb;
 		
-		if ( $wpdb->delete( $wpdb->prefix . 'ibedu_entries', array( 'ID' => $this->ID ), array( '%d' ) ) ) {
+		if ( $wpdb->delete( $this->table_name, array( 'ID' => $this->ID ), array( '%d' ) ) ) {
 			return true;
 		}
 

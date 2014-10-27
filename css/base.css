@@ -159,6 +159,19 @@ table.ibedu-courses-pending > thead > tr > th:first-child {
 	padding-top: 12px;
 }
 
+.ibedu-twentyfourteen .ib-edu-course-difficulty {
+	margin-bottom: .5em;
+}
+
+.ibedu-twentyfourteen .ib-edu-course-categories {
+	margin-bottom: 1em;
+}
+
+.ibedu-twentyfourteen .ib-edu-course-difficulty .label,
+.ibedu-twentyfourteen .ib-edu-course-categories .label {
+	margin-right: 5px;
+}
+
 @media screen and (min-width: 594px) {
 	.ibedu-twentyfourteen {
 		padding-left: 30px;

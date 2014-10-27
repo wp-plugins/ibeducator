@@ -1,7 +1,7 @@
 <?php
-	$api = IBEdu_API::get_instance();
+	$api = IB_Educator::get_instance();
 	$page = isset( $_GET['paged'] ) ? absint( $_GET['paged'] ) : 1;
-	$statuses = IBEdu_Payment::get_statuses();
+	$statuses = IB_Educator_Payment::get_statuses();
 	$status = isset( $_GET['status'] ) && array_key_exists( $_GET['status'], $statuses ) ? $_GET['status'] : '';
 	$args = array(
 		'per_page' => 10,
@@ -19,13 +19,13 @@
 	<h2><?php _e( 'Educator Payments', 'ibeducator' ); ?></h2>
 
 	<ul class="subsubsub ibedu-subnav">
-		<li><a href="<?php echo admin_url( 'admin.php?page=ibedu_payments' ); ?>"<?php if ( empty( $status ) ) echo ' class="current"'; ?>><?php _e( 'All', 'ibeducator' ); ?></a> | </li>
+		<li><a href="<?php echo admin_url( 'admin.php?page=ib_educator_payments' ); ?>"<?php if ( empty( $status ) ) echo ' class="current"'; ?>><?php _e( 'All', 'ibeducator' ); ?></a> | </li>
 		<?php
 			$i = 1;
 
 			foreach ( $statuses as $key => $label ) {
 				$count = isset( $payments_count[ $key ] ) ? $payments_count[ $key ]->num_rows : 0;
-				echo '<li><a href="' . admin_url( 'admin.php?page=ibedu_payments&status=' . $key ) . '"' . ( $key == $status ? ' class="current"' : '' ) . '>' . $label . ' <span class="count">(' . intval( $count ) . ')</span></a>' . ( $i < count( $statuses ) ? ' | ' : '' ) . '</li>';
+				echo '<li><a href="' . admin_url( 'admin.php?page=ib_educator_payments&status=' . $key ) . '"' . ( $key == $status ? ' class="current"' : '' ) . '>' . $label . ' <span class="count">(' . intval( $count ) . ')</span></a>' . ( $i < count( $statuses ) ? ' | ' : '' ) . '</li>';
 				++$i;
 			}
 		?>
@@ -64,7 +64,7 @@
 			<td><?php echo date( 'j M, Y H:i', strtotime( $payment->payment_date ) ); ?></td>
 			<td>
 			<?php
-				echo '<a class="ibedu-item-edit" href="' . admin_url( 'admin.php?page=ibedu_payments&edu-action=edit-payment&payment_id=' . absint( $payment->ID ) ) . '">' . __( 'Edit', 'ibeducator' ) . '</a>';
+				echo '<a class="ibedu-item-edit" href="' . admin_url( 'admin.php?page=ib_educator_payments&edu-action=edit-payment&payment_id=' . absint( $payment->ID ) ) . '">' . __( 'Edit', 'ibeducator' ) . '</a>';
 				echo ' | <a class="ibedu-item-delete" data-payment_id="' . absint( $payment->ID ) . '" data-wpnonce="' . wp_create_nonce( 'ibedu_delete_payment_' . absint( $payment->ID ) ) . '" href="' . admin_url( 'admin-ajax.php' ) . '">' . __( 'Delete', 'ibeducator' ) . '</a>';
 			?>
 			</td>

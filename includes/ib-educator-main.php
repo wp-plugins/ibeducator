@@ -1,6 +1,6 @@
 <?php
 
-class IBEdu_Main {
+class IB_Educator_Main {
 	protected static $gateways = array();
 
 	private function __construct() {}
@@ -18,26 +18,27 @@ class IBEdu_Main {
 	 * Initialize hooks.
 	 */
 	private static function init_hooks() {
-		add_action( 'init', array( 'IBEdu_Main', 'add_rewrite_endpoints' ) );
-		add_action( 'init', array( 'IBEdu_Main', 'register_post_types' ) );
-		add_action( 'init', array( 'IBEdu_Main', 'init_gateways' ) );
+		add_action( 'init', array( 'IB_Educator_Main', 'add_rewrite_endpoints' ) );
+		add_action( 'init', array( 'IB_Educator_Main', 'register_post_types' ) );
+		add_action( 'init', array( 'IB_Educator_Main', 'init_gateways' ) );
 
 		// Process actions (e.g. enroll, payment).
-		add_action( 'template_redirect', array( 'IBEdu_Main', 'process_actions' ) );
+		add_action( 'template_redirect', array( 'IB_Educator_Main', 'process_actions' ) );
 
 		// Override templates.
-		add_filter( 'template_include', array( 'IBEdu_Main', 'override_templates' ) );
+		add_filter( 'template_include', array( 'IB_Educator_Main', 'override_templates' ) );
 
 		// Verify permissions for various pages.
-		add_action( 'template_redirect', array( 'IBEdu_Main', 'protect_private_pages' ) );
+		add_action( 'template_redirect', array( 'IB_Educator_Main', 'protect_private_pages' ) );
 
 		// Add templating actions.
-		add_action( 'ibedu_before_main_loop', array( 'IBEdu_Main', 'action_before_main_loop' ) );
-		add_action( 'ibedu_after_main_loop', array( 'IBEdu_Main', 'action_after_main_loop' ) );
-		add_action( 'ibedu_sidebar', array( 'IBEdu_Main', 'action_sidebar' ) );
+		add_action( 'ib_educator_before_main_loop', array( 'IB_Educator_Main', 'action_before_main_loop' ) );
+		add_action( 'ib_educator_after_main_loop', array( 'IB_Educator_Main', 'action_after_main_loop' ) );
+		add_action( 'ib_educator_sidebar', array( 'IB_Educator_Main', 'action_sidebar' ) );
+		add_action( 'ib_educator_before_course_content', array( 'IB_Educator_Main', 'before_course_content' ) );
 
 		// Enqueue scripts and styles.
-		add_action( 'wp_enqueue_scripts', array( 'IBEdu_Main', 'enqueue_scripts_styles' ) );
+		add_action( 'wp_enqueue_scripts', array( 'IB_Educator_Main', 'enqueue_scripts_styles' ) );
 	}
 
 	/**
@@ -45,12 +46,12 @@ class IBEdu_Main {
 	 */
 	public static function init_gateways() {
 		// Include abstract payment gateway class.
-		require_once IBEDUCATOR_PLUGIN_DIR . 'includes/gateways/abstract.ibedu-payment-gateway.php';
+		require_once IBEDUCATOR_PLUGIN_DIR . 'includes/gateways/ib-educator-payment-gateway.php';
 
-		$gateways = apply_filters( 'ibedu_payment_gateways', array(
-			'paypal' => 'IBEdu_Gateway_Paypal',
-			'cash'   => 'IBEdu_Gateway_Cash',
-			'check'  => 'IBEdu_Gateway_Check',
+		$gateways = apply_filters( 'ib_educator_payment_gateways', array(
+			'paypal' => 'IB_Educator_Gateway_Paypal',
+			'cash'   => 'IB_Educator_Gateway_Cash',
+			'check'  => 'IB_Educator_Gateway_Check',
 		) );
 
 		// Get the list of enabled gateways.
@@ -75,10 +76,10 @@ class IBEdu_Main {
 				continue;
 			}
 
-			$gateway_file = IBEDUCATOR_PLUGIN_DIR . 'includes/gateways/' . strtolower( substr( $gateway, 14 ) ) . '/class.' . strtolower( str_replace( '_', '-', $gateway ) ) . '.php';
+			$gateway_file = IBEDUCATOR_PLUGIN_DIR . 'includes/gateways/' . strtolower( substr( $gateway, 20 ) ) . '/' . strtolower( str_replace( '_', '-', $gateway ) ) . '.php';
 
 			if ( is_readable( $gateway_file ) ) {
-				require( $gateway_file );
+				require_once $gateway_file;
 
 				$loaded_gateway = new $gateway();
 				self::$gateways[ $loaded_gateway->get_id() ] = $loaded_gateway;
@@ -104,6 +105,7 @@ class IBEdu_Main {
 		add_rewrite_endpoint( 'edu-thankyou', EP_PAGES );
 		add_rewrite_endpoint( 'edu-action', EP_PAGES | EP_PERMALINK );
 		add_rewrite_endpoint( 'edu-message', EP_PAGES | EP_PERMALINK );
+		add_rewrite_endpoint( 'edu-request', EP_ROOT );
 	}
 
 	/**
@@ -124,7 +126,7 @@ class IBEdu_Main {
 				'show_ui'             => true,
 				'show_in_nav_menus'   => true,
 				'show_in_menu'        => true,
-				'show_in_admin_bar'   => false,
+				'show_in_admin_bar'   => true,
 				'capability_type'     => 'ibedu_course',
 				'map_meta_cap'        => true,
 				'hierarchical'        => false,
@@ -150,7 +152,7 @@ class IBEdu_Main {
 				'show_ui'             => true,
 				'show_in_nav_menus'   => false,
 				'show_in_menu'        => true,
-				'show_in_admin_bar'   => false,
+				'show_in_admin_bar'   => true,
 				'capability_type'     => 'ibedu_lesson',
 				'map_meta_cap'        => true,
 				'hierarchical'        => false,
@@ -161,14 +163,29 @@ class IBEdu_Main {
 				'can_export'          => true
 			)
 		);
+
+		// Register course taxonomy.
+		register_taxonomy( 'ib_educator_category', 'ibedu_course', array(
+			'label'             => __( 'Course Categories', 'ibeducator' ),
+			'public'            => true,
+			'show_ui'           => true,
+			'show_in_nav_menus' => true,
+			'hierarchical'      => true,
+			'rewrite'           => array( 'slug' => 'course-category' ),
+			'capabilities'      => array(
+				'assign_terms' => 'edit_ibedu_courses',
+			),
+		) );
 	}
 
 	/**
 	 * Enqueue scripts and styles.
 	 */
 	public static function enqueue_scripts_styles() {
-		if ( apply_filters( 'ibedu_default_styles', true ) ) {
-			wp_enqueue_style( 'ibedu-base', IBEDUCATOR_PLUGIN_URL . 'css/ibedu-base.css' );
+		$default_stylesheet = apply_filters( 'ib_educator_stylesheet', true );
+
+		if ( $default_stylesheet ) {
+			wp_enqueue_style( 'ib-educator-base', IBEDUCATOR_PLUGIN_URL . 'css/base.css' );
 		}
 	}
 
@@ -176,6 +193,10 @@ class IBEdu_Main {
 	 * Process actions.
 	 */
 	public static function process_actions() {
+		if ( ! isset( $GLOBALS['wp_query']->post ) ) {
+			return;
+		}
+
 		$post_id = isset( $GLOBALS['wp_query']->post->ID ) ? $GLOBALS['wp_query']->post->ID : null;
 
 		if ( ! $post_id ) {
@@ -188,19 +209,19 @@ class IBEdu_Main {
 			return;
 		}
 
-		require_once IBEDUCATOR_PLUGIN_DIR . 'includes/class.ibedu-actions.php';
+		require_once IBEDUCATOR_PLUGIN_DIR . 'includes/ib-educator-actions.php';
 
 		switch ( $action ) {
 			case 'cancel-payment':
-				IBEdu_Actions::cancel_payment();
+				IB_Educator_Actions::cancel_payment();
 				break;
 
 			case 'submit-quiz':
-				IBEdu_Actions::submit_quiz();
+				IB_Educator_Actions::submit_quiz();
 				break;
 
 			case 'payment':
-				IBEdu_Actions::payment();
+				IB_Educator_Actions::payment();
 				break;
 		}
 	}
@@ -241,7 +262,7 @@ class IBEdu_Main {
 		$private_pages = array();
 
 		// Student courses page.
-		$student_courses_page = ibedu_page_id( 'student_courses_page' );
+		$student_courses_page = ib_edu_page_id( 'student_courses_page' );
 
 		if ( $student_courses_page > 0 ) {
 			$private_pages[] = $student_courses_page;
@@ -257,22 +278,22 @@ class IBEdu_Main {
 	 * Plugin activation hook.
 	 */
 	public static function plugin_activation() {
-		require_once( IBEDUCATOR_PLUGIN_DIR . 'includes/class.ibedu-install.php' );
-		$ibedu_install = new IBEdu_Install();
-		$ibedu_install->install();
+		require_once( IBEDUCATOR_PLUGIN_DIR . 'includes/ib-educator-install.php' );
+		$install = new IB_Educator_Install();
+		$install->activate();
 	}
 
 	/**
 	 * Plugin deactivation hook.
 	 */
 	public static function plugin_deactivation() {
-		require_once( IBEDUCATOR_PLUGIN_DIR . 'includes/class.ibedu-install.php' );
-		$ibedu_install = new IBEdu_Install();
-		$ibedu_install->deactivate();
+		require_once( IBEDUCATOR_PLUGIN_DIR . 'includes/ib-educator-install.php' );
+		$install = new IB_Educator_Install();
+		$install->deactivate();
 	}
 
 	/**
-	 * Modify main loop template for default themes.
+	 * Action hook: before main loop.
 	 */
 	public static function action_before_main_loop( $where = '' ) {
 		$template = get_template();
@@ -288,7 +309,7 @@ class IBEdu_Main {
 	}
 
 	/**
-	 * Modify main loop template for default themes.
+	 * Action hook: after main loop.
 	 */
 	public static function action_after_main_loop( $where = '' ) {
 		$template = get_template();
@@ -304,9 +325,28 @@ class IBEdu_Main {
 	}
 
 	/**
-	 * Modify main loop sidebar for default themes.
+	 * Action hook: main loop sidebar.
 	 */
 	public static function action_sidebar() {
 		get_sidebar();
+	}
+
+	/**
+	 * Action hook: before course content.
+	 */
+	public static function before_course_content() {
+		// Output course difficulty.
+		$difficulty = ib_edu_get_difficulty( get_the_ID() );
+
+		if ( $difficulty ) {
+			echo '<div class="ib-edu-course-difficulty"><span class="label">' . __( 'Difficulty:', 'ibeducator' ) . '</span>' . esc_html( $difficulty['label'] ) . '</div>';
+		}
+
+		// Output course categories.
+		$categories = get_the_term_list( get_the_ID(), 'ib_educator_category' );
+
+		if ( $categories ) {
+			echo '<div class="ib-edu-course-categories"><span class="label">' . __( 'Categories:', 'ibeducator' ) . '</span>' . $categories . '</div>';
+		}
 	}
 }

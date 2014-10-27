@@ -1,6 +1,6 @@
 <?php
 
-class IBEdu_Gateway_Cash extends IBEdu_Payment_Gateway {
+class IB_Educator_Gateway_Cash extends IB_Educator_Payment_Gateway {
 	/**
 	 * Setup payment gateway.
 	 */
@@ -12,11 +12,12 @@ class IBEdu_Gateway_Cash extends IBEdu_Payment_Gateway {
 		$this->init_options( array(
 			'description' => array(
 				'type'  => 'textarea',
-				'label' => __( 'Instructions for a student', 'ibeducator' )
+				'label' => __( 'Instructions for a student', 'ibeducator' ),
+				'id'    => 'ib-edu-description',
 			)
 		) );
 
-		add_action( 'ibedu_thankyou_cash', array( $this, 'thankyou_page' ) );
+		add_action( 'ib_educator_thankyou_cash', array( $this, 'thankyou_page' ) );
 	}
 
 	/**
@@ -29,7 +30,7 @@ class IBEdu_Gateway_Cash extends IBEdu_Payment_Gateway {
 			$user_id = get_current_user_id();
 		}
 		
-		$api = IBEdu_API::get_instance();
+		$api = IB_Educator::get_instance();
 		$redirect_args = array();
 
 		// Add payment
@@ -39,7 +40,7 @@ class IBEdu_Gateway_Cash extends IBEdu_Payment_Gateway {
 			'payment_status'  => 'pending',
 			'payment_gateway' => $this->get_id(),
 			'amount'          => number_format( get_post_meta( $course_id, '_ibedu_price', true ), 2 ),
-			'currency'        => ibedu_currency()
+			'currency'        => ib_edu_get_currency(),
 		) );
 
 		if ( $payment->ID ) {
@@ -48,7 +49,7 @@ class IBEdu_Gateway_Cash extends IBEdu_Payment_Gateway {
 
 		return array(
 			'status'   => 'success',
-			'redirect' => $this->get_redirect_url( $redirect_args )
+			'redirect' => $this->get_redirect_url( $redirect_args ),
 		);
 	}
 
@@ -70,7 +71,7 @@ class IBEdu_Gateway_Cash extends IBEdu_Payment_Gateway {
 		}
 
 		// Show link to student courses page.
-		$student_courses_page = get_post( ibedu_page_id( 'student_courses' ) );
+		$student_courses_page = get_post( ib_edu_page_id( 'student_courses' ) );
 		
 		if ( $student_courses_page ) {
 			echo '<p>' . sprintf( __( 'Go to %s page', 'ibeducator' ), '<a href="' . esc_url( get_permalink( $student_courses_page->ID ) ) . '">' . esc_html( $student_courses_page->post_title ) . '</a>' ) . '</p>';
