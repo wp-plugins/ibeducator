@@ -34,6 +34,9 @@ class IB_Educator_Install {
 
 		// Flush rewrite rules
 		flush_rewrite_rules();
+
+		// Update the plugin version in database.
+		update_option( 'ib_educator_version', IBEDUCATOR_VERSION );
 	}
 
 	/**

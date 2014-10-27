@@ -32,7 +32,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 
 if ( ! defined( 'ABSPATH' ) ) exit;
 
-define( 'IBEDUCATOR_VERSION', '0.9.9' );
+define( 'IBEDUCATOR_VERSION', '0.9.10' );
 define( 'IBEDUCATOR_DB_VERSION', '0.9.0' );
 define( 'IBEDUCATOR_PLUGIN_DIR', plugin_dir_path( __FILE__ ) );
 define( 'IBEDUCATOR_PLUGIN_URL', plugin_dir_url( __FILE__ ) );
@@ -64,6 +64,16 @@ if ( is_admin() ) {
 	// Setup educator quiz admin.
 	require_once IBEDUCATOR_PLUGIN_DIR . 'admin/ib-educator-quiz-admin.php';
 	IB_Educator_Quiz_Admin::init();
+
+	// Update.
+	function ib_edu_update_check() {
+		if ( get_option( 'ib_educator_version' ) != IBEDUCATOR_VERSION ) {
+			require_once 'includes/ib-educator-install.php';
+			$install = new IB_Educator_Install();
+			$install->activate();
+		}
+	}
+	add_action( 'admin_init', 'ib_edu_update_check' );
 }
 
 // Shortcodes.
