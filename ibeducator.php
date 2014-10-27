@@ -7,7 +7,7 @@ Plugin Name: Educator WP
 Plugin URI: http://incrediblebytes.com/plugins/educator-wp/
 Description: Offer courses to students online.
 Author: dmytro.d (IncredibleBytes)
-Version: 0.9.9
+Version: 0.9.10
 Author URI: http://incrediblebytes.com
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
