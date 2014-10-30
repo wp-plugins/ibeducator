@@ -1,0 +1,180 @@
+#ib-edu-breadcrumbs {
+	margin-bottom: 12px;
+}
+
+/* Forms */
+.ib-edu-form {
+	margin-bottom: 24px;
+}
+
+/* Student's courses page */
+table.ib-edu-courses > thead > tr > th:first-child {
+	width: 70%;
+}
+
+table.ib-edu-courses-pending > thead > tr > th:first-child {
+	width: auto;
+}
+
+.ib-edu-courses-pending td {
+	vertical-align: middle;
+}
+
+/* Course */
+.ib-edu-course {
+	margin-bottom: 24px;
+}
+
+.ib-edu-course:after {
+	clear: both;
+	content: '';
+	display: block;
+}
+
+.ib-edu-course .course-image {
+	float: left;
+	margin-right: 20px;
+}
+
+.ib-edu-course .course-summary {
+	overflow: hidden;
+}
+
+.ib-edu-course-price {
+	font-weight: bold;
+	margin-bottom: 24px;
+}
+
+.ib-edu-course-price .ib-edu-button {
+	vertical-align: middle;
+}
+
+.ib-edu-course-price .price {
+	margin-right: 20px;
+	vertical-align: middle;
+}
+
+/* Quiz */
+.ib-edu-question {
+	margin-bottom: 20px;
+}
+
+.ib-edu-answers {
+	list-style: none;
+	margin-bottom: 0;
+	margin-left: 0;
+}
+
+.ib-edu-answers .correct {
+	font-weight: bold;
+}
+
+.ib-edu-answers .wrong {
+	text-decoration: line-through;
+}
+
+.ib-edu-answers input[type="radio"] {
+	margin-right: 5px;
+}
+
+.ib-edu-quiz-grade {
+	margin-bottom: 24px;
+}
+
+/* Messages and notifications */
+.ib-edu-message {
+	margin-bottom: 24px;
+}
+
+.ib-edu-message.success {
+	color: green;
+}
+
+.ib-edu-message.error {
+	color: red;
+}
+
+/* Forms */
+.ib-edu-form legend {
+	font-weight: bold;
+}
+
+.ib-edu-form-field {
+	margin-bottom: 20px;
+}
+
+.ib-edu-form-field:after {
+	clear: both;
+	content: '\00a0';
+	display: block;
+	height: 0;
+	overflow: hidden;
+}
+
+.ib-edu-form-field > label {
+	display: block;
+	float: left;
+	max-width: 120px;
+}
+
+.ib-edu-form-control {
+	margin-left: 140px;
+}
+
+.ib-edu-payment-method {
+	list-style: none;
+	margin-left: 0;
+}
+
+.ib-edu-payment-method li + li {
+	margin-top: 5px;
+}
+
+.ib-edu-payment-method input[type="radio"] {
+	margin-right: 5px;
+}
+
+/* TwentyFourteen theme */
+.ib-edu-twentyfourteen {
+	margin: 0 auto;
+	max-width: 474px;
+	padding: 0 10px 0;
+}
+
+#ib-edu-payment-form input[type="text"] {
+	width: 100%;
+}
+
+.ib-edu-twentyfourteen .ib-edu-lesson h1 {
+	font-size: 18px;
+	margin-top: 0;
+}
+
+.ib-edu-course .course-summary h1 a {
+	text-decoration: none;
+}
+
+.ib-edu-twentyfourteen .ib-edu-course-single .course-content,
+.ib-edu-twentyfourteen .ib-edu-lesson-single .lesson-content {
+	padding-top: 12px;
+}
+
+.ib-edu-twentyfourteen .ib-edu-course-difficulty {
+	margin-bottom: .5em;
+}
+
+.ib-edu-twentyfourteen .ib-edu-course-categories {
+	margin-bottom: 1em;
+}
+
+.ib-edu-twentyfourteen .ib-edu-course-difficulty .label,
+.ib-edu-twentyfourteen .ib-edu-course-categories .label {
+	margin-right: 5px;
+}
+
+@media screen and (min-width: 594px) {
+	.ib-edu-twentyfourteen {
+		padding-left: 30px;
+		padding-right: 30px;
+	}
+}
