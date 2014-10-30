@@ -7,7 +7,7 @@ Plugin Name: Educator WP
 Plugin URI: http://incrediblebytes.com/plugins/educator-wp/
 Description: Offer courses to students online.
 Author: dmytro.d (IncredibleBytes)
-Version: 0.9.10
+Version: 1.0.0
 Author URI: http://incrediblebytes.com
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
@@ -32,7 +32,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 
 if ( ! defined( 'ABSPATH' ) ) exit;
 
-define( 'IBEDUCATOR_VERSION', '0.9.10' );
+define( 'IBEDUCATOR_VERSION', '1.0.0' );
 define( 'IBEDUCATOR_DB_VERSION', '0.9.0' );
 define( 'IBEDUCATOR_PLUGIN_DIR', plugin_dir_path( __FILE__ ) );
 define( 'IBEDUCATOR_PLUGIN_URL', plugin_dir_url( __FILE__ ) );
@@ -64,6 +64,10 @@ if ( is_admin() ) {
 	// Setup educator quiz admin.
 	require_once IBEDUCATOR_PLUGIN_DIR . 'admin/ib-educator-quiz-admin.php';
 	IB_Educator_Quiz_Admin::init();
+
+	// Meta boxes.
+	require_once IBEDUCATOR_PLUGIN_DIR . 'admin/ib-educator-admin-meta.php';
+	IB_Educator_Admin_Meta::init();
 
 	// Update.
 	function ib_edu_update_check() {

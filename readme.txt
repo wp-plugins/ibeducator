@@ -4,7 +4,7 @@ Donate link: http://incrediblebytes.com
 Tags: learning management system, lms, learning, online courses
 Requires at least: 4.0
 Tested up to: 4.0
-Stable tag: 0.9.10
+Stable tag: trunk
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -46,6 +46,16 @@ Coming soon.
 5. **Pages** - Assign the pages that will be used by the plugin.
 
 == Changelog ==
+
+= 1.0.0 =
+* Did more code refactoring and fixed a couple of bugs.
+* Custom post types are now called more descriptively: ib_educator_course, ib_educator_lesson.
+* Archive templates are called: archive-ib_educator_lesson.php, archive-ib_educator_course.php, single-ib_educator_lesson.php, single-ib_educator_course.php
+* Accepted a convention for CSS classes and IDs: ib-edu-[html_class_name] or ib-edu-[html_id] (IncredibleBytes - Educator (ib-edu)).
+* Added currency settings (symbol, position) and updated settings page (select pages in "General" settings tab now).
+* If your currency is not on the list, there is a way to add it.
+* Fixed a PayPal IPN bug.
+* Finally, a stable release.
 
 = 0.9.10 =
 * Plugin checks for the version number in the database, and upgrades it's structure (DB, custom post types, taxonomies, etc) when user updates it in WordPress admin.
