@@ -15,6 +15,7 @@ Hi! Welcome to educator WP, the brand new, powerful and easy to use Learning Man
 This plugin allows you to offer courses online.
 
 Documentation: http://incrediblebytes.com/documents/plugins/educator-wp/
+
 How this plugin works: http://incrediblebytes.com/document/how-educator-wp-works/
 
 Features:
