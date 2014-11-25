@@ -6,7 +6,7 @@
 
 	<?php do_action( 'ib_educator_after_course_title' ); ?>
 
-	<div class="course-content">
+	<div class="course-content entry-content">
 		<?php
 			$status = '';
 

@@ -220,9 +220,9 @@ class IB_Educator_Actions {
 				wp_set_auth_cookie( $user_id );
 
 				// Set the user's role to student.
-				$current_user = get_user_by( 'id', $user_id );
-				$current_user->remove_role( 'subscriber' );
-				$current_user->add_role( 'student' );
+				$student = get_user_by( 'id', $user_id );
+				$student->remove_role( 'subscriber' );
+				$student->add_role( 'student' );
 			}
 		}
 
@@ -262,6 +262,8 @@ class IB_Educator_Actions {
 				// The course is not free.
 				$gateway = $gateways[ $payment_method ];
 				$result = $gateway->process_payment( $course_id, $user_id );
+
+				// Redirect.
 				wp_safe_redirect( $result['redirect'] );
 			}
 

@@ -14,7 +14,7 @@ class IB_Educator_Gateway_Cash extends IB_Educator_Payment_Gateway {
 				'type'  => 'textarea',
 				'label' => __( 'Instructions for a student', 'ibeducator' ),
 				'id'    => 'ib-edu-description',
-			)
+			),
 		) );
 
 		add_action( 'ib_educator_thankyou_cash', array( $this, 'thankyou_page' ) );
@@ -48,7 +48,7 @@ class IB_Educator_Gateway_Cash extends IB_Educator_Payment_Gateway {
 		}
 
 		return array(
-			'status'   => 'success',
+			'status'   => 'pending',
 			'redirect' => $this->get_redirect_url( $redirect_args ),
 		);
 	}

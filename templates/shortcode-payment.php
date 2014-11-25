@@ -22,7 +22,7 @@
 							<?php
 								printf(
 									__( '%s with %s', 'ibeducator' ),
-									'<a href="' . esc_url( get_permalink( $course->ID ) ) . '" target="_new">' . esc_html( $course->post_title ) . '</a>',
+									'<a href="' . esc_url( get_permalink( $course->ID ) ) . '">' . esc_html( $course->post_title ) . '</a>',
 									esc_html( get_the_author_meta( 'display_name', $course->post_author ) )
 								);
 							?>
@@ -149,7 +149,13 @@
 					<?php endif; ?>
 
 					<fieldset>
-						<legend><?php _e( 'Payment Information', 'ibeducator' ); ?></legend>
+						<legend><?php
+							if ( $course_price ) {
+								_e( 'Payment Information', 'ibeducator' );
+							} else {
+								echo esc_html( $course->post_title );
+							}
+						?></legend>
 
 						<div class="ib-edu-form-field">
 							<label><?php _e( 'Course', 'ibeducator' ); ?></label>
@@ -157,7 +163,7 @@
 								<?php
 									printf(
 										__( '%s with %s', 'ibeducator' ),
-										'<a href="' . esc_url( get_permalink( $course->ID ) ) . '" target="_new">' . esc_html( $course->post_title ) . '</a>',
+										'<a href="' . esc_url( get_permalink( $course->ID ) ) . '" target="_blank">' . esc_html( $course->post_title ) . '</a>',
 										esc_html( get_the_author_meta( 'display_name', $course->post_author ) )
 									);
 								?>

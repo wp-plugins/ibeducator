@@ -387,9 +387,30 @@ class IB_Educator_Quiz_Admin {
 		$grade = isset( $_POST['grade'] ) ? floatval( $_POST['grade'] ) : 0;
 
 		$api->update_quiz_grade( $quiz_grade->ID, array(
-			'grade'           => $grade,
-			'status'          => 'approved',
+			'grade'  => $grade,
+			'status' => 'approved',
 		) );
+
+		// Send notification email to the student.
+		$entry = IB_Educator_Entry::get_instance( $entry_id );
+		$student = get_user_by( 'id', $entry->user_id );
+
+		if ( $student ) {
+			$lesson_title = get_the_title( $lesson_id );
+			
+			ib_edu_send_notification(
+				$student->user_email,
+				'quiz_grade',
+				array(
+					'lesson_title' => $lesson_title,
+				),
+				array(
+					'student_name' => $student->display_name,
+					'lesson_title' => $lesson_title,
+					'grade'        => ib_edu_format_grade( $grade ),
+				)
+			);
+		}
 
 		echo json_encode( array( 'status' => 'success' ) );
 

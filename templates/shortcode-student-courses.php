@@ -32,7 +32,7 @@
 						<form action="<?php echo esc_url( ib_edu_get_endpoint_url( 'edu-action', 'cancel-payment', get_permalink() ) ); ?>" method="post">
 							<?php wp_nonce_field( 'ibedu_cancel_payment' ); ?>
 							<input type="hidden" name="payment_id" value="<?php echo absint( $course->edu_payment_id ); ?>">
-							<button type="submit"><?php _e( 'Cancel', 'ibeducator' ); ?></a>
+							<button type="submit" class="ib-edu-button"><?php _e( 'Cancel', 'ibeducator' ); ?></a>
 						</form>
 					</td>
 				</tr>
@@ -95,6 +95,6 @@
 			}
 		}
 	} else {
-		echo '<p>' . __( 'You are not registered for any course.', 'ibeducator' ) . '</p>';
+		echo '<p>' . __( 'You are not registered for any course.', 'ibeducator' ) . ' <a href="' . esc_url( get_post_type_archive_link( 'ib_educator_course' ) ) . '">' . __( 'Browse courses', 'ibeducator' ) . '</a></p>';
 	}
 ?>

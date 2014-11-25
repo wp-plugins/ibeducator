@@ -3,22 +3,18 @@ Contributors: dmytro.d
 Donate link: http://incrediblebytes.com
 Tags: learning management system, lms, learning, online courses
 Requires at least: 4.0
-Tested up to: 4.0
-Stable tag: 1.0.0
+Tested up to: 4.0.1
+Stable tag: 1.1.0
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
-Hi! Welcome to educator WP, the brand new, powerful and easy to use LMS plugin for WordPress.
+Hi! Welcome to educator WP, the brand new, powerful and easy to use Learning Management System plugin for WordPress.
 
 == Description ==
 
-This plugin allows you to offer a number of courses to your visitors. The visitors can take a course for free or use one of the built-in payment methods to pay.
+This plugin allows you to offer courses online.
 
 Documentation: http://incrediblebytes.com/educator-wp-documentation/
-
-This is a beta version and I would be very pleased to receive feedback.
-
-This plugin has gone through a very reasonable amount of testing.
 
 Features:
 
@@ -27,6 +23,7 @@ Features:
 * Supports PayPal, cash or check payment methods.
 * Create lecturers that can edit their courses and lessons.
 * Grade courses and quizzes.
+* Email notifications.
 
 == Installation ==
 
@@ -46,6 +43,19 @@ Coming soon.
 5. **Pages** - Assign the pages that will be used by the plugin.
 
 == Changelog ==
+
+= 1.1.0 =
+* Added email notifications feature. Student receives email notification when:
+  - he/she can start studying the course (PayPal sends payment confirmation or admin changes the student's payment status to "Complete" and checks "Create an entry for this student" on the "Edit Payment" screen).
+  - lecturer adds grade to his/her quiz.
+* Edit email notifications in Educator &raquo; Settings &raquo; Emails
+* Administrator can add payments and entries manually.
+* Autocomplete for the 'Course' and 'Student' fields in "Edit Payment" and "Edit Entry" forms.
+* Namespaced settings_errors() on settings pages to prevent non-relevant errors from showing up.
+* Added capabilities of authors to lecturers (edit_posts, delete_posts) so they can create posts, but not publish them. They will be able to edit their own posts only.
+* Fixed bug when Educator WP created many entries for one payments due to multiple IPN responses from PayPal with status "Complete".
+* Added date column to the Entries page.
+* Bug fixes and improvements.
 
 = 1.0.0 =
 * Did more code refactoring and fixed a couple of bugs.

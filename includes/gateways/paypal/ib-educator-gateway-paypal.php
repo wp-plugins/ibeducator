@@ -65,7 +65,7 @@ class IB_Educator_Gateway_Paypal extends IB_Educator_Payment_Gateway {
 		) );
 
 		return array(
-			'status'   => 'success',
+			'status'   => 'pending',
 			'redirect' => ib_edu_get_endpoint_url( 'edu-pay', ( $payment->ID ? $payment->ID : '' ), get_permalink( ib_edu_page_id( 'payment' ) ) )
 		);
 	}
@@ -263,14 +263,38 @@ class IB_Educator_Gateway_Paypal extends IB_Educator_Payment_Gateway {
 						$payment->payment_status = 'complete';
 						$payment->save();
 
-						// Add entry.
-						$entry = IB_Educator_Entry::get_instance();
-						$entry->course_id = $payment->course_id;
-						$entry->user_id = $payment->user_id;
-						$entry->payment_id = $payment->ID;
-						$entry->entry_status = 'inprogress';
-						$entry->entry_date = date( 'Y-m-d H:i:s' );
-						$entry->save();
+						// Add entry if not exists.
+						$api = IB_Educator::get_instance();
+						$entry = $api->get_entry( array( 'payment_id' => $payment->ID ) );
+
+						if ( ! $entry ) {
+							$entry = IB_Educator_Entry::get_instance();
+							$entry->course_id = $payment->course_id;
+							$entry->user_id = $payment->user_id;
+							$entry->payment_id = $payment->ID;
+							$entry->entry_status = 'inprogress';
+							$entry->entry_date = date( 'Y-m-d H:i:s' );
+							$entry->save();
+
+							// Send notification email to the student.
+							$student = get_user_by( 'id', $payment->user_id );
+							$course = get_post( $payment->course_id, OBJECT, 'display' );
+
+							if ( $student && $course ) {
+								ib_edu_send_notification(
+									$student->user_email,
+									'student_registered',
+									array(
+										'course_title' => $course->post_title,
+									),
+									array(
+										'student_name'   => $student->display_name,
+										'course_title'   => $course->post_title,
+										'course_excerpt' => $course->post_excerpt,
+									)
+								);
+							}
+						}
 						break;
 
 					case 'Failed':
@@ -303,6 +327,10 @@ class IB_Educator_Gateway_Paypal extends IB_Educator_Payment_Gateway {
 
 				case 'thankyou_message':
 					$input[ $option_name ] = wp_kses_post( $value );
+					break;
+
+				case 'test':
+					if ( 1 != $value ) $input[ $option_name ] = 0;
 					break;
 			}
 		}

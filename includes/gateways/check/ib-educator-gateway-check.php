@@ -48,7 +48,7 @@ class IB_Educator_Gateway_Check extends IB_Educator_Payment_Gateway {
 		}
 
 		return array(
-			'status'   => 'success',
+			'status'   => 'pending',
 			'redirect' => $this->get_redirect_url( $redirect_args )
 		);
 	}

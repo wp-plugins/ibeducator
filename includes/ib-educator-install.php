@@ -38,6 +38,9 @@ class IB_Educator_Install {
 		IB_Educator_Main::register_post_types();
 		IB_Educator_Main::add_rewrite_endpoints();
 
+		// Setup email templates.
+		$this->setup_email_templates();
+
 		// Flush rewrite rules
 		flush_rewrite_rules();
 
@@ -267,10 +270,47 @@ CREATE TABLE {$this->grades} (
 					'delete_published_ib_educator_lessons',
 					'edit_published_ib_educator_lessons',
 				);
+
+				// Allow lecturers to add posts, administrator has to approve these posts though.
+				$capabilities['post'] = array(
+					'delete_posts',
+					'edit_posts',
+				);
 				break;
 		}
 
 		return $capabilities;
+	}
+
+	/**
+	 * Setup email templates.
+	 */
+	public function setup_email_templates() {
+		if ( ! get_option( 'ib_educator_student_registered' ) ) {
+			update_option( 'ib_educator_student_registered', array(
+				'subject' => sprintf( __( 'Registration for %s is complete', 'ibeducator' ), '{course_title}' ),
+				'template' => 'Dear {student_name},
+
+You\'ve got access to {course_title}.
+
+{course_excerpt}
+
+Best regards,
+Administration',
+			) );
+		}
+
+		if ( ! get_option( 'ib_educator_quiz_grade' ) ) {
+			update_option( 'ib_educator_quiz_grade', array(
+				'subject' => __( 'You\'ve got a grade', 'ibeducator' ),
+				'template' => 'Dear {student_name},
+
+You\'ve got {grade} for {lesson_title}.
+
+Best regards,
+Administration',
+			) );
+		}
 	}
 
 	/**
