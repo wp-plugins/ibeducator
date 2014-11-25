@@ -31,7 +31,10 @@
 	}
 ?>
 <div class="wrap">
-	<h2><?php _e( 'Educator Entries', 'ibeducator' ); ?></h2>
+	<h2>
+		<?php _e( 'Educator Entries', 'ibeducator' ); ?>
+		<a href="<?php echo esc_url( admin_url( 'admin.php?page=ib_educator_entries&edu-action=edit-entry' ) ); ?>" class="add-new-h2"><?php _e( 'Add New', 'ibeducator' ); ?></a>
+	</h2>
 
 	<ul class="subsubsub ib-edu-subnav">
 		<li><a href="<?php echo admin_url( 'admin.php?page=ib_educator_entries' ); ?>"<?php if ( empty( $status ) ) echo ' class="current"'; ?>><?php _e( 'All', 'ibeducator' ); ?></a> | </li>
@@ -54,6 +57,7 @@
 			<th><?php _e( 'Course', 'ibeducator' ); ?></th>
 			<th><?php _e( 'Status', 'ibeducator' ); ?></th>
 			<th><?php _e( 'Grade', 'ibeducator' ); ?></th>
+			<th><?php _e( 'Date', 'ibeducator' ); ?></th>
 			<th><?php _e( 'Actions', 'ibeducator' ); ?></th>
 		</thead>
 		<tbody>
@@ -61,22 +65,29 @@
 		<?php foreach ( $entries['rows'] as $entry ) : ?>
 		<?php
 			$student = get_user_by( 'id', $entry->user_id );
-			$course = get_post( $entry->course_id );
-			$payment = IB_Educator_Payment::get_instance( $entry->payment_id );
 			$username = '';
 
-			if ( $student->first_name && $student->last_name ) {
-				$username = $student->first_name . ' ' . $student->last_name;
-			} else {
+			if ( $student ) {
 				$username = $student->display_name;
+				$username .= ' (#' . absint( $student->ID ) . ')';
 			}
+
+			$course = get_post( $entry->course_id );
+			$course_title = '';
+
+			if ( $course ) {
+				$course_title = $course->post_title;
+			}
+
+			$payment = IB_Educator_Payment::get_instance( $entry->payment_id );
 		?>
 		<tr<?php if ( 0 == $i % 2 ) echo ' class="alternate"'; ?> data-id="<?php echo absint( $entry->ID ); ?>">
 			<td><?php echo absint( $entry->ID ); ?></td>
-			<td><?php echo esc_html( $username ) . ' (#' . absint( $student->ID ) . ')'; ?></td>
-			<td><?php echo esc_html( $course->post_title ); ?></td>
+			<td><?php echo esc_html( $username ); ?></td>
+			<td><?php echo esc_html( $course_title ); ?></td>
 			<td><?php echo sanitize_title( $entry->entry_status ); ?></td>
 			<td><?php echo ib_edu_format_grade( $entry->grade ); ?></td>
+			<td><?php echo date( 'j M, Y H:i', strtotime( $entry->entry_date ) ); ?></td>
 			<td>
 				<?php
 					echo '<a class="ib-edu-item-edit" href="' . admin_url( 'admin.php?page=ib_educator_entries&edu-action=edit-entry&entry_id=' . absint( $entry->ID ) ) . '">' . __( 'Edit', 'ibeducator' ) . '</a>';

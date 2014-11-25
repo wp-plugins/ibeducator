@@ -26,6 +26,12 @@
 
 .ib-edu-field {
 	margin: 0 0 30px 0;
+}
+
+.ib-edu-field:after {
+	clear: both;
+	content: '';
+	height: 0;
 	overflow: hidden;
 }
 
@@ -48,6 +54,31 @@
 	font-style: italic;
 	line-height: 1.5;
 	margin-top: 5px;
+}
+
+/* Autocomplete ---------------*/
+.ib-edu-autocomplete {
+	display: inline-block;
+}
+
+.ib-edu-autocomplete-choices {
+	max-height: 200px;
+	overflow: auto;
+	position: absolute;
+	z-index: 100;
+}
+
+.ib-edu-autocomplete-choices a {
+	background-color: #fff;
+	border: 1px solid #ddd;
+	border-top: 0;
+	cursor: pointer;
+	display: block;
+	padding: 7px 10px;
+}
+
+.ib-edu-autocomplete-choices a:first-child {
+	border-top: 1px solid #ddd;
 }
 
 /* Offers form ---------------*/

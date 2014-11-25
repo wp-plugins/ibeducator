@@ -16,7 +16,10 @@
 	$payments_count = $api->get_payments_count();
 ?>
 <div class="wrap">
-	<h2><?php _e( 'Educator Payments', 'ibeducator' ); ?></h2>
+	<h2>
+		<?php _e( 'Educator Payments', 'ibeducator' ); ?>
+		<a href="<?php echo esc_url( admin_url( 'admin.php?page=ib_educator_payments&edu-action=edit-payment' ) ); ?>" class="add-new-h2"><?php _e( 'Add New', 'ibeducator' ); ?></a>
+	</h2>
 
 	<ul class="subsubsub ib-edu-subnav">
 		<li><a href="<?php echo admin_url( 'admin.php?page=ib_educator_payments' ); ?>"<?php if ( empty( $status ) ) echo ' class="current"'; ?>><?php _e( 'All', 'ibeducator' ); ?></a> | </li>
@@ -49,15 +52,24 @@
 		<?php foreach ( $payments['rows'] as $payment ) : ?>
 		<?php
 			$student = get_user_by( 'id', $payment->user_id );
-			$course = get_post( $payment->course_id );
 			$username = '';
-			if ( $student->first_name && $student->last_name ) {$username = $student->first_name . ' ' . $student->last_name;}
-			else {$username = $student->display_name;}
+
+			if ( $student ) {
+				$username = $student->display_name;
+				$username .= ' (#' . intval( $student->ID ) . ')';
+			}
+
+			$course = get_post( $payment->course_id );
+			$course_title = '';
+
+			if ( $course ) {
+				$course_title = $course->post_title;
+			}
 		?>
 		<tr<?php if ( 0 == $i % 2 ) echo ' class="alternate"'; ?>>
 			<td><?php echo absint( $payment->ID ); ?></td>
-			<td><?php echo esc_html( $username ) . ' (#' . absint( $student->ID ) . ')'; ?></td>
-			<td><?php echo esc_html( $course->post_title ); ?></td>
+			<td><?php echo esc_html( $username ); ?></td>
+			<td><?php echo esc_html( $course_title ); ?></td>
 			<td><?php echo sanitize_title( $payment->currency ) . ' ' . number_format( $payment->amount, 2 ); ?></td>
 			<td><?php echo sanitize_title( $payment->payment_gateway ); ?></td>
 			<td><?php echo sanitize_title( $payment->payment_status ); ?></td>

@@ -218,11 +218,9 @@ function ib_edu_strip_zeroes( $number, $decimal_point ) {
  * @return string
  */
 function ib_edu_format_grade( $grade ) {
-	if ( ! is_int( $grade ) ) {
-		$grade = number_format( floatval( $grade ), 2 );
-	}
+	$formatted = (float) round( $grade, 2 );
 
-	return apply_filters( 'ib_educator_format_grade', $grade . '%', $grade );
+	return apply_filters( 'ib_educator_format_grade', $formatted . '%', $grade );
 }
 
 /**
@@ -418,6 +416,25 @@ function ib_edu_user_can_edit_lesson( $lesson_id ) {
 	}
 
 	return false;
+}
+
+/**
+ * Send email notification.
+ *
+ * @param string $to
+ * @param string $template
+ * @param array $subject_vars
+ * @param array $template_vars
+ */
+function ib_edu_send_notification( $to, $template, $subject_vars, $template_vars ) {
+	require_once IBEDUCATOR_PLUGIN_DIR . '/includes/ib-educator-email.php';
+
+	$email = new IB_Educator_Email();
+	$email->set_template( $template );
+	$email->parse_subject( $subject_vars );
+	$email->parse_template( $template_vars );
+	$email->add_recipient( $to );
+	$email->send();
 }
 
 /**

@@ -16,7 +16,7 @@ class IB_Educator_Admin_Meta {
 	 * Add meta boxes.
 	 */
 	public static function add_meta_boxes() {
-		// Course meta box
+		// Course meta box.
 		add_meta_box(
 			'ib_educator_course_meta',
 			__( 'Course Settings', 'ibeducator' ),
@@ -24,7 +24,7 @@ class IB_Educator_Admin_Meta {
 			'ib_educator_course'
 		);
 
-		// Lesson meta box
+		// Lesson meta box.
 		add_meta_box(
 			'ib_educator_lesson_meta',
 			__( 'Lesson Settings', 'ibeducator' ),

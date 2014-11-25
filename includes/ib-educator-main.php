@@ -9,8 +9,6 @@ class IB_Educator_Main {
 	 * Initialize plugin.
 	 */
 	public static function init() {
-		load_plugin_textdomain( 'ibeducator', false, IBEDUCATOR_PLUGIN_DIR . 'languages/' );
-
 		self::init_hooks();
 	}
 
@@ -18,27 +16,37 @@ class IB_Educator_Main {
 	 * Initialize hooks.
 	 */
 	private static function init_hooks() {
-		add_action( 'init', array( 'IB_Educator_Main', 'add_rewrite_endpoints' ) );
-		add_action( 'init', array( 'IB_Educator_Main', 'register_post_types' ) );
-		add_action( 'init', array( 'IB_Educator_Main', 'init_gateways' ) );
+		add_action( 'init', array( __CLASS__, 'add_rewrite_endpoints' ) );
+		add_action( 'init', array( __CLASS__, 'register_post_types' ) );
+		add_action( 'init', array( __CLASS__, 'init_gateways' ) );
+
+		// Plugin textdomain.
+		add_action( 'plugins_loaded', array( __CLASS__, 'load_textdomain' ) );
 
 		// Process actions (e.g. enroll, payment).
-		add_action( 'template_redirect', array( 'IB_Educator_Main', 'process_actions' ) );
+		add_action( 'template_redirect', array( __CLASS__, 'process_actions' ) );
 
 		// Override templates.
-		add_filter( 'template_include', array( 'IB_Educator_Main', 'override_templates' ) );
+		add_filter( 'template_include', array( __CLASS__, 'override_templates' ) );
 
 		// Verify permissions for various pages.
-		add_action( 'template_redirect', array( 'IB_Educator_Main', 'protect_private_pages' ) );
+		add_action( 'template_redirect', array( __CLASS__, 'protect_private_pages' ) );
 
 		// Add templating actions.
-		add_action( 'ib_educator_before_main_loop', array( 'IB_Educator_Main', 'action_before_main_loop' ) );
-		add_action( 'ib_educator_after_main_loop', array( 'IB_Educator_Main', 'action_after_main_loop' ) );
-		add_action( 'ib_educator_sidebar', array( 'IB_Educator_Main', 'action_sidebar' ) );
-		add_action( 'ib_educator_before_course_content', array( 'IB_Educator_Main', 'before_course_content' ) );
+		add_action( 'ib_educator_before_main_loop', array( __CLASS__, 'action_before_main_loop' ) );
+		add_action( 'ib_educator_after_main_loop', array( __CLASS__, 'action_after_main_loop' ) );
+		add_action( 'ib_educator_sidebar', array( __CLASS__, 'action_sidebar' ) );
+		add_action( 'ib_educator_before_course_content', array( __CLASS__, 'before_course_content' ) );
 
 		// Enqueue scripts and styles.
-		add_action( 'wp_enqueue_scripts', array( 'IB_Educator_Main', 'enqueue_scripts_styles' ) );
+		add_action( 'wp_enqueue_scripts', array( __CLASS__, 'enqueue_scripts_styles' ) );
+	}
+
+	/**
+	 * Load plugin textdomain.
+	 */
+	public static function load_textdomain() {
+		load_plugin_textdomain( 'ibeducator', false, IBEDUCATOR_PLUGIN_DIR . 'languages' );
 	}
 
 	/**
@@ -343,7 +351,7 @@ class IB_Educator_Main {
 		}
 
 		// Output course categories.
-		$categories = get_the_term_list( get_the_ID(), 'ib_educator_category' );
+		$categories = get_the_term_list( get_the_ID(), 'ib_educator_category', '', __( ', ', 'ibeducator' ) );
 
 		if ( $categories ) {
 			echo '<div class="ib-edu-course-categories"><span class="label">' . __( 'Categories:', 'ibeducator' ) . '</span>' . $categories . '</div>';

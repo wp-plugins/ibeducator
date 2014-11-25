@@ -39,22 +39,20 @@
 			<div class="label"><?php _e( 'Student', 'ibeducator' ); ?></div>
 			<div class="field">
 				<?php
-					$username = '';
-
-					if ( $student->first_name && $student->last_name ) {
-						$username = $student->first_name . ' ' . $student->last_name;
-					} else {
-						$username = $student->display_name;
+					if ( $student ) {
+						echo esc_html( $student->display_name );
 					}
-
-					echo esc_html( $username );
 				?>
 			</div>
 		</div>
 		<div class="form-row">
 			<div class="label"><?php _e( 'Course', 'ibeducator' ); ?></div>
 			<div class="field">
-				<?php echo esc_html( $course->post_title ); ?>
+				<?php
+					if ( $course ) {
+						echo esc_html( $course->post_title );
+					}
+				?>
 			</div>
 		</div>
 	</div>
@@ -147,13 +145,17 @@
 				<div class="form-row">
 					<div class="label"><?php _e( 'Grade', 'ibeducator' ); ?></div>
 					<div class="field">
-						<input type="text" name="grade" value="<?php echo ( $grade ) ? floatval( $grade->grade ) : ''; ?>"<?php if ( ! $quiz_submitted ) echo ' disabled="disabled"'; ?>>
-						<div class="description"><?php _e( 'Please enter a number between 0 and 100.', 'ibeducator' ); ?></div>
+						<input type="text" name="grade" value="<?php echo ( $grade ) ? floatval( $grade->grade ) : ''; ?>"<?php if ( ! $quiz_submitted ) echo ' disabled="disabled"'; ?> autocomplete="off">
+						<div class="description"><?php
+							_e( 'Please enter a number between 0 and 100.', 'ibeducator' );
+							echo ' ';
+							_e( 'The student will receive a notification email.', 'ibeducator' );
+						?></div>
 					</div>
 				</div>
 
 				<div class="form-buttons">
-					<button class="save-quiz-grade button-primary"<?php if ( ! $quiz_submitted ) echo ' disabled="disabled"'; ?>><?php _e( 'Save Grade', 'ibeducator' ); ?></button>
+					<button class="save-quiz-grade button-secondary"<?php if ( ! $quiz_submitted ) echo ' disabled="disabled"'; ?>><?php _e( 'Save Grade', 'ibeducator' ); ?></button>
 				</div>
 			</div>
 		</div>
@@ -187,27 +189,29 @@
 		});
 
 		$('button.save-quiz-grade').on('click', function() {
-			var jThis = $(this);
+			var button = $(this);
 
-			if (jThis.attr('disabled')) return;
-			jThis.attr('disabled', 'disabled');
+			if (button.attr('disabled')) return;
+			button.attr('disabled', 'disabled');
 
-			var form = jThis.closest('div.quiz-grade');
+			var form = button.closest('div.quiz-grade');
 			var grade = form.find('input[name="grade"]:first').val();
 			var lessonId = form.find('input[name="lesson_id"]:first').val();
 
 			$.ajax({
+				cache: false,
 				method: 'post',
 				dataType: 'json',
 				url: ajaxurl + '?action=ibedu_quiz_grade',
 				data: {
-					entry_id: <?php echo absint( $entry_id ); ?>,
+					entry_id: <?php echo intval( $entry_id ); ?>,
 					lesson_id: lessonId,
 					grade: grade,
 					_wpnonce: nonce
 				},
 				success: function(response) {
-					var overlayHtml = '', overlay = null;
+					var overlayHtml = '',
+						overlay = null;
 					
 					if (response && response.status && response.status === 'success') {
 						overlayHtml = '<div class="ib-edu-overlay ib-edu-saved"></div>';
@@ -220,11 +224,14 @@
 					overlay.fadeIn(200, function() {
 						setTimeout(function() {
 							overlay.fadeOut(200, function() {
+								button.get(0).removeAttribute('disabled');
 								$(this).remove();
-								jThis.removeAttr('disabled');
 							});
 						}, 500);
 					});
+				},
+				error: function() {
+					button.get(0).removeAttribute('disabled');
 				}
 			});
 		});

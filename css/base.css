@@ -141,6 +141,11 @@ table.ib-edu-courses-pending > thead > tr > th:first-child {
 	padding: 0 10px 0;
 }
 
+body .site-content .ib-edu-twentyfourteen .entry-content {
+	padding-left: 0;
+	padding-right: 0;
+}
+
 #ib-edu-payment-form input[type="text"] {
 	width: 100%;
 }

@@ -103,7 +103,7 @@ class IB_Educator_Entry {
 			);
 			$this->ID = $wpdb->insert_id;
 		}
-
+		
 		return ( 1 === $affected_rows || 0 === $affected_rows ) ? true : false;
 	}
 

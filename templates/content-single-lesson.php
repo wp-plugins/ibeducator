@@ -3,7 +3,7 @@
 
 	<div id="ib-edu-breadcrumbs"><?php ib_edu_breadcrumbs(); ?></div>
 
-	<div class="lesson-content">
+	<div class="lesson-content entry-content">
 		<?php
 			if ( ib_edu_student_can_study( get_the_ID() ) ) {
 				the_content();

@@ -3,10 +3,10 @@
 
 	<?php
 		settings_errors( 'general' );
-		IB_Educator_Admin::settings_tabs( 'general' );
+		IB_Educator_Admin::settings_tabs( 'email' );
 		echo '<form action="options.php" method="post">';
-		settings_fields( 'ib_educator_settings' );
-		do_settings_sections( 'ib_educator_general' );
+		settings_fields( 'ib_educator_email_settings' );
+		do_settings_sections( 'ib_educator_email_page' );
 		submit_button();
 		echo '</form>';
 	?>
