@@ -4,7 +4,7 @@ Donate link: http://incrediblebytes.com
 Tags: learning management system, lms, learning, online courses
 Requires at least: 4.0
 Tested up to: 4.0.1
-Stable tag: 1.1.0
+Stable tag: 1.1.1
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -45,6 +45,10 @@ Coming soon.
 5. **Pages** - Assign the pages that will be used by the plugin.
 
 == Changelog ==
+
+= 1.1.1 =
+* Added Courses Archive URL information to Educator &raquo; Settings screen to make it easier for users to find and use it.
+* Fixed issue: when all payment gateways were being disabled, they were visible on student's payment screen.
 
 = 1.1.0 =
 * Added email notifications feature. Student receives email notification when:

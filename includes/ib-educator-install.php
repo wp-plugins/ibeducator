@@ -24,7 +24,7 @@ class IB_Educator_Install {
 	public function activate() {
 		$current_version = get_option( 'ib_educator_version' );
 
-		if ( version_compare( $current_version, '0.9.10', '<=' ) ) {
+		if ( $current_version && version_compare( $current_version, '0.9.10', '<=' ) ) {
 			$this->update_1_0_0();
 		}
 

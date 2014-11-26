@@ -538,7 +538,32 @@ class IB_Educator_Admin {
 	/**
 	 * General settings section description.
 	 */
-	public static function section_description() {}
+	public static function section_description( $arg ) {
+		if ( is_array( $arg ) && isset( $arg['id'] ) ) {
+			switch ( $arg['id'] ) {
+				case 'ib_educator_pages':
+					?>
+					<table class="form-table">
+						<tbody>
+							<tr>
+								<th scope="row"><?php _e( 'Courses Archive', 'ibeducator' ); ?></th>
+								<td>
+									<?php
+										$archive_link = get_post_type_archive_link( 'ib_educator_course' );
+
+										if ( $archive_link ) {
+											echo '<a href="' . esc_url( $archive_link ) . '" target="_blank">' . esc_url( $archive_link ) . '</a>';
+										}
+									?>
+								</td>
+							</tr>
+						</tbody>
+					</table>
+					<?php
+					break;
+			}
+		}
+	}
 
 	/**
 	 * Validate general settings section.
