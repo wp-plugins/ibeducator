@@ -7,7 +7,7 @@ Plugin Name: Educator WP
 Plugin URI: http://incrediblebytes.com/plugins/educator-wp/
 Description: Offer courses to students online.
 Author: dmytro.d (IncredibleBytes)
-Version: 1.1.0
+Version: 1.1.1
 Author URI: http://incrediblebytes.com
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
@@ -32,7 +32,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 
 if ( ! defined( 'ABSPATH' ) ) exit;
 
-define( 'IBEDUCATOR_VERSION', '1.1.0' );
+define( 'IBEDUCATOR_VERSION', '1.1.1' );
 define( 'IBEDUCATOR_DB_VERSION', '0.9.0' );
 define( 'IBEDUCATOR_PLUGIN_DIR', plugin_dir_path( __FILE__ ) );
 define( 'IBEDUCATOR_PLUGIN_URL', plugin_dir_url( __FILE__ ) );

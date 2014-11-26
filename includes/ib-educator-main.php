@@ -80,7 +80,7 @@ class IB_Educator_Main {
 		$gateway_file = null;
 
 		foreach ( $gateways as $gateway_id => $gateway ) {
-			if ( $enabled_gateways && ! in_array( $gateway_id, $enabled_gateways ) ) {
+			if ( null !== $enabled_gateways && ! in_array( $gateway_id, $enabled_gateways ) ) {
 				continue;
 			}
 
