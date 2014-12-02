@@ -6,4 +6,10 @@
 		<?php the_excerpt(); ?>
 	</div>
 	<?php endif; ?>
+
+	<?php
+		if ( ib_edu_has_quiz( get_the_ID() ) ) {
+			echo '<div class="ib-edu-lesson-meta"><span class="quiz">' . __( 'Quiz', 'ibeducator' ) . '</span></div>';
+		}
+	?>
 </article>
