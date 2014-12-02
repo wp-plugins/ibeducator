@@ -437,6 +437,10 @@ function ib_edu_send_notification( $to, $template, $subject_vars, $template_vars
 	$email->send();
 }
 
+function ib_edu_has_quiz( $lesson_id ) {
+	return get_post_meta( $lesson_id, '_ibedu_quiz', true ) ? true : false;
+}
+
 /**
  * Trigger deprecated function error.
  *

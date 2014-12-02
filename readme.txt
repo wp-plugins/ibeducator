@@ -4,7 +4,7 @@ Donate link: http://incrediblebytes.com
 Tags: learning management system, lms, learning, online courses
 Requires at least: 4.0
 Tested up to: 4.0.1
-Stable tag: 1.1.1
+Stable tag: 1.1.2
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -45,6 +45,9 @@ Coming soon.
 5. **Pages** - Assign the pages that will be used by the plugin.
 
 == Changelog ==
+
+= 1.1.2 =
+* Added ib_edu_has_quiz( $lesson_id ) function and lesson meta (displays 'Quiz' if lesson has a quiz).
 
 = 1.1.1 =
 * Added Courses Archive URL information to Educator &raquo; Settings screen to make it easier for users to find and use it.
