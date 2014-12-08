@@ -470,7 +470,7 @@ class IB_Educator_Admin {
 			array(
 				'name'           => 'subject',
 				'settings_group' => 'ib_educator_student_registered',
-				'description'    => sprintf( __( 'Subject of the student registered notification email. Placeholders: %s', 'ibeducator' ), '{course_title}' ),
+				'description'    => sprintf( __( 'Subject of the student registered notification email. Placeholders: %s', 'ibeducator' ), '{course_title}, {login_link}' ),
 			)
 		);
 
@@ -484,7 +484,7 @@ class IB_Educator_Admin {
 			array(
 				'name'           => 'template',
 				'settings_group' => 'ib_educator_student_registered',
-				'description'    => sprintf( __( 'Placeholders: %s', 'ibeducator' ), '{student_name}, {course_title}, {course_excerpt}' ),
+				'description'    => sprintf( __( 'Placeholders: %s', 'ibeducator' ), '{student_name}, {course_title}, {course_excerpt}, {login_link}' ),
 			)
 		);
 
@@ -512,7 +512,7 @@ class IB_Educator_Admin {
 			array(
 				'name'           => 'template',
 				'settings_group' => 'ib_educator_quiz_grade',
-				'description'    => sprintf( __( 'Placeholders: %s', 'ibeducator' ), '{student_name}, {lesson_title}, {grade}' ),
+				'description'    => sprintf( __( 'Placeholders: %s', 'ibeducator' ), '{student_name}, {lesson_title}, {grade}, {login_link}' ),
 			)
 		);
 

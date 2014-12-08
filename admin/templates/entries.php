@@ -12,6 +12,10 @@
 		$args['entry_status'] = $status;
 	}
 
+	if ( ! empty( $_GET['id'] ) ) {
+		$args['entry_id'] = $_GET['id'];
+	}
+
 	$entries = null;
 
 	if ( current_user_can( 'manage_educator' ) ) {
@@ -48,6 +52,19 @@
 			}
 		?>
 	</ul>
+
+	<form class="ib-edu-admin-search" action="<?php echo esc_url( admin_url( 'admin.php' ) ); ?>" method="get">
+		<input type="hidden" name="page" value="ib_educator_entries">
+
+		<div class="block">
+			<label for="search-entry-id"><?php echo _x( 'ID', 'ID of an item', 'ibeducator' ); ?></label>
+			<input type="text" id="search-entry-id" name="id" value="<?php if ( ! empty( $args['entry_id'] ) ) echo intval( $args['entry_id'] ); ?>">
+		</div>
+
+		<div class="block">
+			<input type="submit" class="button" value="<?php _e( 'Search', 'ibeducator' ); ?>">
+		</div>
+	</form>
 
 	<?php if ( $entries['rows'] ) : ?>
 	<table id="ib-edu-entries-table" class="wp-list-table widefat">

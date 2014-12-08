@@ -11,13 +11,14 @@ class IB_Educator_Gateway_Check extends IB_Educator_Payment_Gateway {
 		// Setup options.
 		$this->init_options( array(
 			'description' => array(
-				'type'  => 'textarea',
-				'label' => __( 'Instructions for a student', 'ibeducator' ),
-				'id'    => 'ib-edu-description',
+				'type'      => 'textarea',
+				'label'     => __( 'Instructions for a student', 'ibeducator' ),
+				'id'        => 'ib-edu-description',
+				'rich_text' => true,
 			)
 		) );
 
-		add_action( 'ib_educator_thankyou_check', array( $this, 'thankyou_page' ) );
+		add_action( 'ib_educator_thankyou_' . $this->id, array( $this, 'thankyou_page' ) );
 	}
 
 	/**
@@ -61,7 +62,7 @@ class IB_Educator_Gateway_Check extends IB_Educator_Payment_Gateway {
 
 		if ( ! empty( $description ) ) {
 			echo '<h3>' . __( 'Payment Instructions', 'ibeducator' ) . '</h3>';
-			echo '<div class="ib-edu-payment-description">' . wpautop( $description ) . '</div>';
+			echo '<div class="ib-edu-payment-description">' . wpautop( stripslashes( $description ) ) . '</div>';
 		}
 
 		// Show link to student courses page.
@@ -82,7 +83,7 @@ class IB_Educator_Gateway_Check extends IB_Educator_Payment_Gateway {
 		foreach ( $input as $option_name => $value ) {
 			switch ( $option_name ) {
 				case 'description':
-					$input[ $option_name ] = wp_kses_post( $value );
+					$input[ $option_name ] = wp_kses_data( $value );
 					break;
 			}
 		}

@@ -31,9 +31,10 @@ class IB_Educator_Gateway_Paypal extends IB_Educator_Payment_Gateway {
 			),
 
 			'thankyou_message' => array(
-				'type'  => 'textarea',
-				'label' => __( 'Thank you message', 'ibeducator' ),
-				'id'    => 'ib-edu-thankyou-message',
+				'type'      => 'textarea',
+				'label'     => __( 'Thank you message', 'ibeducator' ),
+				'id'        => 'ib-edu-thankyou-message',
+				'rich_text' => true,
 			),
 		) );
 
@@ -128,7 +129,7 @@ class IB_Educator_Gateway_Paypal extends IB_Educator_Payment_Gateway {
 		$thankyou_message = $this->get_option( 'thankyou_message' );
 
 		if ( ! empty( $thankyou_message ) ) {
-			echo '<div class="ib-edu-payment-description">' . wpautop( $thankyou_message ) . '</div>';
+			echo '<div class="ib-edu-payment-description">' . wpautop( stripslashes( $thankyou_message ) ) . '</div>';
 		}
 
 		// Show link to student courses page.
@@ -326,7 +327,7 @@ class IB_Educator_Gateway_Paypal extends IB_Educator_Payment_Gateway {
 					break;
 
 				case 'thankyou_message':
-					$input[ $option_name ] = wp_kses_post( $value );
+					$input[ $option_name ] = wp_kses_data( $value );
 					break;
 
 				case 'test':

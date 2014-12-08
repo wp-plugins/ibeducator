@@ -7,17 +7,16 @@
 	margin-bottom: 24px;
 }
 
-/* Student's courses page */
-table.ib-edu-courses > thead > tr > th:first-child {
-	width: 70%;
-}
-
-table.ib-edu-courses-pending > thead > tr > th:first-child {
-	width: auto;
-}
-
 .ib-edu-courses-pending td {
 	vertical-align: middle;
+}
+
+.ib-edu-courses .payment-description .text {
+	display: none;
+}
+
+.ib-edu-courses .payment-description.open .text {
+	display: block;
 }
 
 /* Course */
@@ -52,6 +51,10 @@ table.ib-edu-courses-pending > thead > tr > th:first-child {
 .ib-edu-course-price .price {
 	margin-right: 20px;
 	vertical-align: middle;
+}
+
+.ib-edu-lesson-meta {
+	font-style: italic;
 }
 
 /* Quiz */
@@ -132,6 +135,11 @@ table.ib-edu-courses-pending > thead > tr > th:first-child {
 
 .ib-edu-payment-method input[type="radio"] {
 	margin-right: 5px;
+}
+
+/* Student's courses */
+.ib-edu-courses .payment-description p {
+	margin: 1em 0 0;
 }
 
 /* TwentyFourteen theme */

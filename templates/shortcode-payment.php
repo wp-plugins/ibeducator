@@ -9,15 +9,23 @@
 			if ( ! $course ) return;
 			?>
 			<h3><?php _e( 'Payment Summary', 'ibeducator' ); ?></h3>
+
 			<table id="payment-details">
-				<thead>
-					<tr>
-						<th><?php _e( 'Item', 'ibeducator' ); ?></th>
-						<th><?php _e( 'Amount', 'ibeducator' ); ?></th>
-					</tr>
-				</thead>
 				<tbody>
+					<tr class="payment-id">
+						<td><?php _e( 'Payment', 'ibeducator' ); ?></td>
+						<td><?php echo intval( $payment->ID ); ?></td>
+					</tr>
+
+					<tr class="payment-date">
+						<td><?php _e( 'Date', 'ibeducator' ); ?></td>
+						<td><?php echo date_i18n( get_option( 'date_format' ), strtotime( $payment->payment_date ) ); ?></td>
+					</tr>
+
 					<tr>
+						<td>
+							<?php _e( 'Course', 'ibeducator' ); ?>
+						</td>
 						<td>
 							<?php
 								printf(
@@ -27,6 +35,10 @@
 								);
 							?>
 						</td>
+					</tr>
+
+					<tr>
+						<td><?php _e( 'Price', 'ibeducator' ); ?></td>
 						<td>
 							<?php echo ib_edu_format_course_price( ib_edu_get_course_price( $course->ID ) ); ?>
 						</td>

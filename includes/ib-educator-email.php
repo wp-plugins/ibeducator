@@ -73,8 +73,8 @@ class IB_Educator_Email {
 		$values = array();
 
 		foreach ( $vars as $key => $value ) {
-			$keys[] = '{' . $key . '}';
-			$values[] = $value;
+			$keys[] = '{' . sanitize_key( $key ) . '}';
+			$values[] = esc_html( $value );
 		}
 
 		$this->body = str_replace( $keys, $values, $this->template );
