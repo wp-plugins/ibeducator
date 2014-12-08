@@ -48,12 +48,39 @@
 	margin-left: 220px;
 }
 
+.ib-edu-control .wp-editor-wrap {
+	overflow: hidden;
+}
+
 .ib-edu-control .description {
 	color: #666;
 	font-size: 14px;
 	font-style: italic;
 	line-height: 1.5;
 	margin-top: 5px;
+}
+
+/* Search form */
+.ib-edu-admin-search {
+	margin: 1em 0 .5em;
+	overflow: hidden;
+}
+
+.ib-edu-admin-search .block {
+	float: left;
+	margin: 0 .5em .5em 0;
+}
+
+.ib-edu-admin-search label,
+.ib-edu-admin-search input {
+	vertical-align: middle;
+}
+
+.ib-edu-admin-search label {
+	color: #000;
+	font-size: 14px;
+	font-weight: 600;
+	margin-right: 5px;
 }
 
 /* Autocomplete ---------------*/
@@ -346,4 +373,17 @@
 
 #ib-edu-progress .quiz.open .handle:before {
 	content: '\f142';
+}
+
+@media screen and (max-width: 782px) {
+	/* Search form */
+	.ib-edu-admin-search .block {
+		float: none;
+		margin-right: 0;
+	}
+
+	.ib-edu-admin-search label {
+		display: block;
+		margin-bottom: 5px;
+	}
 }

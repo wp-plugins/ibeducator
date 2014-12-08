@@ -57,9 +57,10 @@ class IB_Educator_Main {
 		require_once IBEDUCATOR_PLUGIN_DIR . 'includes/gateways/ib-educator-payment-gateway.php';
 
 		$gateways = apply_filters( 'ib_educator_payment_gateways', array(
-			'paypal' => 'IB_Educator_Gateway_Paypal',
-			'cash'   => 'IB_Educator_Gateway_Cash',
-			'check'  => 'IB_Educator_Gateway_Check',
+			'paypal'        => 'IB_Educator_Gateway_Paypal',
+			'cash'          => 'IB_Educator_Gateway_Cash',
+			'check'         => 'IB_Educator_Gateway_Check',
+			'bank-transfer' => 'IB_Educator_Gateway_Bank_Transfer',
 		) );
 
 		// Get the list of enabled gateways.
@@ -84,7 +85,7 @@ class IB_Educator_Main {
 				continue;
 			}
 
-			$gateway_file = IBEDUCATOR_PLUGIN_DIR . 'includes/gateways/' . strtolower( substr( $gateway, 20 ) ) . '/' . strtolower( str_replace( '_', '-', $gateway ) ) . '.php';
+			$gateway_file = IBEDUCATOR_PLUGIN_DIR . 'includes/gateways/' . strtolower( str_replace( '_', '-', substr( $gateway, 20 ) ) ) . '/' . strtolower( str_replace( '_', '-', $gateway ) ) . '.php';
 
 			if ( is_readable( $gateway_file ) ) {
 				require_once $gateway_file;

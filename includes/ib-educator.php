@@ -159,6 +159,11 @@ class IB_Educator {
 		global $wpdb;
 		$sql = "SELECT * FROM {$this->entries} WHERE 1";
 
+		// Filter by entry_id.
+		if ( isset( $args['entry_id'] ) ) {
+			$sql .= ' AND ID=' . absint( $args['entry_id'] );
+		}
+
 		// Filter by course_id.
 		if ( isset( $args['course_id'] ) ) {
 			$course_id = array();
@@ -306,7 +311,7 @@ class IB_Educator {
 	public function get_pending_courses( $user_id ) {
 		global $wpdb;
 		$ids = array();
-		$payments = $this->get_payments( array( 'user_id' => $user_id, 'payment_status' => array( 'pending' ) ) );
+		$payments = $this->get_payments( array( 'user_id' => $user_id, 'payment_status' => array( 'pending' ) ), OBJECT_K );
 
 		if ( $payments ) {
 			$payment_ids = array();
@@ -328,6 +333,7 @@ class IB_Educator {
 
 				foreach ( $query->posts as $post ) {
 					$post->edu_payment_id = $payment_ids[ $post->ID ];
+					$post->edu_payment = $payments[ $post->edu_payment_id ];
 					$posts[ $post->ID ] = $post;
 				}
 
@@ -384,9 +390,17 @@ class IB_Educator {
 	 * @param array $args
 	 * @return false|array of IB_Educator_Payment objects
 	 */
-	public function get_payments( $args ) {
+	public function get_payments( $args, $output_type = null ) {
 		global $wpdb;
+
+		if ( null === $output_type ) $output_type = OBJECT;
+
 		$sql = "SELECT * FROM {$this->payments} WHERE 1";
+
+		// Filter by payment_id.
+		if ( isset( $args['payment_id'] ) ) {
+			$sql .= ' AND ID=' . absint( $args['payment_id'] );
+		}
 
 		// Filter by user_id.
 		if ( isset( $args['user_id'] ) ) {
@@ -417,7 +431,7 @@ class IB_Educator {
 			$pagination_sql .= ' LIMIT ' . ( ( $args['page'] - 1 ) * $args['per_page'] ) . ', ' . $args['per_page'];
 		}
 
-		$payments = $wpdb->get_results( $sql . ' ORDER BY payment_date DESC' . $pagination_sql );
+		$payments = $wpdb->get_results( $sql . ' ORDER BY payment_date DESC' . $pagination_sql, $output_type );
 
 		if ( $payments ) {
 			$payments = array_map( array( 'IB_Educator_Payment', 'get_instance' ), $payments );

@@ -429,6 +429,10 @@ function ib_edu_user_can_edit_lesson( $lesson_id ) {
 function ib_edu_send_notification( $to, $template, $subject_vars, $template_vars ) {
 	require_once IBEDUCATOR_PLUGIN_DIR . '/includes/ib-educator-email.php';
 
+	// Set default template vars.
+	$template_vars['login_link'] = apply_filters( 'ib_educator_login_url', wp_login_url() );
+
+	// Send email.
 	$email = new IB_Educator_Email();
 	$email->set_template( $template );
 	$email->parse_subject( $subject_vars );
@@ -437,6 +441,12 @@ function ib_edu_send_notification( $to, $template, $subject_vars, $template_vars
 	$email->send();
 }
 
+/**
+ * Check if the lesson has a quiz attached.
+ *
+ * @param int $lesson_id
+ * @return bool
+ */
 function ib_edu_has_quiz( $lesson_id ) {
 	return get_post_meta( $lesson_id, '_ibedu_quiz', true ) ? true : false;
 }

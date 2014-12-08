@@ -295,6 +295,8 @@ You\'ve got access to {course_title}.
 
 {course_excerpt}
 
+Log in: {login_link}
+
 Best regards,
 Administration',
 			) );
@@ -306,6 +308,8 @@ Administration',
 				'template' => 'Dear {student_name},
 
 You\'ve got {grade} for {lesson_title}.
+
+Log in: {login_link}
 
 Best regards,
 Administration',

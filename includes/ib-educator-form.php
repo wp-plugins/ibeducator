@@ -79,14 +79,29 @@ class IB_Educator_Form {
 			'class'       => 'large-text code',
 			'description' => '',
 			'cols'        => 40,
-			'rows'        => 4,
+			'rows'        => 5,
 			'id'          => '',
+			'rich_text'   => false,
 		) );
 		$for = empty( $data['id'] ) ? '' : ' for="' . esc_attr( $data['id'] ) . '"';
 		$id = empty( $data['id'] ) ? '' : ' id="' . esc_attr( $data['id'] ) . '"';
 		$output = '<div class="ib-edu-field">';
 		$output .= '<div class="ib-edu-label"><label' . $for . '>' . $data['label'] . '</label></div>';
-		$output .= '<div class="ib-edu-control"><textarea class="' . esc_attr( $data['class'] ) . '"' . $id . ' name="' . esc_attr( $name ) . '" cols="' . absint( $data['cols'] ) . '" rows="' . absint( $data['rows'] ) . '">' . esc_textarea( $value ) . '</textarea>';
+		$output .= '<div class="ib-edu-control">';
+
+		if ( false == $data['rich_text'] || ! user_can_richedit() ) {
+			$output .= '<textarea class="' . esc_attr( $data['class'] ) . '"' . $id . ' name="' . esc_attr( $name ) . '" cols="' . absint( $data['cols'] ) . '" rows="' . absint( $data['rows'] ) . '">' . esc_textarea( stripslashes( $value ) ) . '</textarea>';
+		} else {
+			ob_start();
+			wp_editor( stripslashes( $value ), $data['id'], array(
+				'media_buttons' => false,
+				'tinymce'       => false,
+				'quicktags'     => array( 'buttons' => 'strong,em,link,del,ins,img,ul,ol,li,code,close' ),
+				'textarea_name' => $name,
+				'textarea_rows' => $data['rows'],
+			) );
+			$output .= ob_get_clean();
+		}
 		$output .= self::description_html( $data );
 		$output .= '</div></div>';
 		return $output;

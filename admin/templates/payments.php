@@ -12,6 +12,10 @@
 		$args['payment_status'] = array( $status );
 	}
 
+	if ( ! empty( $_GET['id'] ) ) {
+		$args['payment_id'] = $_GET['id'];
+	}
+
 	$payments = $api->get_payments( $args );
 	$payments_count = $api->get_payments_count();
 ?>
@@ -33,6 +37,19 @@
 			}
 		?>
 	</ul>
+
+	<form class="ib-edu-admin-search" action="<?php echo esc_url( admin_url( 'admin.php' ) ); ?>" method="get">
+		<input type="hidden" name="page" value="ib_educator_payments">
+
+		<div class="block">
+			<label for="search-payment-id"><?php echo _x( 'ID', 'ID of an item', 'ibeducator' ); ?></label>
+			<input type="text" id="search-payment-id" name="id" value="<?php if ( ! empty( $args['payment_id'] ) ) echo intval( $args['payment_id'] ); ?>">
+		</div>
+
+		<div class="block">
+			<input type="submit" class="button" value="<?php _e( 'Search', 'ibeducator' ); ?>">
+		</div>
+	</form>
 
 	<?php if ( $payments['rows'] ) : ?>
 
@@ -91,10 +108,10 @@
 		$big = 999999999;
 
 		echo paginate_links( array(
-			'base' => str_replace( $big, '%#%', esc_url( get_pagenum_link( $big ) ) ),
-			'format' => '?paged=%#%',
+			'base'    => str_replace( $big, '%#%', esc_url( get_pagenum_link( $big ) ) ),
+			'format'  => '?paged=%#%',
 			'current' => $page,
-			'total' => $payments['num_pages']
+			'total'   => $payments['num_pages']
 		) );
 	?>
 	</div>
