@@ -4,7 +4,7 @@ Donate link: http://incrediblebytes.com
 Tags: learning management system, lms, learning, online courses
 Requires at least: 4.0
 Tested up to: 4.1
-Stable tag: 1.3.0
+Stable tag: 1.3.1
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -26,6 +26,7 @@ Features:
 * Create lecturers that can edit their courses and lessons.
 * Grade courses and quizzes.
 * Email notifications.
+* NEW: memberships feature.
 
 == Installation ==
 
@@ -45,6 +46,11 @@ Coming soon.
 5. **Pages** - Assign the pages that will be used by the plugin.
 
 == Changelog ==
+
+= 1.3.1 =
+* Fixed the "Table 'wp_ibeducator_members' doesn't exist" error.
+* Moved the plugin update check to an earlier hook (from 'admin_init' to 'init' with priority of 9).
+* Please check the changelog for version 1.3.0 too.
 
 = 1.3.0 =
 * Added the memberships feature.
