@@ -39,16 +39,19 @@
 	overflow: hidden;
 }
 
-.ib-edu-course-price {
+.ib-edu-course-price,
+.ib-edu-price-widget {
 	font-weight: bold;
 	margin-bottom: 24px;
 }
 
-.ib-edu-course-price .ib-edu-button {
+.ib-edu-course-price .ib-edu-button,
+.ib-edu-price-widget .ib-edu-button {
 	vertical-align: middle;
 }
 
-.ib-edu-course-price .price {
+.ib-edu-course-price .price,
+.ib-edu-price-widget .price {
 	margin-right: 20px;
 	vertical-align: middle;
 }
@@ -140,54 +143,4 @@
 /* Student's courses */
 .ib-edu-courses .payment-description p {
 	margin: 1em 0 0;
-}
-
-/* TwentyFourteen theme */
-.ib-edu-twentyfourteen {
-	margin: 0 auto;
-	max-width: 474px;
-	padding: 0 10px 0;
-}
-
-body .site-content .ib-edu-twentyfourteen .entry-content {
-	padding-left: 0;
-	padding-right: 0;
-}
-
-#ib-edu-payment-form input[type="text"] {
-	width: 100%;
-}
-
-.ib-edu-twentyfourteen .ib-edu-lesson h1 {
-	font-size: 18px;
-	margin-top: 0;
-}
-
-.ib-edu-course .course-summary h1 a {
-	text-decoration: none;
-}
-
-.ib-edu-twentyfourteen .ib-edu-course-single .course-content,
-.ib-edu-twentyfourteen .ib-edu-lesson-single .lesson-content {
-	padding-top: 12px;
-}
-
-.ib-edu-twentyfourteen .ib-edu-course-difficulty {
-	margin-bottom: .5em;
-}
-
-.ib-edu-twentyfourteen .ib-edu-course-categories {
-	margin-bottom: 1em;
-}
-
-.ib-edu-twentyfourteen .ib-edu-course-difficulty .label,
-.ib-edu-twentyfourteen .ib-edu-course-categories .label {
-	margin-right: 5px;
-}
-
-@media screen and (min-width: 594px) {
-	.ib-edu-twentyfourteen {
-		padding-left: 30px;
-		padding-right: 30px;
-	}
 }

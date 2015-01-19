@@ -29,11 +29,25 @@ class IB_Educator_Admin_Actions {
 
 			// Payment ID.
 			if ( 'admin' == $who && isset( $_POST['payment_id'] ) ) {
-				$payment = IB_Educator_Payment::get_instance( $_POST['payment_id'] );
+				if ( empty( $_POST['payment_id'] ) ) {
+					$entry->payment_id = 0;
+				} else {
+					$payment = IB_Educator_Payment::get_instance( $_POST['payment_id'] );
 
-				if ( $payment->ID ) {
-					$entry->payment_id = $payment->ID;
+					if ( $payment->ID ) {
+						$entry->payment_id = $payment->ID;
+					}
 				}
+			}
+
+			// Origin.
+			if ( 'admin' == $who && isset( $_POST['entry_origin'] ) && array_key_exists( $_POST['entry_origin'], IB_Educator_Entry::get_origins() ) ) {
+				$entry->entry_origin = $_POST['entry_origin'];
+			}
+
+			// Membership ID.
+			if ( 'admin' == $who && isset( $_POST['membership_id'] ) && 'membership' == $entry->entry_origin ) {
+				$entry->object_id = intval( $_POST['membership_id'] );
 			}
 
 			// Student ID.
@@ -57,7 +71,13 @@ class IB_Educator_Admin_Actions {
 			}
 
 			// Entry date.
-			$entry->entry_date = date( 'Y-m-d H:i:s' );
+			if ( 'admin' == $who ) {
+				if ( isset( $_POST['entry_date'] ) ) {
+					$entry->entry_date = sanitize_text_field( $_POST['entry_date'] );
+				} elseif ( empty( $entry->entry_date ) ) {
+					$entry->entry_date = date( 'Y-m-d H:i:s' );
+				}
+			}
 
 			if ( $entry->save() ) {
 				wp_redirect( admin_url( 'admin.php?page=ib_educator_entries&edu-action=edit-entry&entry_id=' . $entry->ID . '&edu-message=saved' ) );
@@ -79,7 +99,14 @@ class IB_Educator_Admin_Actions {
 			check_admin_referer( 'ib_educator_edit_payment_' . $payment_id );
 
 			// Capability check.
-			if ( ! current_user_can( 'manage_educator' ) ) return;
+			if ( ! current_user_can( 'manage_educator' ) ) {
+				return;
+			}
+
+			// Payment type.
+			if ( isset( $_POST['payment_type'] ) && array_key_exists( $_POST['payment_type'], IB_Educator_Payment::get_types() ) ) {
+				$payment->payment_type = $_POST['payment_type'];
+			}
 
 			// Student ID.
 			if ( empty( $payment->user_id ) ) {
@@ -94,14 +121,28 @@ class IB_Educator_Admin_Actions {
 			if ( empty( $payment->course_id ) ) {
 				if ( ! empty( $_POST['course_id'] ) && is_numeric( $_POST['course_id'] ) ) {
 					$payment->course_id = $_POST['course_id'];
-				} else {
+				} elseif ( 'course' == $payment->payment_type ) {
 					$errors[] = 'empty_course_id';
 				}
+			}
+
+			// Object ID.
+			if ( isset( $_POST['object_id'] ) && is_numeric( $_POST['object_id'] ) ) {
+				$payment->object_id = $_POST['object_id'];
 			}
 
 			// Amount.
 			if ( isset( $_POST['amount'] ) && is_numeric( $_POST['amount'] ) ) {
 				$payment->amount = $_POST['amount'];
+			}
+
+			if ( isset( $_POST['currency'] ) ) {
+				$payment->currency = sanitize_text_field( $_POST['currency'] );
+			}
+
+			// Transaction ID.
+			if ( isset( $_POST['txn_id'] ) ) {
+				$payment->txn_id = sanitize_text_field( $_POST['txn_id'] );
 			}
 
 			// Payment status.
@@ -123,6 +164,8 @@ class IB_Educator_Admin_Actions {
 				$api = IB_Educator::get_instance();
 				$entry_saved = true;
 
+				// Create entry for the student.
+				// Implemented for the "course" payment type.
 				if ( isset( $_POST['create_entry'] ) && ! $api->get_entry( array( 'payment_id' => $payment->ID ) ) ) {
 					$entry = IB_Educator_Entry::get_instance();
 					$entry->course_id = $payment->course_id;
@@ -154,6 +197,36 @@ class IB_Educator_Admin_Actions {
 					}
 				}
 
+				// Setup membership for the student.
+				if ( isset( $_POST['setup_membership'] ) && 'membership' == $payment->payment_type ) {
+					$ms = IB_Educator_Memberships::get_instance();
+
+					// Setup membership.
+					$ms->setup_membership( $payment->user_id, $payment->object_id );
+
+					// Send notification email.
+					$student = get_user_by( 'id', $payment->user_id );
+					$membership = $ms->get_membership( $payment->object_id );
+
+					if ( $student && $membership ) {
+						$user_membership = $ms->get_user_membership( $student->ID );
+						$membership_meta = $ms->get_membership_meta( $membership->ID );
+						$expiration = ( $user_membership ) ? $user_membership['expiration'] : 0;
+
+						ib_edu_send_notification(
+							$student->user_email,
+							'membership_register',
+							array(),
+							array(
+								'student_name' => $student->display_name,
+								'membership'   => $membership->post_title,
+								'expiration'   => ( $expiration ) ? date_i18n( get_option( 'date_format' ), $expiration ) : __( 'None', 'ibeducator' ),
+								'price'        => $ms->format_price( $membership_meta['price'], $membership_meta['duration'], $membership_meta['period'], false ),
+							)
+						);
+					}
+				}
+
 				if ( $entry_saved ) {
 					wp_redirect( admin_url( 'admin.php?page=ib_educator_payments&edu-action=edit-payment&payment_id=' . $payment->ID . '&edu-message=saved' ) );
 					exit;
@@ -163,22 +236,90 @@ class IB_Educator_Admin_Actions {
 	}
 
 	/**
+	 * Edit member action.
+	 */
+	public static function edit_member() {
+		if ( count( $_POST ) ) {
+			// Verify nonce.
+			check_admin_referer( 'ib_educator_edit_member' );
+
+			// Capability check.
+			if ( ! current_user_can( 'manage_educator' ) ) {
+				return;
+			}
+
+			$ms = IB_Educator_Memberships::get_instance();
+			$member_id = isset( $_GET['id'] ) ? intval( $_GET['id'] ) : 0;
+			$user_membership = ( $member_id ) ? $ms->get_user_membership( $member_id ) : null;
+			$data = array();
+
+			if ( isset( $_POST['user_id'] ) ) {
+				$data['user_id'] = intval( $_POST['user_id'] );
+			}
+
+			if ( isset( $_POST['membership_id'] ) ) {
+				$data['membership_id'] = intval( $_POST['membership_id'] );
+			}
+
+			if ( isset( $_POST['membership_status'] ) ) {
+				$data['status'] = sanitize_text_field( $_POST['membership_status'] );
+			}
+
+			$date_regex = '/^[0-9]{4}-[0-9]{2}-[0-9]{2} [0-9]{2}:[0-9]{2}:[0-9]{2}$/';
+
+			if ( isset( $_POST['expiration'] ) ) {
+				if ( preg_match( $date_regex, $_POST['expiration'] ) ) {
+					$data['expiration'] = $_POST['expiration'];
+				} else {
+					$data['expiration'] = '0000-00-00 00:00:00';
+				}
+			}
+
+			if ( isset( $_POST['paused'] ) ) {
+				if ( preg_match( $date_regex, $_POST['paused'] ) ) {
+					$data['paused'] = $_POST['paused'];
+				} else {
+					$data['paused'] = '0000-00-00 00:00:00';
+				}
+			}
+
+			$data['ID'] = ( $user_membership ) ? $user_membership['ID'] : 0;
+			$data['ID'] = $ms->update_user_membership( $data );
+
+			if ( 'paused' == $data['status'] || 'expired' == $data['status'] ) {
+				$ms->pause_membership_entries( $data['user_id'] );
+			}
+
+			wp_redirect( admin_url( 'admin.php?page=ib_educator_members&edu-action=edit-member&id=' . intval( $member_id ) . '&edu-message=saved' ) );
+			exit;
+		}
+	}
+
+	/**
 	 * Edit payment gateway action.
 	 */
 	public static function edit_payment_gateway() {
-		if ( ! isset( $_POST['gateway_id'] ) ) return;
+		if ( ! isset( $_POST['gateway_id'] ) ) {
+			return;
+		}
 		
 		$gateway_id = sanitize_title( $_POST['gateway_id'] );
 
 		// Verify nonce.
 		check_admin_referer( 'ib_educator_payments_settings' );
 
+		// Get available gateways.
 		$gateways = IB_Educator_Main::get_gateways();
 
-		if ( ! isset( $gateways[ $gateway_id ] ) ) return;
+		// Does the requested gateway exist?
+		if ( ! isset( $gateways[ $gateway_id ] ) ) {
+			return;
+		}
 
 		// Capability check.
-		if ( ! current_user_can( 'manage_educator' ) ) return;
+		if ( ! current_user_can( 'manage_educator' ) ) {
+			return;
+		}
 
 		$saved = $gateways[ $gateway_id ]->save_admin_options();
 		$message = '';

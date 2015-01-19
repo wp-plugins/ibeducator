@@ -16,12 +16,12 @@ class IB_Educator {
 	 */
 	private function __construct() {
 		$tables = ib_edu_table_names();
-		$this->payments = $tables['payments'];
-		$this->entries = $tables['entries'];
+		$this->payments  = $tables['payments'];
+		$this->entries   = $tables['entries'];
 		$this->questions = $tables['questions'];
-		$this->choices = $tables['choices'];
-		$this->answers = $tables['answers'];
-		$this->grades = $tables['grades'];
+		$this->choices   = $tables['choices'];
+		$this->answers   = $tables['answers'];
+		$this->grades    = $tables['grades'];
 	}
 
 	/**
@@ -47,13 +47,13 @@ class IB_Educator {
 	public function get_access_status( $course_id, $user_id ) {
 		global $wpdb;
 		$status = '';
-		$sql = "SELECT ep.course_id, ep.user_id, ep.payment_status, ee.entry_status FROM {$this->payments} ep
-			LEFT JOIN {$this->entries} ee ON ee.payment_id=ep.ID
-			WHERE ep.course_id=%d AND ep.user_id=%d";
+		$sql = "SELECT ee.course_id, ee.user_id, ep.payment_status, ee.entry_status FROM {$this->entries} ee
+			LEFT JOIN {$this->payments} ep ON ep.ID=ee.payment_id
+			WHERE ee.course_id=%d AND ee.user_id=%d";
 		$results = $wpdb->get_results( $wpdb->prepare( $sql, $course_id, $user_id ) );
 		$has_complete = false;
 		$has_cancelled = false;
-
+		
 		if ( $results ) {
 			foreach ( $results as $result ) {
 				if ( 'complete' == $result->entry_status ) {
@@ -83,6 +83,7 @@ class IB_Educator {
 	/**
 	 * Determine if a user can pay for a given course.
 	 *
+	 * @deprecated 1.3.0
 	 * @param int $course_id
 	 * @param int $user_id
 	 * @return boolean
@@ -100,8 +101,10 @@ class IB_Educator {
 	public function add_payment( $data ) {
 		// Record payment.
 		$payment = IB_Educator_Payment::get_instance();
-		$payment->course_id = $data['course_id'];
+		if ( ! empty( $data['course_id'] ) ) $payment->course_id = $data['course_id'];
 		$payment->user_id = $data['user_id'];
+		if ( ! empty( $data['object_id'] ) ) $payment->object_id = $data['object_id'];
+		$payment->payment_type = $data['payment_type'];
 		$payment->payment_gateway = $data['payment_gateway'];
 		$payment->payment_status = $data['payment_status'];
 		$payment->amount = $data['amount'];
@@ -153,7 +156,7 @@ class IB_Educator {
 	 * Get entries.
 	 *
 	 * @param array $args
-	 * @return false|array of IB_Educator_Entry objects
+	 * @return array
 	 */
 	public function get_entries( $args ) {
 		global $wpdb;
@@ -209,7 +212,8 @@ class IB_Educator {
 		if ( $has_pagination ) {
 			return array(
 				'num_pages' => ceil( $num_rows / $args['per_page'] ),
-				'rows'  => $entries
+				'num_items' => $num_rows,
+				'rows'      => $entries,
 			);
 		}
 
@@ -219,8 +223,9 @@ class IB_Educator {
 	/**
 	 * Get entries count grouped by entry status.
 	 *
+	 * @deprecated 1.3.0
 	 * @param array $args
-	 * @return false|array
+	 * @return array
 	 */
 	public function get_entries_count( $args = array() ) {
 		global $wpdb;
@@ -250,10 +255,10 @@ class IB_Educator {
 	}
 
 	/**
-	 * Get student's courses.
+	 * Get the student's courses.
 	 *
 	 * @param int $user_id
-	 * @return false|array of WP_Post objects grouped by entry status
+	 * @return array
 	 */
 	public function get_student_courses( $user_id ) {
 		global $wpdb;
@@ -264,7 +269,7 @@ class IB_Educator {
 
 		$entries = $this->get_entries( array( 'user_id'  => $user_id ) );
 		
-		if ( $entries ) {
+		if ( ! empty( $entries ) ) {
 			$statuses = array();
 
 			foreach ( $entries as $row ) {
@@ -313,7 +318,7 @@ class IB_Educator {
 		$ids = array();
 		$payments = $this->get_payments( array( 'user_id' => $user_id, 'payment_status' => array( 'pending' ) ), OBJECT_K );
 
-		if ( $payments ) {
+		if ( ! empty( $payments ) ) {
 			$payment_ids = array();
 
 			foreach ( $payments as $payment ) {
@@ -388,7 +393,7 @@ class IB_Educator {
 	 * Get payments.
 	 *
 	 * @param array $args
-	 * @return false|array of IB_Educator_Payment objects
+	 * @return array
 	 */
 	public function get_payments( $args, $output_type = null ) {
 		global $wpdb;
@@ -399,7 +404,11 @@ class IB_Educator {
 
 		// Filter by payment_id.
 		if ( isset( $args['payment_id'] ) ) {
-			$sql .= ' AND ID=' . absint( $args['payment_id'] );
+			if ( is_array( $args['payment_id'] ) ) {
+				$sql .= ' AND ID IN (' . implode( ',', array_map( 'absint', $args['payment_id'] ) ) . ')';
+			} else {
+				$sql .= ' AND ID=' . absint( $args['payment_id'] );
+			}
 		}
 
 		// Filter by user_id.
@@ -410,6 +419,16 @@ class IB_Educator {
 		// Filter by course_id.
 		if ( isset( $args['course_id'] ) ) {
 			$sql .= ' AND course_id=' . absint( $args['course_id'] );
+		}
+
+		// Filter by payment_type.
+		if ( isset( $args['payment_type'] ) ) {
+			$sql .= " AND payment_type='" . esc_sql( $args['payment_type'] ) . "'";
+		}
+
+		// Filter by object_id.
+		if ( isset( $args['object_id'] ) ) {
+			$sql .= ' AND object_id=' . absint( $args['object_id'] );
 		}
 
 		// Filter by payment status.
@@ -440,7 +459,8 @@ class IB_Educator {
 		if ( $has_pagination ) {
 			return array(
 				'num_pages' => ceil( $num_rows / $args['per_page'] ),
-				'rows'      => $payments
+				'num_items' => $num_rows,
+				'rows'      => $payments,
 			);
 		}
 
@@ -449,6 +469,8 @@ class IB_Educator {
 
 	/**
 	 * Get payments count groupped by payment status.
+	 *
+	 * @deprecated 1.3.0
 	 */
 	public function get_payments_count() {
 		global $wpdb;
@@ -459,7 +481,7 @@ class IB_Educator {
 	 * Get courses of a lecturer.
 	 *
 	 * @param int $user_id
-	 * @return false|array of course_ids
+	 * @return array
 	 */
 	public function get_lecturer_courses( $user_id ) {
 		global $wpdb;

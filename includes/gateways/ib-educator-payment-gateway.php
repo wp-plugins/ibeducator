@@ -5,6 +5,7 @@ abstract class IB_Educator_Payment_Gateway {
 	protected $title = '';
 	protected $options = array();
 	protected $values = array();
+	protected $editable = true;
 
 	/**
 	 * Get gateway id.
@@ -35,6 +36,10 @@ abstract class IB_Educator_Payment_Gateway {
 
 	public function is_enabled() {
 		return $this->get_option( 'enabled' );
+	}
+
+	public function is_editable() {
+		return $this->editable;
 	}
 
 	/**
@@ -76,6 +81,10 @@ abstract class IB_Educator_Payment_Gateway {
 	 * Save gateway options.
 	 */
 	public function save_admin_options() {
+		if ( ! $this->is_editable() ) {
+			return false;
+		}
+
 		if ( ! count( $_POST ) ) {
 			return false;
 		}
@@ -110,6 +119,10 @@ abstract class IB_Educator_Payment_Gateway {
 	 * Output gateway options form.
 	 */
 	public function admin_options_form() {
+		if ( ! $this->is_editable() ) {
+			return;
+		}
+
 		require_once( IBEDUCATOR_PLUGIN_DIR . 'includes/ib-educator-form.php' );
 
 		foreach ( $this->options as $name => $data ) {
@@ -136,7 +149,7 @@ abstract class IB_Educator_Payment_Gateway {
 	 *
 	 * @param int $course_id
 	 */
-	public function process_payment( $course_id, $user_id ) {}
+	public function process_payment( $course_id, $user_id, $payment_type ) {}
 
 	/**
 	 * Get the url to the "thank you" page.

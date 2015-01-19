@@ -62,13 +62,18 @@
 
 /* Search form */
 .ib-edu-admin-search {
-	margin: 1em 0 .5em;
-	overflow: hidden;
+	margin: 0;
+}
+
+.ib-edu-admin-search:after {
+	clear: both;
+	content: '';
+	display: block;
 }
 
 .ib-edu-admin-search .block {
 	float: left;
-	margin: 0 .5em .5em 0;
+	margin: 0 15px 0 0;
 }
 
 .ib-edu-admin-search label,
@@ -187,12 +192,28 @@
 	margin-bottom: 6px;
 }
 
+/* Tablenav ---------------*/
+.ib-edu-tablenav {
+	margin: 6px 0 4px;
+}
+
+.ib-edu-tablenav.bottom {
+	margin-top: 8px;
+}
+
+.ib-edu-tablenav .num-items {
+	color: #777;
+	float: right;
+	font-style: italic;
+	line-height: 30px;
+}
+
 /* Pagination ---------------*/
 .ib-edu-pagination a,
 .ib-edu-pagination > span {
 	background-color: #e3e3e3;
 	display: inline-block;
-	margin: 10px 2px;
+	margin: 0 2px 4px;
 	padding: 3px 8px;
 	text-decoration: none;
 }

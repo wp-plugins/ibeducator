@@ -1,6 +1,9 @@
 <?php
 
 class IB_Educator_Admin_Meta {
+	/**
+	 * Initialize.
+	 */
 	public static function init() {
 		// Add meta boxes.
 		add_action( 'add_meta_boxes', array( __CLASS__, 'add_meta_boxes' ) );
@@ -10,6 +13,9 @@ class IB_Educator_Admin_Meta {
 
 		// Save course meta box.
 		add_action( 'save_post', array( __CLASS__, 'save_course_meta_box' ), 10, 3 );
+
+		// Save membership meta box.
+		add_action( 'save_post', array( __CLASS__, 'save_membership_meta_box' ), 10, 3 );
 	}
 
 	/**
@@ -31,6 +37,14 @@ class IB_Educator_Admin_Meta {
 			array( __CLASS__, 'lesson_meta_box' ),
 			'ib_educator_lesson'
 		);
+
+		// Membership meta box.
+		add_meta_box(
+			'ib_educator_membership',
+			__( 'Membership Settings', 'ibeducator' ),
+			array( __CLASS__, 'membership_meta_box' ),
+			'ib_edu_membership'
+		);
 	}
 
 	/**
@@ -39,35 +53,7 @@ class IB_Educator_Admin_Meta {
 	 * @param WP_Post $post
 	 */
 	public static function course_meta_box( $post ) {
-		wp_nonce_field( 'ib_educator_course_meta_box', 'ib_educator_course_meta_box_nonce' );
-
-		$price = ib_edu_get_course_price( $post->ID );
-		?>
-		<div class="ib-edu-field">
-			<div class="ib-edu-label"><label for="ib-educator-price"><?php _e( 'Price', 'ibeducator' ); ?></label></div>
-			<div class="ib-edu-control">
-				<input type="text" id="ib-educator-price" name="_ibedu_price" value="<?php echo esc_attr( $price ); ?>">
-			</div>
-		</div>
-
-		<div class="ib-edu-field">
-			<div class="ib-edu-label"><label for="ib-educator-difficulty"><?php _e( 'Difficulty', 'ibeducator' ); ?></label></div>
-			<div class="ib-edu-control">
-				<?php
-					$difficulty = get_post_meta( $post->ID, '_ib_educator_difficulty', true );
-					$difficulty_levels = ib_edu_get_difficulty_levels();
-				?>
-				<select id="ib-educator-difficulty" name="_ib_educator_difficulty">
-					<option value=""><?php _e( 'None', 'ibeducator' ); ?></option>
-					<?php
-						foreach ( $difficulty_levels as $key => $label ) {
-							echo '<option value="' . esc_attr( $key ) . '"' . ( $key == $difficulty ? ' selected="selected"' : '' ) . '>' . esc_html( $label ) . '</option>';
-						}
-					?>
-				</select>
-			</div>
-		</div>
-		<?php
+		include( IBEDUCATOR_PLUGIN_DIR . 'admin/meta-boxes/course.php' );
 	}
 
 	/**
@@ -76,25 +62,16 @@ class IB_Educator_Admin_Meta {
 	 * @param WP_Post $post
 	 */
 	public static function lesson_meta_box( $post ) {
-		wp_nonce_field( 'ib_educator_lesson_meta_box', 'ib_educator_lesson_meta_box_nonce' );
+		include( IBEDUCATOR_PLUGIN_DIR . 'admin/meta-boxes/lesson.php' );
+	}
 
-		$value = get_post_meta( $post->ID, '_ibedu_course', true );
-		$courses = get_posts( array( 'post_type' => 'ib_educator_course', 'posts_per_page' => -1 ) );
-		?>
-		<?php if ( ! empty( $courses ) ) : ?>
-		<div class="ib-edu-field">
-			<div class="ib-edu-label"><label for="ib-educator-course"><?php _e( 'Course', 'ibeducator' ); ?></label></div>
-			<div class="ib-edu-control">
-				<select id="ib-educator-course" name="_ibedu_course">
-					<option value=""><?php _e( 'Select Course', 'ibeducator' ); ?></option>
-					<?php foreach ( $courses as $post ) : ?>
-					<option value="<?php echo intval( $post->ID ); ?>"<?php if ( $value == $post->ID ) echo ' selected="selected"'; ?>><?php echo esc_html( $post->post_title ); ?></option>
-					<?php endforeach; ?>
-				</select>
-			</div>
-		</div>
-		<?php endif; ?>
-		<?php
+	/**
+	 * Output membership meta box.
+	 *
+	 * @param WP_Post $post
+	 */
+	public static function membership_meta_box( $post ) {
+		include( IBEDUCATOR_PLUGIN_DIR . 'admin/meta-boxes/membership.php' );
 	}
 
 	/**
@@ -151,5 +128,55 @@ class IB_Educator_Admin_Meta {
 
 		$value = ( isset( $_POST['_ibedu_course'] ) && is_numeric( $_POST['_ibedu_course'] ) ) ? $_POST['_ibedu_course'] : '';
 		update_post_meta( $post_id, '_ibedu_course', $value );
+	}
+
+	/**
+	 * Save membership meta box.
+	 *
+	 * @param int $post_id
+	 * @param WP_Post $post
+	 * @param boolean $update
+	 */
+	public static function save_membership_meta_box( $post_id, $post, $update ) {
+		if ( ! isset( $_POST['ib_edu_membership_nonce'] ) ) {
+			return;
+		}
+
+		if ( ! wp_verify_nonce( $_POST['ib_edu_membership_nonce'], 'ib_edu_membership' ) ) {
+			return;
+		}
+
+		if ( defined( 'DOING_AUTOSAVE' ) && DOING_AUTOSAVE ) {
+			return;
+		}
+
+		if ( 'ib_edu_membership' != get_post_type( $post_id ) || ! current_user_can( 'edit_ib_edu_membership', $post_id ) ) {
+			return;
+		}
+
+		$ms = IB_Educator_Memberships::get_instance();
+		$meta = $ms->get_membership_meta( $post_id );
+
+		// Price.
+		if ( isset( $_POST['_ib_educator_price'] ) ) {
+			$meta['price'] = (float) $_POST['_ib_educator_price'];
+		}
+
+		// Duration.
+		if ( isset( $_POST['_ib_educator_duration'] ) ) {
+			$meta['duration'] = intval( $_POST['_ib_educator_duration'] );
+		}
+
+		// Period.
+		if ( isset( $_POST['_ib_educator_period'] ) && array_key_exists( $_POST['_ib_educator_period'], $ms->get_periods() ) ) {
+			$meta['period'] = $_POST['_ib_educator_period'];
+		}
+
+		// Categories.
+		if ( isset( $_POST['_ib_educator_categories'] ) && is_array( $_POST['_ib_educator_categories'] ) ) {
+			$meta['categories'] = array_map( 'absint', $_POST['_ib_educator_categories'] );
+		}
+
+		update_post_meta( $post_id, '_ib_educator_membership', $meta );
 	}
 }

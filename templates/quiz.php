@@ -1,17 +1,19 @@
 <?php
-	$api = IB_Educator::get_instance();
+$api = IB_Educator::get_instance();
 
-	// Get entry data for the current student. Entry status must be "inprogress".
-	$entry = $api->get_entry( array(
-		'user_id'      => get_current_user_id(),
-		'course_id'    => ib_edu_get_course_id( get_the_ID() ),
-		'entry_status' => 'inprogress'
-	) );
+// Get entry data for the current student. Entry status must be "inprogress".
+$entry = $api->get_entry( array(
+	'user_id'      => get_current_user_id(),
+	'course_id'    => ib_edu_get_course_id( get_the_ID() ),
+	'entry_status' => 'inprogress'
+) );
 
-	if ( ! $entry ) return;
+if ( ! $entry ) {
+	return;
+}
 
-	$lesson_id = get_the_ID();
-	$questions = $api->get_questions( array( 'lesson_id' => $lesson_id ) );
+$lesson_id = get_the_ID();
+$questions = $api->get_questions( array( 'lesson_id' => $lesson_id ) );
 ?>
 
 <?php if ( $questions ) : ?>

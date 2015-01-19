@@ -1,10 +1,10 @@
-=== Plugin Name ===
+=== Educator WP ===
 Contributors: dmytro.d
 Donate link: http://incrediblebytes.com
 Tags: learning management system, lms, learning, online courses
 Requires at least: 4.0
-Tested up to: 4.0.1
-Stable tag: 1.2.0
+Tested up to: 4.1
+Stable tag: 1.3.0
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -45,6 +45,17 @@ Coming soon.
 5. **Pages** - Assign the pages that will be used by the plugin.
 
 == Changelog ==
+
+= 1.3.0 =
+* Added the memberships feature.
+* Now, an admin can create membership levels. A membership level gives the students access to courses from the categories specified in this membership level. A membership level can be purchased once, daily, monthly or yearly.
+* Admin UI improvements: payments and entries list pages.
+* The PayPal txn_id (the merchant's original transaction identification number) is now saved to the "payments" table. Please find it on the payment's edit screen.
+* Improved security and data sanitation.
+* Removed some old code and deprecated functions (since beta version 0.9.1).
+* Added a number of shortcodes: [memberships_page], [user_membership_page], [user_payments_page].
+* New filters.
+* Now, lessons are searchable by default.
 
 = 1.2.0 =
 * Improved student's courses page (added payment instructions, payment number and entry id).

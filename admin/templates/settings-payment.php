@@ -1,23 +1,25 @@
 <?php
-	// Get all gateway objects
-	$gateways = IB_Educator_Main::get_gateways();
-	$gateway_id = '';
-	
-	if ( isset( $_GET['gateway_id'] ) ) {
-		$gateway_id = $_GET['gateway_id'];
-	} elseif ( isset( $_POST['gateway_id'] ) ) {
-		$gateway_id = $_POST['gateway_id'];
-	}
+if ( ! defined( 'ABSPATH' ) ) exit;
 
-	if ( ! empty( $gateway_id ) && ! isset( $gateways[ $gateway_id ] ) ) {
-		return;
-	} elseif ( empty( $gateway_id ) ) {
-		reset( $gateways );
-		$gateway_id = $gateways[ key( $gateways ) ]->get_id();
-	}
+// Get all gateway objects
+$gateways = IB_Educator_Main::get_gateways();
+$gateway_id = '';
 
-	$gateway = $gateways[ $gateway_id ];
-	$message = isset( $_GET['edu-message'] ) ? $_GET['edu-message'] : '';
+if ( isset( $_GET['gateway_id'] ) ) {
+	$gateway_id = $_GET['gateway_id'];
+} elseif ( isset( $_POST['gateway_id'] ) ) {
+	$gateway_id = $_POST['gateway_id'];
+}
+
+if ( ! empty( $gateway_id ) && ! isset( $gateways[ $gateway_id ] ) ) {
+	return;
+} elseif ( empty( $gateway_id ) ) {
+	reset( $gateways );
+	$gateway_id = $gateways[ key( $gateways ) ]->get_id();
+}
+
+$gateway = $gateways[ $gateway_id ];
+$message = isset( $_GET['edu-message'] ) ? $_GET['edu-message'] : '';
 ?>
 
 <div class="wrap">
@@ -33,11 +35,16 @@
 	</div>
 	<?php endif; ?>
 
-	<?php IB_Educator_Admin::settings_tabs( 'payment' ); ?>
+	<?php self::settings_tabs( 'payment' ); ?>
 
 	<ul class="ib-edu-tabs">
 		<li class="title"><span><?php _e( 'Payment Gateways:', 'ibeducator' ); ?></span></li>
 		<?php foreach ( $gateways as $id => $obj ) : ?>
+			<?php
+				if ( ! $obj->is_editable() ) {
+					continue;
+				}
+			?>
 			<?php if ( $gateway_id == $id ) : ?>
 			<li class="active"><span><?php echo $obj->get_title(); ?></span></li>
 			<?php else : ?>

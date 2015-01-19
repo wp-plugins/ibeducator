@@ -39,7 +39,7 @@ class IB_Educator_Quiz_Admin {
 	 * Add meta box.
 	 */
 	public static function add_meta_boxes() {
-		// Quiz meta box
+		// Quiz meta box.
 		add_meta_box(
 			'ib_educator_quiz',
 			__( 'Quiz', 'ibeducator' ),

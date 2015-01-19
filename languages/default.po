@@ -1,0 +1,1290 @@
+msgid ""
+msgstr ""
+"Project-Id-Version: Educator WP\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2015-01-19 16:40-0500\n"
+"PO-Revision-Date: 2015-01-19 16:40-0500\n"
+"Last-Translator: Dima <contact@incrediblebytes.com>\n"
+"Language-Team: IncredibleBytes <contact@incrediblebytes.com>\n"
+"Language: en\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"X-Poedit-KeywordsList: __;_e;esc_html__;esc_html_e;_n:1,2;_x:1,2c;_ex:1,2c;"
+"_n_noop:1,2\n"
+"X-Poedit-Basepath: .\n"
+"Plural-Forms: nplurals=2; plural=n != 1;\n"
+"X-Poedit-SourceCharset: UTF-8\n"
+"X-Generator: Poedit 1.5.4\n"
+"X-Poedit-SearchPath-0: ..\n"
+
+#: ../admin/custom-post-columns.php:50 ../admin/meta-boxes/lesson.php:9
+#: ../admin/templates/edit-entry.php:107
+#: ../admin/templates/edit-payment.php:123 ../admin/templates/entries.php:81
+#: ../admin/templates/entry-progress.php:50
+#: ../includes/ib-educator-main.php:129
+#: ../includes/objects/ib-educator-payment.php:56
+#: ../templates/shortcode-payment.php:60
+#: ../templates/shortcode-payment.php:252
+#: ../templates/shortcode-student-courses.php:29
+#: ../templates/shortcode-student-courses.php:77
+#: ../templates/shortcode-student-courses.php:104
+#: ../templates/shortcode-student-courses.php:130
+msgid "Course"
+msgstr ""
+
+#: ../admin/custom-post-columns.php:94
+msgid "All courses"
+msgstr ""
+
+#: ../admin/ib-educator-admin-actions.php:223
+#: ../admin/meta-boxes/course.php:21 ../admin/templates/members.php:112
+#: ../includes/gateways/paypal/ib-educator-gateway-paypal.php:373
+#: ../templates/shortcode-user-membership.php:88
+msgid "None"
+msgstr ""
+
+#: ../admin/ib-educator-admin-meta.php:28
+msgid "Course Settings"
+msgstr ""
+
+#: ../admin/ib-educator-admin-meta.php:36
+msgid "Lesson Settings"
+msgstr ""
+
+#: ../admin/ib-educator-admin-meta.php:44
+msgid "Membership Settings"
+msgstr ""
+
+#: ../admin/ib-educator-admin-settings.php:19
+msgid "General"
+msgstr ""
+
+#: ../admin/ib-educator-admin-settings.php:20
+msgid "Payment Gateways"
+msgstr ""
+
+#: ../admin/ib-educator-admin-settings.php:21
+#: ../templates/shortcode-payment.php:238
+msgid "Email"
+msgstr ""
+
+#: ../admin/ib-educator-admin-settings.php:22
+#: ../admin/ib-educator-admin-settings.php:115
+msgid "Memberships"
+msgstr ""
+
+#: ../admin/ib-educator-admin-settings.php:66
+msgid "Pages"
+msgstr ""
+
+#: ../admin/ib-educator-admin-settings.php:83
+msgid "Student's Courses"
+msgstr ""
+
+#: ../admin/ib-educator-admin-settings.php:91
+#, php-format
+msgid ""
+"This page outputs the student's pending, in progress and complete courses. "
+"Add the following shortcode to this page: %s"
+msgstr ""
+
+#: ../admin/ib-educator-admin-settings.php:99
+#: ../includes/objects/ib-educator-entry.php:54
+#: ../templates/shortcode-payment.php:35
+msgid "Payment"
+msgstr ""
+
+#: ../admin/ib-educator-admin-settings.php:107
+#, php-format
+msgid ""
+"This page outputs the payment details of the course. Add the following "
+"shortcode to this page: %s"
+msgstr ""
+
+#: ../admin/ib-educator-admin-settings.php:123
+#, php-format
+msgid "This page outputs all memberships. Shortcode: %s"
+msgstr ""
+
+#: ../admin/ib-educator-admin-settings.php:131
+msgid "User's Membership"
+msgstr ""
+
+#: ../admin/ib-educator-admin-settings.php:139
+#, php-format
+msgid ""
+"This page outputs the membership settings for the current user. Shortcode: %s"
+msgstr ""
+
+#: ../admin/ib-educator-admin-settings.php:147
+msgid "User's Payments"
+msgstr ""
+
+#: ../admin/ib-educator-admin-settings.php:155
+#, php-format
+msgid "This page outputs the user's payments. Shortcode: %s"
+msgstr ""
+
+#: ../admin/ib-educator-admin-settings.php:162
+#: ../admin/ib-educator-admin-settings.php:170
+#: ../admin/templates/edit-payment.php:222
+msgid "Currency"
+msgstr ""
+
+#: ../admin/ib-educator-admin-settings.php:184
+msgid "Currency Position"
+msgstr ""
+
+#: ../admin/ib-educator-admin-settings.php:192
+msgid "Before"
+msgstr ""
+
+#: ../admin/ib-educator-admin-settings.php:193
+msgid "After"
+msgstr ""
+
+#: ../admin/ib-educator-admin-settings.php:201
+msgid "Decimal Point Separator"
+msgstr ""
+
+#: ../admin/ib-educator-admin-settings.php:216
+msgid "Thousands Separator"
+msgstr ""
+
+#: ../admin/ib-educator-admin-settings.php:238
+msgid "Email Settings"
+msgstr ""
+
+#: ../admin/ib-educator-admin-settings.php:246
+msgid "From Name"
+msgstr ""
+
+#: ../admin/ib-educator-admin-settings.php:253
+msgid "The name email notifications are said to come from."
+msgstr ""
+
+#: ../admin/ib-educator-admin-settings.php:261
+msgid "From Email"
+msgstr ""
+
+#: ../admin/ib-educator-admin-settings.php:268
+msgid "Email to send notifications from."
+msgstr ""
+
+#: ../admin/ib-educator-admin-settings.php:276
+msgid "Email Templates"
+msgstr ""
+
+#: ../admin/ib-educator-admin-settings.php:284
+msgid "Student registered subject"
+msgstr ""
+
+#: ../admin/ib-educator-admin-settings.php:291
+#, php-format
+msgid "Subject of the student registered notification email. Placeholders: %s"
+msgstr ""
+
+#: ../admin/ib-educator-admin-settings.php:298
+msgid "Student registered template"
+msgstr ""
+
+#: ../admin/ib-educator-admin-settings.php:305
+#: ../admin/ib-educator-admin-settings.php:333
+#: ../admin/ib-educator-admin-settings.php:360
+#: ../admin/ib-educator-admin-settings.php:387
+#, php-format
+msgid "Placeholders: %s"
+msgstr ""
+
+#: ../admin/ib-educator-admin-settings.php:312
+msgid "Quiz grade subject"
+msgstr ""
+
+#: ../admin/ib-educator-admin-settings.php:319
+msgid "Subject of the quiz grade email."
+msgstr ""
+
+#: ../admin/ib-educator-admin-settings.php:326
+msgid "Quiz grade template"
+msgstr ""
+
+#: ../admin/ib-educator-admin-settings.php:340
+msgid "Membership registration subject"
+msgstr ""
+
+#: ../admin/ib-educator-admin-settings.php:353
+msgid "Membership registration template"
+msgstr ""
+
+#: ../admin/ib-educator-admin-settings.php:367
+msgid "Membership renew subject"
+msgstr ""
+
+#: ../admin/ib-educator-admin-settings.php:380
+msgid "Membership renew template"
+msgstr ""
+
+#: ../admin/ib-educator-admin-settings.php:425
+msgid "Memberships Settings"
+msgstr ""
+
+#: ../admin/ib-educator-admin-settings.php:449
+msgid ""
+"Send an email notification to a user X days before his/her membership expires"
+msgstr ""
+
+#: ../admin/ib-educator-admin-settings.php:479
+msgid "Courses Archive"
+msgstr ""
+
+#: ../admin/ib-educator-admin-settings.php:670
+#: ../admin/templates/edit-payment.php:186
+msgid "Select"
+msgstr ""
+
+#: ../admin/ib-educator-admin.php:49 ../admin/ib-educator-admin.php:50
+msgid "Educator"
+msgstr ""
+
+#: ../admin/ib-educator-admin.php:59 ../admin/templates/settings-email.php:4
+#: ../admin/templates/settings-general.php:4
+#: ../admin/templates/settings-memberships.php:4
+#: ../admin/templates/settings-payment.php:26
+msgid "Educator Settings"
+msgstr ""
+
+#: ../admin/ib-educator-admin.php:60
+msgid "Settings"
+msgstr ""
+
+#: ../admin/ib-educator-admin.php:67 ../admin/templates/payments.php:34
+msgid "Educator Payments"
+msgstr ""
+
+#: ../admin/ib-educator-admin.php:68 ../admin/templates/edit-entry.php:59
+#: ../admin/templates/edit-member.php:141
+msgid "Payments"
+msgstr ""
+
+#: ../admin/ib-educator-admin.php:77 ../admin/ib-educator-admin.php:85
+#: ../admin/templates/entries.php:39
+msgid "Educator Entries"
+msgstr ""
+
+#: ../admin/ib-educator-admin.php:78 ../admin/ib-educator-admin.php:86
+msgid "Entries"
+msgstr ""
+
+#: ../admin/ib-educator-admin.php:95 ../admin/templates/members.php:28
+msgid "Educator Members"
+msgstr ""
+
+#: ../admin/ib-educator-admin.php:96
+msgid "Members"
+msgstr ""
+
+#: ../admin/ib-educator-quiz-admin.php:33 ../admin/templates/entries.php:183
+#: ../admin/templates/payments.php:189
+msgid "Are you sure you want to delete this item?"
+msgstr ""
+
+#: ../admin/ib-educator-quiz-admin.php:45 ../templates/content-lesson.php:12
+#: ../templates/quiz.php:68
+msgid "Quiz"
+msgstr ""
+
+#: ../admin/meta-boxes/course.php:7 ../admin/meta-boxes/membership.php:18
+#: ../includes/ib-educator-memberships.php:782
+#: ../templates/shortcode-payment.php:86
+#: ../templates/shortcode-payment.php:281
+msgid "Price"
+msgstr ""
+
+#: ../admin/meta-boxes/course.php:14
+msgid "Difficulty"
+msgstr ""
+
+#: ../admin/meta-boxes/lesson.php:12
+msgid "Select Course"
+msgstr ""
+
+#: ../admin/meta-boxes/membership.php:28
+msgid "Duration"
+msgstr ""
+
+#: ../admin/meta-boxes/membership.php:46
+msgid "Categories"
+msgstr ""
+
+#: ../admin/meta-boxes/membership.php:51
+msgid "Select Categories"
+msgstr ""
+
+#: ../admin/meta-boxes/quiz.php:10
+#, php-format
+msgid "Add %s question."
+msgstr ""
+
+#: ../admin/meta-boxes/quiz.php:12
+msgid "Multiple Choice"
+msgstr ""
+
+#: ../admin/meta-boxes/quiz.php:13
+msgid "Written Answer"
+msgstr ""
+
+#: ../admin/meta-boxes/quiz.php:17
+msgid "Go"
+msgstr ""
+
+#: ../admin/meta-boxes/quiz.php:41 ../admin/meta-boxes/quiz.php:75
+#: ../admin/templates/entry-progress.php:79
+msgid "Question"
+msgstr ""
+
+#: ../admin/meta-boxes/quiz.php:45
+msgid "Answers"
+msgstr ""
+
+#: ../admin/meta-boxes/quiz.php:46
+msgid "No answers yet."
+msgstr ""
+
+#: ../admin/meta-boxes/quiz.php:51 ../admin/templates/entry-progress.php:78
+msgid "Correct?"
+msgstr ""
+
+#: ../admin/meta-boxes/quiz.php:52
+msgid "Answer"
+msgstr ""
+
+#: ../admin/meta-boxes/quiz.php:60 ../admin/meta-boxes/quiz.php:79
+msgid "Save Question"
+msgstr ""
+
+#: ../admin/meta-boxes/quiz.php:61
+msgid "Add Answer"
+msgstr ""
+
+#: ../admin/meta-boxes/quiz.php:62 ../admin/meta-boxes/quiz.php:80
+#: ../admin/templates/entries.php:123 ../admin/templates/payments.php:139
+msgid "Delete"
+msgstr ""
+
+#: ../admin/templates/edit-entry.php:17 ../admin/templates/edit-member.php:5
+#: ../admin/templates/edit-payment.php:5 ../admin/templates/entries.php:33
+#: ../admin/templates/entry-progress.php:14 ../admin/templates/members.php:5
+#: ../admin/templates/payments.php:5
+msgid "Access denied"
+msgstr ""
+
+#: ../admin/templates/edit-entry.php:34
+msgid "Edit Entry"
+msgstr ""
+
+#: ../admin/templates/edit-entry.php:36
+msgid "Add Entry"
+msgstr ""
+
+#: ../admin/templates/edit-entry.php:42
+msgid "Entry saved."
+msgstr ""
+
+#: ../admin/templates/edit-entry.php:52
+msgid "Payment ID"
+msgstr ""
+
+#: ../admin/templates/edit-entry.php:57
+#, php-format
+msgid "Please find payment ID on %s page."
+msgstr ""
+
+#: ../admin/templates/edit-entry.php:70
+#: ../admin/templates/edit-payment.php:142
+#: ../includes/objects/ib-educator-entry.php:55
+#: ../includes/objects/ib-educator-payment.php:57
+#: ../templates/shortcode-payment.php:75
+#: ../templates/shortcode-payment.php:268
+msgid "Membership"
+msgstr ""
+
+#: ../admin/templates/edit-entry.php:73
+#: ../admin/templates/edit-payment.php:146
+msgid "Select Membership"
+msgstr ""
+
+#: ../admin/templates/edit-entry.php:88
+#: ../admin/templates/edit-payment.php:113
+#: ../admin/templates/entry-progress.php:40
+#: ../includes/ib-educator-install.php:231
+msgid "Student"
+msgstr ""
+
+#: ../admin/templates/edit-entry.php:121 ../admin/templates/entries.php:84
+#: ../admin/templates/entry-progress.php:147
+#: ../templates/shortcode-student-courses.php:104
+msgid "Grade"
+msgstr ""
+
+#: ../admin/templates/edit-entry.php:124
+msgid "A number between 0 and 100."
+msgstr ""
+
+#: ../admin/templates/edit-entry.php:130
+msgid "Origin"
+msgstr ""
+
+#: ../admin/templates/edit-entry.php:142 ../admin/templates/edit-member.php:98
+#: ../admin/templates/edit-payment.php:240 ../admin/templates/entries.php:53
+#: ../admin/templates/entries.php:83 ../admin/templates/members.php:60
+#: ../admin/templates/payments.php:61 ../admin/templates/payments.php:95
+#: ../templates/shortcode-user-membership.php:51
+msgid "Status"
+msgstr ""
+
+#: ../admin/templates/edit-entry.php:153 ../admin/templates/entries.php:85
+#: ../admin/templates/payments.php:96 ../templates/shortcode-payment.php:40
+#: ../templates/shortcode-user-payments.php:27
+msgid "Date"
+msgstr ""
+
+#: ../admin/templates/edit-entry.php:156
+msgid "Date format: yyyy-mm-dd hh:mm:ss"
+msgstr ""
+
+#: ../admin/templates/edit-member.php:37
+msgid "Edit Member"
+msgstr ""
+
+#: ../admin/templates/edit-member.php:39
+msgid "Add Member"
+msgstr ""
+
+#: ../admin/templates/edit-member.php:45
+msgid "Member updated."
+msgstr ""
+
+#: ../admin/templates/edit-member.php:64
+msgid "Member"
+msgstr ""
+
+#: ../admin/templates/edit-member.php:77 ../admin/templates/members.php:59
+#: ../includes/ib-educator-main.php:182
+#: ../templates/shortcode-user-membership.php:35
+msgid "Membership Level"
+msgstr ""
+
+#: ../admin/templates/edit-member.php:113 ../admin/templates/members.php:61
+#: ../templates/shortcode-user-membership.php:84
+msgid "Expiration Date"
+msgstr ""
+
+#: ../admin/templates/edit-member.php:117
+msgid "Enter the date like yyyy-mm-dd hh:mm:ss"
+msgstr ""
+
+#: ../admin/templates/edit-payment.php:36
+msgid "Edit Payment"
+msgstr ""
+
+#: ../admin/templates/edit-payment.php:38
+msgid "Add Payment"
+msgstr ""
+
+#: ../admin/templates/edit-payment.php:51
+msgid "Please select a student"
+msgstr ""
+
+#: ../admin/templates/edit-payment.php:55
+msgid "Please select a course"
+msgstr ""
+
+#: ../admin/templates/edit-payment.php:66
+msgid "Payment saved."
+msgstr ""
+
+#: ../admin/templates/edit-payment.php:75 ../admin/templates/payments.php:48
+#: ../admin/templates/payments.php:91
+msgid "Payment Type"
+msgstr ""
+
+#: ../admin/templates/edit-payment.php:86
+#: ../templates/shortcode-student-courses.php:77
+#: ../templates/shortcode-student-courses.php:104
+#: ../templates/shortcode-student-courses.php:130
+msgid "Entry ID"
+msgstr ""
+
+#: ../admin/templates/edit-payment.php:92
+msgid "This payment is not connected to any entry."
+msgstr ""
+
+#: ../admin/templates/edit-payment.php:97
+msgid "Create an entry for this student"
+msgstr ""
+
+#: ../admin/templates/edit-payment.php:162
+msgid "Update membership for this student"
+msgstr ""
+
+#: ../admin/templates/edit-payment.php:164
+msgid "Setup membership for this student"
+msgstr ""
+
+#: ../admin/templates/edit-payment.php:173
+msgid "Switched from:"
+msgstr ""
+
+#: ../admin/templates/edit-payment.php:183
+#: ../templates/shortcode-payment.php:322
+msgid "Payment Method"
+msgstr ""
+
+#: ../admin/templates/edit-payment.php:201 ../admin/templates/payments.php:93
+#: ../templates/shortcode-user-payments.php:29
+msgid "Amount"
+msgstr ""
+
+#: ../admin/templates/edit-payment.php:207
+msgid ""
+"A number with a maximum of 2 figures after the decimal point (for example, "
+"9.99)."
+msgstr ""
+
+#: ../admin/templates/edit-payment.php:212
+msgid "Transaction ID"
+msgstr ""
+
+#: ../admin/templates/edit-payment.php:225
+msgid "Select Currency"
+msgstr ""
+
+#: ../admin/templates/entries.php:40 ../admin/templates/members.php:29
+#: ../admin/templates/payments.php:35
+msgid "Add New"
+msgstr ""
+
+#: ../admin/templates/entries.php:48 ../admin/templates/payments.php:43
+msgctxt "ID of an item"
+msgid "ID"
+msgstr ""
+
+#: ../admin/templates/entries.php:55 ../admin/templates/payments.php:50
+#: ../admin/templates/payments.php:63
+msgid "All"
+msgstr ""
+
+#: ../admin/templates/entries.php:66 ../admin/templates/members.php:42
+#: ../admin/templates/payments.php:74
+msgid "Search"
+msgstr ""
+
+#: ../admin/templates/entries.php:71 ../admin/templates/entries.php:154
+#: ../admin/templates/members.php:47 ../admin/templates/members.php:139
+#: ../admin/templates/payments.php:79 ../admin/templates/payments.php:172
+#, php-format
+msgid "%d item"
+msgid_plural "%d items"
+msgstr[0] ""
+msgstr[1] ""
+
+#: ../admin/templates/entries.php:80 ../admin/templates/payments.php:89
+#: ../templates/shortcode-user-payments.php:26
+msgid "ID"
+msgstr ""
+
+#: ../admin/templates/entries.php:82 ../admin/templates/members.php:57
+#: ../admin/templates/payments.php:92 ../templates/shortcode-payment.php:231
+msgid "Username"
+msgstr ""
+
+#: ../admin/templates/entries.php:114
+#: ../admin/templates/entry-progress.php:180 ../admin/templates/members.php:85
+#: ../admin/templates/payments.php:131
+msgid "Edit"
+msgstr ""
+
+#: ../admin/templates/entries.php:118 ../admin/templates/entry-progress.php:35
+msgid "Progress"
+msgstr ""
+
+#: ../admin/templates/entries.php:162
+msgid "No entries found."
+msgstr ""
+
+#: ../admin/templates/entries.php:169
+msgid "No data available."
+msgstr ""
+
+#: ../admin/templates/entry-progress.php:38
+msgid "Entry Details"
+msgstr ""
+
+#: ../admin/templates/entry-progress.php:63
+msgid "Quizzes"
+msgstr ""
+
+#: ../admin/templates/entry-progress.php:112
+msgid "Correct"
+msgstr ""
+
+#: ../admin/templates/entry-progress.php:114
+msgid "Wrong"
+msgstr ""
+
+#: ../admin/templates/entry-progress.php:117
+#: ../admin/templates/entry-progress.php:123
+msgid "Not answered yet."
+msgstr ""
+
+#: ../admin/templates/entry-progress.php:151
+msgid "Please enter a number between 0 and 100."
+msgstr ""
+
+#: ../admin/templates/entry-progress.php:153
+msgid "The student will receive a notification email."
+msgstr ""
+
+#: ../admin/templates/entry-progress.php:159
+msgid "Save Grade"
+msgstr ""
+
+#: ../admin/templates/entry-progress.php:168
+msgid "Summary"
+msgstr ""
+
+#: ../admin/templates/entry-progress.php:170
+msgid "Average Grade"
+msgstr ""
+
+#: ../admin/templates/entry-progress.php:176
+msgid "Final Grade"
+msgstr ""
+
+#: ../admin/templates/members.php:37
+msgid "Search Members"
+msgstr ""
+
+#: ../admin/templates/members.php:58
+msgid "Name"
+msgstr ""
+
+#: ../admin/templates/members.php:147
+msgid "No members found."
+msgstr ""
+
+#: ../admin/templates/payments.php:90
+msgid "Item"
+msgstr ""
+
+#: ../admin/templates/payments.php:94
+msgid "Method"
+msgstr ""
+
+#: ../admin/templates/payments.php:180
+#: ../templates/shortcode-user-payments.php:68
+msgid "No payments found."
+msgstr ""
+
+#: ../admin/templates/settings-payment.php:30
+msgid "Payment options updated."
+msgstr ""
+
+#: ../admin/templates/settings-payment.php:34
+msgid "Update failed or options values have not changed."
+msgstr ""
+
+#: ../admin/templates/settings-payment.php:41
+msgid "Payment Gateways:"
+msgstr ""
+
+#: ../includes/functions.php:115
+msgid "Australian Dollars"
+msgstr ""
+
+#: ../includes/functions.php:116
+msgid "Brazilian Real"
+msgstr ""
+
+#: ../includes/functions.php:117
+msgid "Canadian Dollars"
+msgstr ""
+
+#: ../includes/functions.php:118
+msgid "Chinese Yuan"
+msgstr ""
+
+#: ../includes/functions.php:119
+msgid "Czech Koruna"
+msgstr ""
+
+#: ../includes/functions.php:120
+msgid "Danish Krone"
+msgstr ""
+
+#: ../includes/functions.php:121
+msgid "Euros"
+msgstr ""
+
+#: ../includes/functions.php:122
+msgid "Hong Kong Dollar"
+msgstr ""
+
+#: ../includes/functions.php:123
+msgid "Hungarian Forint"
+msgstr ""
+
+#: ../includes/functions.php:124
+msgid "Indian Rupee"
+msgstr ""
+
+#: ../includes/functions.php:125
+msgid "Iranian Rial"
+msgstr ""
+
+#: ../includes/functions.php:126
+msgid "Israeli Shekel"
+msgstr ""
+
+#: ../includes/functions.php:127
+msgid "Japanese Yen"
+msgstr ""
+
+#: ../includes/functions.php:128
+msgid "Malaysian Ringgits"
+msgstr ""
+
+#: ../includes/functions.php:129
+msgid "Mexican Peso"
+msgstr ""
+
+#: ../includes/functions.php:130
+msgid "New Zealand Dollar"
+msgstr ""
+
+#: ../includes/functions.php:131
+msgid "Norwegian Krone"
+msgstr ""
+
+#: ../includes/functions.php:132
+msgid "Philippine Pesos"
+msgstr ""
+
+#: ../includes/functions.php:133
+msgid "Polish Zloty"
+msgstr ""
+
+#: ../includes/functions.php:134
+msgid "Pounds Sterling"
+msgstr ""
+
+#: ../includes/functions.php:135
+msgid "Russian Rubles"
+msgstr ""
+
+#: ../includes/functions.php:136
+msgid "Singapore Dollar"
+msgstr ""
+
+#: ../includes/functions.php:137
+msgid "Swedish Krona"
+msgstr ""
+
+#: ../includes/functions.php:138
+msgid "Swiss Franc"
+msgstr ""
+
+#: ../includes/functions.php:139
+msgid "Taiwan New Dollars"
+msgstr ""
+
+#: ../includes/functions.php:140
+msgid "Thai Baht"
+msgstr ""
+
+#: ../includes/functions.php:141
+msgid "Turkish Lira"
+msgstr ""
+
+#: ../includes/functions.php:142
+msgid "US Dollars"
+msgstr ""
+
+#: ../includes/functions.php:143
+msgid "Ukrainian Hryvnia"
+msgstr ""
+
+#: ../includes/functions.php:328
+msgid "Your registration is pending."
+msgstr ""
+
+#: ../includes/functions.php:332
+msgid "The payment for this course is pending."
+msgstr ""
+
+#: ../includes/functions.php:336 ../templates/content-single-course.php:21
+msgid "You are registered for this course."
+msgstr ""
+
+#: ../includes/functions.php:407
+msgid "Beginner"
+msgstr ""
+
+#: ../includes/functions.php:408
+msgid "Intermediate"
+msgstr ""
+
+#: ../includes/functions.php:409
+msgid "Advanced"
+msgstr ""
+
+#: ../includes/functions.php:527
+msgid "Join"
+msgstr ""
+
+#: ../includes/functions.php:531
+#: ../includes/gateways/free/ib-educator-gateway-free.php:9
+msgid "Free"
+msgstr ""
+
+#: ../includes/functions.php:534
+msgid "Register"
+msgstr ""
+
+#: ../includes/functions.php:551
+#, php-format
+msgid ""
+"%1$s is <strong>deprecated</strong> since Educator WP version %2$s! Use %3$s "
+"instead."
+msgstr ""
+
+#: ../includes/functions.php:553
+#, php-format
+msgid ""
+"%1$s is <strong>deprecated</strong> since Educator WP version %2$s with no "
+"alternative available."
+msgstr ""
+
+#: ../includes/ib-educator-install.php:226
+msgid "Lecturer"
+msgstr ""
+
+#: ../includes/ib-educator-install.php:339
+#, php-format
+msgid "Registration for %s is complete"
+msgstr ""
+
+#: ../includes/ib-educator-install.php:355
+msgid "You've got a grade"
+msgstr ""
+
+#: ../includes/ib-educator-install.php:369
+msgid "You've been registered for a membership"
+msgstr ""
+
+#: ../includes/ib-educator-install.php:387
+msgid "Your membership expires"
+msgstr ""
+
+#: ../includes/ib-educator-main.php:128
+#: ../templates/archive-ib_educator_course.php:14
+msgid "Courses"
+msgstr ""
+
+#: ../includes/ib-educator-main.php:154
+#: ../templates/archive-ib_educator_lesson.php:14
+#: ../templates/content-single-course.php:48
+msgid "Lessons"
+msgstr ""
+
+#: ../includes/ib-educator-main.php:155
+msgid "Lesson"
+msgstr ""
+
+#: ../includes/ib-educator-main.php:179 ../includes/ib-educator-main.php:181
+msgid "Membership Levels"
+msgstr ""
+
+#: ../includes/ib-educator-main.php:183
+msgid "Add New Membership Level"
+msgstr ""
+
+#: ../includes/ib-educator-main.php:184
+msgid "Edit Membership Level"
+msgstr ""
+
+#: ../includes/ib-educator-main.php:185
+msgid "New Membership Level"
+msgstr ""
+
+#: ../includes/ib-educator-main.php:186
+msgid "View Membership Level"
+msgstr ""
+
+#: ../includes/ib-educator-main.php:187
+msgid "Search Membership Levels"
+msgstr ""
+
+#: ../includes/ib-educator-main.php:188
+msgid "No membership levels found"
+msgstr ""
+
+#: ../includes/ib-educator-main.php:189
+msgid "No membership levels found in Trash"
+msgstr ""
+
+#: ../includes/ib-educator-main.php:211
+msgid "Course Categories"
+msgstr ""
+
+#: ../includes/ib-educator-main.php:423
+msgid "Difficulty:"
+msgstr ""
+
+#: ../includes/ib-educator-main.php:427
+msgid ", "
+msgstr ""
+
+#: ../includes/ib-educator-main.php:430
+msgid "Categories:"
+msgstr ""
+
+#: ../includes/ib-educator-memberships.php:49
+msgid "Onetime Fee"
+msgstr ""
+
+#: ../includes/ib-educator-memberships.php:50
+msgid "Day(s)"
+msgstr ""
+
+#: ../includes/ib-educator-memberships.php:51
+msgid "Month(s)"
+msgstr ""
+
+#: ../includes/ib-educator-memberships.php:52
+msgid "Year(s)"
+msgstr ""
+
+#: ../includes/ib-educator-memberships.php:63
+msgid "Expired"
+msgstr ""
+
+#: ../includes/ib-educator-memberships.php:65
+msgid "Active"
+msgstr ""
+
+#: ../includes/ib-educator-memberships.php:135
+#, php-format
+msgid "per day"
+msgid_plural "per %d days"
+msgstr[0] ""
+msgstr[1] ""
+
+#: ../includes/ib-educator-memberships.php:139
+#, php-format
+msgid "per month"
+msgid_plural "per %d months"
+msgstr[0] ""
+msgstr[1] ""
+
+#: ../includes/ib-educator-memberships.php:143
+#, php-format
+msgid "per year"
+msgid_plural "per %d years"
+msgstr[0] ""
+msgstr[1] ""
+
+#: ../includes/ib-educator-memberships.php:585
+#: ../templates/content-membership.php:23
+msgid "Purchase"
+msgstr ""
+
+#: ../includes/gateways/ib-educator-payment-gateway.php:53
+msgid "Enabled"
+msgstr ""
+
+#: ../includes/gateways/ib-educator-payment-gateway.php:58
+msgid "Default"
+msgstr ""
+
+#: ../includes/gateways/bank-transfer/ib-educator-gateway-bank-transfer.php:9
+msgid "Bank Transfer"
+msgstr ""
+
+#: ../includes/gateways/bank-transfer/ib-educator-gateway-bank-transfer.php:15
+#: ../includes/gateways/cash/ib-educator-gateway-cash.php:15
+#: ../includes/gateways/check/ib-educator-gateway-check.php:15
+msgid "Instructions for a student"
+msgstr ""
+
+#: ../includes/gateways/bank-transfer/ib-educator-gateway-bank-transfer.php:92
+#: ../includes/gateways/cash/ib-educator-gateway-cash.php:92
+msgid "You've paid for this course already."
+msgstr ""
+
+#: ../includes/gateways/bank-transfer/ib-educator-gateway-bank-transfer.php:97
+#: ../includes/gateways/cash/ib-educator-gateway-cash.php:97
+#: ../includes/gateways/check/ib-educator-gateway-check.php:92
+msgid "Payment Instructions"
+msgstr ""
+
+#: ../includes/gateways/cash/ib-educator-gateway-cash.php:9
+msgid "Cash"
+msgstr ""
+
+#: ../includes/gateways/check/ib-educator-gateway-check.php:9
+msgid "Check"
+msgstr ""
+
+#: ../includes/gateways/paypal/ib-educator-gateway-paypal.php:15
+msgid "PayPal"
+msgstr ""
+
+#: ../includes/gateways/paypal/ib-educator-gateway-paypal.php:22
+msgid "Business Email"
+msgstr ""
+
+#: ../includes/gateways/paypal/ib-educator-gateway-paypal.php:28
+msgid "Test"
+msgstr ""
+
+#: ../includes/gateways/paypal/ib-educator-gateway-paypal.php:29
+msgid ""
+"If checked, Educator will use PayPal sandbox URL and PayPal payments will be "
+"in testing mode."
+msgstr ""
+
+#: ../includes/gateways/paypal/ib-educator-gateway-paypal.php:35
+msgid "Thank you message"
+msgstr ""
+
+#: ../includes/gateways/paypal/ib-educator-gateway-paypal.php:162
+#: ../templates/shortcode-payment.php:351
+msgid "Continue"
+msgstr ""
+
+#: ../includes/gateways/paypal/ib-educator-gateway-paypal.php:164
+msgid "Redirecting to PayPal..."
+msgstr ""
+
+#: ../includes/objects/ib-educator-entry.php:39
+#: ../includes/objects/ib-educator-payment.php:41
+msgid "Pending"
+msgstr ""
+
+#: ../includes/objects/ib-educator-entry.php:40
+msgid "In progress"
+msgstr ""
+
+#: ../includes/objects/ib-educator-entry.php:41
+#: ../includes/objects/ib-educator-payment.php:42
+#: ../templates/shortcode-student-courses.php:102
+msgid "Complete"
+msgstr ""
+
+#: ../includes/objects/ib-educator-entry.php:42
+#: ../includes/objects/ib-educator-payment.php:44
+msgid "Cancelled"
+msgstr ""
+
+#: ../includes/objects/ib-educator-entry.php:43
+#: ../templates/shortcode-student-courses.php:128
+msgid "Paused"
+msgstr ""
+
+#: ../includes/objects/ib-educator-payment.php:43
+msgid "Failed"
+msgstr ""
+
+#: ../templates/content-single-course.php:25
+msgid "Your registration for this course is pending."
+msgstr ""
+
+#: ../templates/content-single-course.php:29
+msgid "Your payment for this course is pending."
+msgstr ""
+
+#: ../templates/content-single-lesson.php:14
+#, php-format
+msgid "Please register for the %s to view this lesson."
+msgstr ""
+
+#: ../templates/content-single-lesson.php:15
+msgid "course"
+msgstr ""
+
+#: ../templates/quiz.php:27
+msgid "Please answer all questions before submitting the quiz."
+msgstr ""
+
+#: ../templates/quiz.php:31
+msgid "Thank you. The quiz has been accepted."
+msgstr ""
+
+#: ../templates/quiz.php:42
+msgid "Quiz Grade"
+msgstr ""
+
+#: ../templates/quiz.php:49
+#, php-format
+msgid "You scored %s for this quiz."
+msgstr ""
+
+#: ../templates/quiz.php:51
+msgid "Your grade is pending."
+msgstr ""
+
+#: ../templates/quiz.php:159
+msgid "Submit"
+msgstr ""
+
+#: ../templates/shortcode-memberships.php:26
+msgid "No memberships found."
+msgstr ""
+
+#: ../templates/shortcode-payment.php:30
+msgid "Payment Summary"
+msgstr ""
+
+#: ../templates/shortcode-payment.php:45
+#: ../templates/shortcode-user-payments.php:28
+msgid "Payment Status"
+msgstr ""
+
+#: ../templates/shortcode-payment.php:65
+#: ../templates/shortcode-payment.php:257
+#, php-format
+msgid "%s with %s"
+msgstr ""
+
+#: ../templates/shortcode-payment.php:93
+msgid "Total"
+msgstr ""
+
+#: ../templates/shortcode-payment.php:108
+#, php-format
+msgid "Go to %s page"
+msgstr ""
+
+#: ../templates/shortcode-payment.php:178
+msgid "Already have an account?"
+msgstr ""
+
+#: ../templates/shortcode-payment.php:178
+msgid "Log in"
+msgstr ""
+
+#: ../templates/shortcode-payment.php:190
+msgid "Please enter your username and email."
+msgstr ""
+
+#: ../templates/shortcode-payment.php:195
+msgid "Please check if you entered your username correctly."
+msgstr ""
+
+#: ../templates/shortcode-payment.php:200
+#, php-format
+msgid "Username &quot;%s&quot; is not available."
+msgstr ""
+
+#: ../templates/shortcode-payment.php:205
+msgid "A user with your email already exists."
+msgstr ""
+
+#: ../templates/shortcode-payment.php:210
+msgid "Please check if you entered your email correctly."
+msgstr ""
+
+#: ../templates/shortcode-payment.php:215
+msgid "Please select a payment method."
+msgstr ""
+
+#: ../templates/shortcode-payment.php:228
+msgid "Create an Account"
+msgstr ""
+
+#: ../templates/shortcode-payment.php:247
+msgid "Payment Information"
+msgstr ""
+
+#: ../templates/shortcode-payment.php:304
+#, php-format
+msgctxt "membership price description"
+msgid "%s now and %s from %s"
+msgstr ""
+
+#: ../templates/shortcode-payment.php:362
+msgid "Please select a course to continue."
+msgstr ""
+
+#: ../templates/shortcode-student-courses.php:5
+#: ../templates/shortcode-user-membership.php:5
+#: ../templates/shortcode-user-payments.php:5
+msgid "Please log in to view this page."
+msgstr ""
+
+#: ../templates/shortcode-student-courses.php:19
+#: ../templates/shortcode-user-payments.php:18
+msgid "Payment has been cancelled."
+msgstr ""
+
+#: ../templates/shortcode-student-courses.php:27
+msgid "Pending Payment"
+msgstr ""
+
+#: ../templates/shortcode-student-courses.php:29
+msgctxt "Table column heading"
+msgid "Payment"
+msgstr ""
+
+#: ../templates/shortcode-student-courses.php:29
+#: ../templates/shortcode-student-courses.php:130
+msgid "Actions"
+msgstr ""
+
+#: ../templates/shortcode-student-courses.php:48
+msgid "View payment instructions"
+msgstr ""
+
+#: ../templates/shortcode-student-courses.php:60
+#: ../templates/shortcode-user-payments.php:59
+msgid "Cancel"
+msgstr ""
+
+#: ../templates/shortcode-student-courses.php:75
+msgid "In Progress"
+msgstr ""
+
+#: ../templates/shortcode-student-courses.php:77
+msgid "Date taken"
+msgstr ""
+
+#: ../templates/shortcode-student-courses.php:145
+#: ../templates/shortcode-user-membership.php:75
+msgid "Resume"
+msgstr ""
+
+#: ../templates/shortcode-student-courses.php:157
+msgid "You are not registered for any course."
+msgstr ""
+
+#: ../templates/shortcode-student-courses.php:157
+msgid "Browse courses"
+msgstr ""
+
+#: ../templates/shortcode-user-membership.php:15
+msgid "Your account is not connected to a membership."
+msgstr ""
+
+#: ../templates/shortcode-user-membership.php:44
+msgid "Extend"
+msgstr ""
+
+#: ../templates/shortcode-user-membership.php:69
+msgid "Pause"
+msgstr ""
+
+#: ../templates/shortcode-user-payments.php:53
+msgid "Details"
+msgstr ""

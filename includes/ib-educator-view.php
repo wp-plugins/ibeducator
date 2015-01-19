@@ -1,8 +1,6 @@
 <?php
 
 class IB_Educator_View {
-	static private $theme_dir = 'ibeducator';
-
 	/**
 	 * Get plugin templates directory.
 	 *

@@ -10,6 +10,41 @@ function ib_edu_get_settings() {
 }
 
 /**
+ * Get the Educator WP option.
+ *
+ * @param string $option_key
+ * @param string $option_section
+ * @return mixed
+ */
+function ib_edu_get_option( $option_key, $option_section ) {
+	static $options = array();
+
+	if ( empty( $options[ $option_section ] ) ) {
+		$option = '';
+
+		switch ( $option_section ) {
+			case 'settings':
+				$option = 'ib_educator_settings';
+				break;
+			case 'email':
+				$option = 'ib_educator_email';
+				break;
+			case 'memberships':
+				$option = 'ib_educator_memberships';
+				break;
+		}
+
+		$options[ $option_section ] = get_option( $option, array() );
+	}
+
+	if ( isset( $options[ $option_section ][ $option_key ] ) ) {
+		return $options[ $option_section ][ $option_key ];
+	}
+
+	return null;
+}
+
+/**
  * Get breadcrumbs HTML.
  *
  * @param string $sep
@@ -67,7 +102,7 @@ function ib_edu_request_url( $request ) {
  * @return float
  */
 function ib_edu_get_course_price( $course_id ) {
-	return floatval( get_post_meta( $course_id, '_ibedu_price', true ) );
+	return (float) get_post_meta( $course_id, '_ibedu_price', true );
 }
 
 /**
@@ -177,19 +212,34 @@ function ib_edu_get_currency_symbol( $currency ) {
 }
 
 /**
- * Format price.
+ * Format course price.
  *
- * @param int|float $price
+ * @param float $price
  * @return string
  */
 function ib_edu_format_course_price( $price ) {
+	return ib_edu_format_price( $price );
+}
+
+/**
+ * Format price.
+ *
+ * @param float $price
+ * @return string
+ */
+function ib_edu_format_price( $price, $apply_filters = true, $symbol = true ) {
 	$settings = ib_edu_get_settings();
 	$currency = ib_edu_get_currency();
-	$currency_symbol = ib_edu_get_currency_symbol( $currency );
 	$decimal_point = ! empty( $settings['decimal_point'] ) ? esc_html( $settings['decimal_point'] ) : '.';
 	$thousands_sep = ! empty( $settings['thousands_sep'] ) ? esc_html( $settings['thousands_sep'] ) : ',';
 	$formatted = number_format( $price, 2, $decimal_point, $thousands_sep );
 	$formatted = ib_edu_strip_zeroes( $formatted, $decimal_point );
+
+	if ( $symbol ) {
+		$currency_symbol = ib_edu_get_currency_symbol( $currency );
+	} else {
+		$currency_symbol = preg_replace( '/[^a-z]+/i', '', $currency );
+	}
 
 	if ( isset( $settings['currency_position'] ) && 'after' == $settings['currency_position'] ) {
 		$formatted = "$formatted $currency_symbol";
@@ -197,7 +247,11 @@ function ib_edu_format_course_price( $price ) {
 		$formatted = "$currency_symbol $formatted";
 	}
 
-	return apply_filters( 'ib_educator_format_price', $formatted, $currency, $price );
+	if ( $apply_filters ) {
+		return apply_filters( 'ib_educator_format_price', $formatted, $currency, $price );
+	}
+
+	return $formatted;
 }
 
 /**
@@ -396,6 +450,7 @@ function ib_edu_table_names() {
 		'choices'   => $prefix . 'choices',
 		'answers'   => $prefix . 'answers',
 		'grades'    => $prefix . 'grades',
+		'members'   => $prefix . 'members',
 	);
 }
 
@@ -449,6 +504,38 @@ function ib_edu_send_notification( $to, $template, $subject_vars, $template_vars
  */
 function ib_edu_has_quiz( $lesson_id ) {
 	return get_post_meta( $lesson_id, '_ibedu_quiz', true ) ? true : false;
+}
+
+/**
+ * Get HTML for the course price widget.
+ *
+ * @param int $course_id
+ * @return string
+ */
+function ib_edu_get_price_widget( $course_id, $user_id ) {
+	// Check membership.
+	$ms = IB_Educator_Memberships::get_instance();
+	$membership_access = $ms->membership_can_access( $course_id, $user_id );
+
+	// Generate the widget.
+	$output = '<div class="ib-edu-course-price">';
+
+	if ( $membership_access ) {
+		$register_url = ib_edu_get_endpoint_url( 'edu-action', 'join', get_permalink( $course_id ) );
+		$output .= '<form action="' . esc_url( $register_url ) . '" method="post">';
+		$output .= '<input type="hidden" name="_wpnonce" value="' . wp_create_nonce( 'ib_educator_join' ) . '">';
+		$output .= '<input type="submit" class="ib-edu-button" value="' . __( 'Join', 'ibeducator' ) . '">';
+		$output .= '</form>';
+	} else {
+		$price = ib_edu_get_course_price( $course_id );
+		$price = ( 0 == $price ) ? __( 'Free', 'ibeducator' ) : ib_edu_format_course_price( $price );
+		$register_url = ib_edu_get_endpoint_url( 'edu-course', $course_id, get_permalink( ib_edu_page_id( 'payment' ) ) );
+		$output .= '<span class="price">' . $price . '</span><a href="' . esc_url( $register_url )
+				. '" class="ib-edu-button">' . __( 'Register', 'ibeducator' ) . '</a>';
+	}
+
+	$output .= '</div>';
+	return $output;
 }
 
 /**

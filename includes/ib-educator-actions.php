@@ -5,16 +5,15 @@ class IB_Educator_Actions {
 	 * Cancel student's payment for a course.
 	 */
 	public static function cancel_payment() {
-		// Verify nonce.
 		if ( ! isset( $_POST['_wpnonce'] ) || ! wp_verify_nonce( $_POST['_wpnonce'], 'ibedu_cancel_payment' ) ) {
 			return;
 		}
 
+		if ( ! is_user_logged_in() ) return;
+
 		$payment_id = isset( $_POST['payment_id'] ) ? absint( $_POST['payment_id'] ) : 0;
 
-		if ( ! $payment_id ) {
-			return;
-		}
+		if ( ! $payment_id ) return;
 
 		$payment = IB_Educator_Payment::get_instance( $payment_id );
 
@@ -48,7 +47,7 @@ class IB_Educator_Actions {
 		if ( ! isset( $_POST['answers'] ) ) {
 			ib_edu_message( 'quiz', 'empty-answers' );
 			return;
-		} else if ( is_array( $_POST['answers'] ) ) {
+		} elseif ( is_array( $_POST['answers'] ) ) {
 			foreach ( $_POST['answers'] as $answer ) {
 				if ( ! empty( $answer ) ) ++$num_answers;
 			}
@@ -160,17 +159,26 @@ class IB_Educator_Actions {
 	 * Pay for a course.
 	 */
 	public static function payment() {
-		// Verify nonce.
 		if ( ! isset( $_POST['_wpnonce'] ) || ! wp_verify_nonce( $_POST['_wpnonce'], 'ibedu_submit_payment' ) ) {
 			return;
 		}
 
-		$course_id = isset( $_POST['course_id'] ) ? absint( $_POST['course_id'] ) : 0;
+		do_action( 'ib_educator_before_payment' );
 
-		if ( ! $course_id ) return;
+		// Get post id and payment type (course or membership).
+		$post_id = 0; // either course id or membership id
+		$payment_type = 'course';
 
-		// Get the course price.
-		$course_price = ib_edu_get_course_price( $course_id );
+		if ( isset( $_POST['course_id'] ) ) {
+			$post_id = absint( $_POST['course_id'] );
+		} elseif ( isset( $_POST['membership_id'] ) ) {
+			$post_id = absint( $_POST['membership_id'] );
+			$payment_type = 'membership';
+		}
+
+		$post = get_post( $post_id );
+
+		if ( ! $post ) return;
 
 		// Create an account.
 		$errors = array();
@@ -199,12 +207,9 @@ class IB_Educator_Actions {
 
 		// Get payment method.
 		$gateways = IB_Educator_Main::get_gateways();
-
+		
 		if ( ! isset( $_POST['payment_method'] ) || ! array_key_exists( $_POST['payment_method'], $gateways ) ) {
-			if ( $course_price ) {
-				// Course is not free, payment method is required.
-				$errors[] = 'empty_payment_method';
-			}
+			$errors[] = 'empty_payment_method';
 		} else {
 			$payment_method = $_POST['payment_method'];
 		}
@@ -232,42 +237,169 @@ class IB_Educator_Actions {
 			return;
 		}
 
-		$api = IB_Educator::get_instance();
-		$access_status = $api->get_access_status( $course_id, $user_id );
+		$can_pay = true;
 
-		// Student can pay for a course only if he/she completed this course or didn't register for it yet.
-		if ( in_array( $access_status, array( 'course_complete', 'forbidden' ) ) ) {
-			if ( ! $course_price ) {
-				// The course is free.
-				$payment = IB_Educator_Payment::get_instance();
-				$payment->course_id = $course_id;
-				$payment->user_id = $user_id;
-				$payment->amount = 0.00;
-				$payment->payment_gateway = 'free';
-				$payment->payment_status = 'complete';
-				$payment->payment_date = date( 'Y-m-d H:i:s' );
+		if ( 'course' == $payment_type ) {
+			$access_status = IB_Educator::get_instance()->get_access_status( $post_id, $user_id );
 
-				if ( $payment->save() ) {
-					$entry = IB_Educator_Entry::get_instance();
-					$entry->course_id = $course_id;
-					$entry->user_id = $user_id;
-					$entry->payment_id = $payment->ID;
-					$entry->entry_status = 'inprogress';
-					$entry->entry_date = date( 'Y-m-d H:i:s' );
-					$entry->save();
-				}
+			// Student can pay for a course only if he/she completed this course or didn't register for it yet.
+			$can_pay = in_array( $access_status, array( 'course_complete', 'forbidden' ) );
+		}
 
-				wp_safe_redirect( get_permalink( $course_id ) );
-			} else {
-				// The course is not free.
-				$gateway = $gateways[ $payment_method ];
-				$result = $gateway->process_payment( $course_id, $user_id );
+		if ( $can_pay ) {
+			// The course is not free.
+			$gateway = $gateways[ $payment_method ];
+			$result = $gateway->process_payment( $post_id, $user_id, $payment_type );
 
-				// Redirect.
-				wp_safe_redirect( $result['redirect'] );
-			}
+			// Redirect.
+			wp_safe_redirect( $result['redirect'] );
 
 			exit;
+		}
+	}
+
+	/**
+	 * Join the course if membership allows.
+	 */
+	public static function join() {
+		if ( ! isset( $_POST['_wpnonce'] ) || ! wp_verify_nonce( $_POST['_wpnonce'], 'ib_educator_join' ) ) {
+			return;
+		}
+
+		// Get the current user id.
+		$user_id = get_current_user_id();
+		if ( ! $user_id ) return;
+
+		// Get course id.
+		$course_id = get_the_ID();
+		if ( ! $course_id ) return;
+
+		// Get course.
+		$course = get_post( $course_id );
+		if ( ! $course || 'ib_educator_course' != $course->post_type ) return;
+
+		$api = IB_Educator::get_instance();
+
+		// Make sure the user can join this course.
+		$ms = IB_Educator_Memberships::get_instance();
+		if ( ! $ms->membership_can_access( $course_id, $user_id ) ) {
+			return;
+		}
+
+		// Check if the user already has an inprogress entry for this course.
+		$entries = $api->get_entries( array(
+			'course_id'    => $course_id,
+			'user_id'      => $user_id,
+			'entry_status' => 'inprogress',
+		) );
+
+		if ( ! empty( $entries ) ) return;
+
+		$user_membership = $ms->get_user_membership( $user_id );
+
+		$entry = IB_Educator_Entry::get_instance();
+		$entry->course_id    = $course_id;
+		$entry->object_id    = $user_membership['membership_id'];
+		$entry->user_id      = $user_id;
+		$entry->entry_origin = 'membership';
+		$entry->entry_status = 'inprogress';
+		$entry->entry_date   = date( 'Y-m-d H:i:s' );
+		$entry->save();
+	}
+
+	/**
+	 * Resume entry.
+	 */
+	public static function resume_entry() {
+		if ( ! isset( $_POST['_wpnonce'] ) || ! wp_verify_nonce( $_POST['_wpnonce'], 'ib_educator_resume_entry' ) ) {
+			return;
+		}
+
+		// Get the current user id.
+		$user_id = get_current_user_id();
+		if ( ! $user_id ) return;
+
+		// Get entry id.
+		if ( ! isset( $_POST['entry_id'] ) ) return;
+		$entry_id = $_POST['entry_id'];
+
+		// Get entry.
+		$entry = IB_Educator_Entry::get_instance( $entry_id );
+		if ( ! $entry ) return;
+
+		$ms = IB_Educator_Memberships::get_instance();
+
+		// Check if there is an "inprogress" entry for this course.
+		$api = IB_Educator::get_instance();
+		$inprogress_entry = $api->get_entry( array(
+			'entry_status' => 'inprogress',
+			'course_id'    => $entry->course_id,
+			'user_id'      => $user_id,
+		) );
+
+		// Make sure that this entry belongs to the current user.
+		// Make sure that the current membership gives access to this entry's course.
+		if ( $inprogress_entry || $entry->user_id != $user_id || ! $ms->membership_can_access( $entry->course_id, $user_id ) ) {
+			return;
+		}
+
+		$entry->entry_status = 'inprogress';
+		$entry->save();
+
+		wp_safe_redirect( get_permalink() );
+	}
+
+	/**
+	 * Pause the user's membership.
+	 */
+	public static function pause_membership() {
+		if ( 1 != ib_edu_get_option( 'pause_memberships', 'memberships' ) ) {
+			return;
+		}
+
+		if ( ! isset( $_GET['_wpnonce'] ) || ! wp_verify_nonce( $_GET['_wpnonce'], 'ib_educator_pause_membership' ) ) {
+			return;
+		}
+
+		// Get the current user id.
+		$user_id = get_current_user_id();
+		
+		if ( ! $user_id ) {
+			return;
+		}
+
+		$ms = IB_Educator_Memberships::get_instance();
+		$user_membership = $ms->get_user_membership( $user_id );
+
+		if ( $user_membership && 'active' == $user_membership['status'] ) {
+			$ms->pause_membership( $user_id );
+		}
+	}
+
+	/**
+	 * Resume the user's membership.
+	 */
+	public static function resume_membership() {
+		if ( 1 != ib_edu_get_option( 'pause_memberships', 'memberships' ) ) {
+			return;
+		}
+
+		if ( ! isset( $_GET['_wpnonce'] ) || ! wp_verify_nonce( $_GET['_wpnonce'], 'ib_educator_resume_membership' ) ) {
+			return;
+		}
+
+		// Get the current user id.
+		$user_id = get_current_user_id();
+
+		if ( ! $user_id ) {
+			return;
+		}
+
+		$ms = IB_Educator_Memberships::get_instance();
+		$user_membership = $ms->get_user_membership( $user_id );
+
+		if ( $user_membership && 'paused' == $user_membership['status'] ) {
+			$ms->resume_membership( $user_id );
 		}
 	}
 }
