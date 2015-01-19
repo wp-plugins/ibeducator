@@ -16,17 +16,18 @@ class IB_Educator_Install {
 		$this->choices = $tables['choices'];
 		$this->answers = $tables['answers'];
 		$this->grades = $tables['grades'];
+		$this->members = $tables['members'];
 	}
 
 	/**
 	 * Install.
 	 */
 	public function activate() {
-		$current_version = get_option( 'ib_educator_version' );
+		/*$current_version = get_option( 'ib_educator_version' );
 
-		if ( $current_version && version_compare( $current_version, '0.9.10', '<=' ) ) {
-			$this->update_1_0_0();
-		}
+		if ( $current_version ) {
+			if ( version_compare( $current_version, '1.2.0', '<=' ) ) {}
+		}*/
 
 		// Setup database tables.
 		$this->setup_tables();
@@ -41,7 +42,15 @@ class IB_Educator_Install {
 		// Setup email templates.
 		$this->setup_email_templates();
 
-		// Flush rewrite rules
+		// Schedule cron events.
+		$this->schedule_events();
+
+		/**
+		 * Plugin activation hook.
+		 */
+		do_action( 'ib_educator_activation' );
+
+		// Flush rewrite rules.
 		flush_rewrite_rules();
 
 		// Update the plugin version in database.
@@ -52,7 +61,25 @@ class IB_Educator_Install {
 	 * Plugin deactivation cleanup.
 	 */
 	public function deactivate() {
+		$this->remove_scheduled_events();
 		flush_rewrite_rules();
+	}
+
+	public function schedule_events() {
+		// CRON: process expired memberships.
+		if ( ! wp_next_scheduled( 'ib_educator_expired_memberships' ) ) {
+			wp_schedule_event( strtotime( date( 'Y-m-d 00:00:00' ) ), 'daily', 'ib_educator_expired_memberships' );
+		}
+
+		// CRON: send the membership expiration notifications.
+		if ( ! wp_next_scheduled( 'ib_educator_membership_notifications' ) ) {
+			wp_schedule_event( strtotime( date( 'Y-m-d 00:00:00' ) ), 'daily', 'ib_educator_membership_notifications' );
+		}
+	}
+
+	public function remove_scheduled_events() {
+		wp_clear_scheduled_hook( 'ib_educator_expired_memberships' );
+		wp_clear_scheduled_hook( 'ib_educator_membership_notifications' );
 	}
 
 	public function get_post_type_caps() {
@@ -99,7 +126,9 @@ class IB_Educator_Install {
   course_id bigint(20) unsigned NOT NULL,
   user_id bigint(20) unsigned NOT NULL,
   payment_id bigint(20) unsigned NOT NULL,
+  object_id bigint(20) unsigned NOT NULL,
   grade decimal(5,2) unsigned NOT NULL,
+  entry_origin varchar(20) NOT NULL default 'payment',
   entry_status varchar(20) NOT NULL,
   entry_date datetime NOT NULL default '0000-00-00 00:00:00',
   complete_date datetime NOT NULL default '0000-00-00 00:00:00',
@@ -108,16 +137,23 @@ class IB_Educator_Install {
 ) $charset_collate;
 CREATE TABLE {$this->payments} (
   ID bigint(20) unsigned NOT NULL auto_increment,
+  parent_id bigint(20) unsigned NOT NULL,
   user_id bigint(20) unsigned NOT NULL,
   course_id bigint(20) unsigned NOT NULL,
+  object_id bigint(20) unsigned default NULL,
+  payment_type varchar(20) NOT NULL default 'course',
   payment_gateway varchar(20) NOT NULL,
   payment_status varchar(20) NOT NULL,
+  txn_id varchar(20) NOT NULL default '',
   amount decimal(8, 2) NOT NULL,
   currency char(3) NOT NULL,
   payment_date datetime NOT NULL default '0000-00-00 00:00:00',
   PRIMARY KEY  (ID),
   KEY user_id (user_id),
-  KEY course_id (course_id)
+  KEY course_id (course_id),
+  KEY object_id (object_id),
+  KEY parent_id (parent_id),
+  KEY txn_id (txn_id)
 ) $charset_collate;";
 
 			// Quiz.
@@ -159,7 +195,19 @@ CREATE TABLE {$this->grades} (
   PRIMARY KEY  (ID),
   KEY lesson_id (lesson_id),
   KEY entry_id (entry_id)
-) $charset_collate;";
+) $charset_collate;
+CREATE TABLE {$this->members} (
+  ID bigint(20) unsigned NOT NULL auto_increment,
+  user_id bigint(20) unsigned NOT NULL,
+  membership_id bigint(20) unsigned NOT NULL,
+  status varchar(20) NOT NULL default '',
+  expiration datetime NOT NULL default '0000-00-00 00:00:00',
+  paused datetime NOT NULL default '0000-00-00 00:00:00',
+  PRIMARY KEY  (ID),
+  KEY user_id (user_id),
+  KEY status (status),
+  KEY expiration (expiration)
+) $charset_collate";
 
 			require_once ABSPATH . 'wp-admin/includes/upgrade.php';
 			dbDelta( $sql );
@@ -221,7 +269,7 @@ CREATE TABLE {$this->grades} (
 				);
 
 				// Capabilities for custom post types.
-				$capability_types = array( 'ib_educator_course', 'ib_educator_lesson' );
+				$capability_types = array( 'ib_educator_course', 'ib_educator_lesson', 'ib_edu_membership' );
 
 				// Post types capabilities.
 				foreach ( $capability_types as $capability_type ) {
@@ -315,56 +363,39 @@ Best regards,
 Administration',
 			) );
 		}
-	}
 
-	/**
-	 * Update to stable version 1.0.0 from beta versions.
-	 */
-	public function update_1_0_0() {
-		global $wpdb;
-		global $wp_roles;
+		if ( ! get_option( 'ib_educator_membership_register' ) ) {
+			update_option( 'ib_educator_membership_register', array(
+				'subject' => __( 'You\'ve been registered for a membership', 'ibeducator' ),
+				'template' => 'Dear {student_name},
 
-		// Update pages settings.
-		$pages = get_option( 'ibedu_pages', array() );
-		$settings = get_option( 'ib_educator_settings', array() );
-		$settings['student_courses_page'] = isset( $pages['student_courses'] ) ? $pages['student_courses'] : 0;
-		$settings['payment_page'] = isset( $pages['payment'] ) ? $pages['payment'] : 0;
-		update_option( 'ib_educator_settings', $settings );
+Thank you for registering for the {membership} membership.
 
-		// Update course post type.
-		$courses = get_posts( array( 'post_type' => 'ibedu_course', 'posts_per_page' => -1 ) );
-		if ( $courses ) {
-			foreach ( $courses as $course ) {
-				set_post_type( $course->ID, 'ib_educator_course' );
-			}
+Membership: {membership}
+Expiration: {expiration}
+Price: {price}
+
+Log in: {login_link}
+
+Best regards,
+Administration',
+			) );
 		}
 
-		// Update lesson post type.
-		$lessons = get_posts( array( 'post_type' => 'ibedu_lesson', 'posts_per_page' => -1 ) );
-		if ( $lessons ) {
-			foreach ( $lessons as $lesson ) {
-				set_post_type( $lesson->ID, 'ib_educator_lesson' );
-			}
-		}
+		if ( ! get_option( 'ib_educator_membership_renew' ) ) {
+			update_option( 'ib_educator_membership_renew', array(
+				'subject' => __( 'Your membership expires', 'ibeducator' ),
+				'template' => 'Dear {student_name},
 
-		// Update permissions.
-		$post_type_caps = $this->get_post_type_caps();
-		foreach ( array( 'ibedu_course', 'ibedu_lesson' ) as $post_type ) {
-			foreach ( $post_type_caps as $cap ) {
-				$cap = str_replace( '{post_type}', $post_type, $cap );
-				$wp_roles->remove_cap( 'administrator', $cap );
-				$wp_roles->remove_cap( 'lecturer', $cap );
-			}
-		}
-		$wp_roles->remove_cap( 'administrator', 'ibedu_edit_entries' );
-		$wp_roles->remove_cap( 'lecturer', 'ibedu_edit_entries' );
+Your {membership} membership expires on {expiration}.
 
-		// Update database tables, if not updated yet.
-		$test = $wpdb->get_results( 'select 1 from ' . $wpdb->prefix . 'ibedu_grades' );
-		if ( $test ) {
-			foreach ( array( 'payments', 'entries', 'questions', 'choices', 'answers', 'grades' ) as $table ) {
-				$wpdb->query( 'rename table `' . $wpdb->prefix . 'ibedu_' . $table . '` to `' . $wpdb->prefix . 'ibeducator_' . $table . '`' );
-			}
+Please renew your membership: {membership_payment_url}
+
+Log in: {login_link}
+
+Best regards,
+Administration',
+			) );
 		}
 	}
 }

@@ -48,26 +48,61 @@ class IB_Educator_Gateway_Paypal extends IB_Educator_Payment_Gateway {
 	 *
 	 * @return array
 	 */
-	public function process_payment( $course_id, $user_id = 0 ) {
+	public function process_payment( $object_id, $user_id = 0, $payment_type = 'course' ) {
 		if ( ! $user_id ) {
 			$user_id = get_current_user_id();
 		}
+
+		if ( ! $user_id ) {
+			return array( 'redirect' => home_url( '/' ) );
+		}
 		
-		$api = IB_Educator::get_instance();
-		
-		// Add payment
-		$payment = $api->add_payment( array(
-			'course_id'       => $course_id,
+		// Add payment.
+		$params = array(
 			'user_id'         => $user_id,
+			'payment_type'    => $payment_type,
 			'payment_status'  => 'pending',
 			'payment_gateway' => $this->get_id(),
-			'amount'          => number_format( ib_edu_get_course_price( $course_id ), 2 ),
-			'currency'        => ib_edu_get_currency()
-		) );
+			'currency'        => ib_edu_get_currency(),
+		);
+
+		if ( 'course' == $payment_type ) {
+			$params['course_id'] = $object_id;
+			$params['amount'] = ib_edu_get_course_price( $object_id );
+		} elseif ( 'membership' == $payment_type ) {
+			$params['object_id'] = $object_id;
+			$ms = IB_Educator_Memberships::get_instance();
+			$update_membership = null;
+
+			if ( 1 == ib_edu_get_option( 'change_memberships', 'memberships' ) ) {
+				$update_membership = $ms->get_new_payment_data( $user_id, $object_id );
+			}
+
+			if ( ! empty( $update_membership ) ) {
+				$params['amount'] = $update_membership['price'];
+			} else {
+				$params['amount'] = $ms->get_price( $object_id );
+			}
+		}
+
+		$redirect = '';
+		$api = IB_Educator::get_instance();
+		$payment = $api->add_payment( $params );
+
+		if ( $payment->ID ) {
+			// Record membership switch.
+			if ( 'membership' == $payment_type && ! empty( $update_membership ) ) {
+				$ms->record_switch( $payment );
+			}
+
+			$redirect = ib_edu_get_endpoint_url( 'edu-pay', $payment->ID, get_permalink( ib_edu_page_id( 'payment' ) ) );
+		} else {
+			$redirect = ib_edu_get_endpoint_url( 'edu-pay', '', get_permalink( ib_edu_page_id( 'payment' ) ) );
+		}
 
 		return array(
 			'status'   => 'pending',
-			'redirect' => ib_edu_get_endpoint_url( 'edu-pay', ( $payment->ID ? $payment->ID : '' ), get_permalink( ib_edu_page_id( 'payment' ) ) )
+			'redirect' => $redirect,
 		);
 	}
 
@@ -82,15 +117,27 @@ class IB_Educator_Gateway_Paypal extends IB_Educator_Payment_Gateway {
 			return;
 		}
 
-		$payment = IB_Educator_Payment::get_instance( $payment_id );
+		$user_id = get_current_user_id();
 
-		if ( ! $payment->ID ) {
+		if ( ! $user_id ) {
 			return;
 		}
 
-		$course = get_post( $payment->course_id );
+		$payment = IB_Educator_Payment::get_instance( $payment_id );
 
-		if ( ! $course ) {
+		// The payment must exist in the database
+		// and it must belong to the current user.
+		if ( ! $payment->ID || $user_id != $payment->user_id ) {
+			return;
+		}
+
+		if ( 'course' == $payment->payment_type ) {
+			$post = get_post( $payment->course_id );
+		} elseif ( 'membership' == $payment->payment_type ) {
+			$post = get_post( $payment->object_id );
+		}
+
+		if ( ! $post ) {
 			return;
 		}
 
@@ -108,19 +155,28 @@ class IB_Educator_Gateway_Paypal extends IB_Educator_Payment_Gateway {
 		echo '<input type="hidden" name="business" value="' . esc_attr( $this->get_option( 'business_email' ) ) . '">';
 		echo '<input type="hidden" name="return" value="' . esc_url( $return_url ) . '">';
 		echo '<input type="hidden" name="notify_url" value="' . esc_url( ib_edu_request_url( 'paypalipn' ) ) . '">';
-		echo '<input type="hidden" name="currency_code" value="' . ib_edu_get_currency() . '">';
-		echo '<input type="hidden" name="item_name" value="' . esc_attr( $course->post_title ) . '">';
+		echo '<input type="hidden" name="currency_code" value="' . esc_attr( ib_edu_get_currency() ) . '">';
+		echo '<input type="hidden" name="item_name" value="' . esc_attr( $post->post_title ) . '">';
 		echo '<input type="hidden" name="item_number" value="' . absint( $payment->ID ) . '">';
 		echo '<input type="hidden" name="amount" value="' . $amount . '">';
 		echo '<div id="paypal-form-buttons"><button type="submit">' . __( 'Continue', 'ibeducator' ) . '</button></div>';
 		echo '</form>';
 		echo '<div id="paypal-redirect-notice" style="display: none;">' . __( 'Redirecting to PayPal...', 'ibeducator' ) . '</div>';
 		echo '<script>(function() {
-			document.getElementById("paypal-form-buttons").style.display = "none";
-			document.getElementById("paypal-redirect-notice").style.display = "block";
-			setTimeout(function() {
+			function goToPayPal() {
+				document.getElementById("paypal-form-buttons").style.display = "none";
+				document.getElementById("paypal-redirect-notice").style.display = "block";
 				document.getElementById("ib-edu-paypal-form").submit();
-			}, 1000);
+			}
+
+			if ( typeof jQuery === "undefined" ) {
+				setTimeout(goToPayPal, 500);
+			} else {
+				jQuery(document).on("ready", function() {
+					goToPayPal();
+				});
+			}
+			
 		})();</script>';
 	}
 
@@ -130,13 +186,6 @@ class IB_Educator_Gateway_Paypal extends IB_Educator_Payment_Gateway {
 
 		if ( ! empty( $thankyou_message ) ) {
 			echo '<div class="ib-edu-payment-description">' . wpautop( stripslashes( $thankyou_message ) ) . '</div>';
-		}
-
-		// Show link to student courses page.
-		$student_courses_page = get_post( ib_edu_page_id( 'student_courses' ) );
-		
-		if ( $student_courses_page ) {
-			echo '<p>' . sprintf( __( 'Go to %s page', 'ibeducator' ), '<a href="' . esc_url( get_permalink( $student_courses_page->ID ) ) . '">' . esc_html( $student_courses_page->post_title ) . '</a>' ) . '</p>';
 		}
 	}
 
@@ -262,36 +311,67 @@ class IB_Educator_Gateway_Paypal extends IB_Educator_Payment_Gateway {
 					case 'Completed':
 						// Update payment status.
 						$payment->payment_status = 'complete';
+
+						if ( isset( $_POST['txn_id'] ) ) {
+							$payment->txn_id = sanitize_text_field( $_POST['txn_id'] );
+						}
+
 						$payment->save();
 
 						// Add entry if not exists.
-						$api = IB_Educator::get_instance();
-						$entry = $api->get_entry( array( 'payment_id' => $payment->ID ) );
+						if ( 'course' == $payment->payment_type ) {
+							$api = IB_Educator::get_instance();
+							$entry = $api->get_entry( array( 'payment_id' => $payment->ID ) );
 
-						if ( ! $entry ) {
-							$entry = IB_Educator_Entry::get_instance();
-							$entry->course_id = $payment->course_id;
-							$entry->user_id = $payment->user_id;
-							$entry->payment_id = $payment->ID;
-							$entry->entry_status = 'inprogress';
-							$entry->entry_date = date( 'Y-m-d H:i:s' );
-							$entry->save();
+							if ( ! $entry ) {
+								$entry = IB_Educator_Entry::get_instance();
+								$entry->course_id = $payment->course_id;
+								$entry->user_id = $payment->user_id;
+								$entry->payment_id = $payment->ID;
+								$entry->entry_status = 'inprogress';
+								$entry->entry_date = date( 'Y-m-d H:i:s' );
+								$entry->save();
 
-							// Send notification email to the student.
+								// Send notification email to the student.
+								$student = get_user_by( 'id', $payment->user_id );
+								$course = get_post( $payment->course_id, OBJECT, 'display' );
+
+								if ( $student && $course ) {
+									ib_edu_send_notification(
+										$student->user_email,
+										'student_registered',
+										array(
+											'course_title' => $course->post_title,
+										),
+										array(
+											'student_name'   => $student->display_name,
+											'course_title'   => $course->post_title,
+											'course_excerpt' => $course->post_excerpt,
+										)
+									);
+								}
+							}
+						} elseif ( 'membership' == $payment->payment_type ) {
+							$ms = IB_Educator_Memberships::get_instance();
+							$ms->setup_membership( $payment->user_id, $payment->object_id );
+
 							$student = get_user_by( 'id', $payment->user_id );
-							$course = get_post( $payment->course_id, OBJECT, 'display' );
+							$membership = $ms->get_membership( $payment->object_id );
 
-							if ( $student && $course ) {
+							if ( $student && $membership ) {
+								$user_membership = $ms->get_user_membership( $student->ID );
+								$membership_meta = $ms->get_membership_meta( $membership->ID );
+								$expiration = ( $user_membership ) ? $user_membership['expiration'] : 0;
+
 								ib_edu_send_notification(
 									$student->user_email,
-									'student_registered',
+									'membership_register',
+									array(),
 									array(
-										'course_title' => $course->post_title,
-									),
-									array(
-										'student_name'   => $student->display_name,
-										'course_title'   => $course->post_title,
-										'course_excerpt' => $course->post_excerpt,
+										'student_name' => $student->display_name,
+										'membership'   => $membership->post_title,
+										'expiration'   => ( $expiration ) ? date_i18n( get_option( 'date_format' ), $expiration ) : __( 'None', 'ibeducator' ),
+										'price'        => $ms->format_price( $membership_meta['price'], $membership_meta['duration'], $membership_meta['period'], false ),
 									)
 								);
 							}
@@ -331,7 +411,9 @@ class IB_Educator_Gateway_Paypal extends IB_Educator_Payment_Gateway {
 					break;
 
 				case 'test':
-					if ( 1 != $value ) $input[ $option_name ] = 0;
+					if ( 1 != $value ) {
+						$input[ $option_name ] = 0;
+					}
 					break;
 			}
 		}

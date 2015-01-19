@@ -3,19 +3,10 @@
 class IB_Educator_Main {
 	protected static $gateways = array();
 
-	private function __construct() {}
-
 	/**
-	 * Initialize plugin.
+	 * Initialize.
 	 */
 	public static function init() {
-		self::init_hooks();
-	}
-
-	/**
-	 * Initialize hooks.
-	 */
-	private static function init_hooks() {
 		add_action( 'init', array( __CLASS__, 'add_rewrite_endpoints' ) );
 		add_action( 'init', array( __CLASS__, 'register_post_types' ) );
 		add_action( 'init', array( __CLASS__, 'init_gateways' ) );
@@ -32,14 +23,14 @@ class IB_Educator_Main {
 		// Verify permissions for various pages.
 		add_action( 'template_redirect', array( __CLASS__, 'protect_private_pages' ) );
 
+		// Enqueue scripts and styles.
+		add_action( 'wp_enqueue_scripts', array( __CLASS__, 'enqueue_scripts_styles' ) );
+
 		// Add templating actions.
 		add_action( 'ib_educator_before_main_loop', array( __CLASS__, 'action_before_main_loop' ) );
 		add_action( 'ib_educator_after_main_loop', array( __CLASS__, 'action_after_main_loop' ) );
 		add_action( 'ib_educator_sidebar', array( __CLASS__, 'action_sidebar' ) );
 		add_action( 'ib_educator_before_course_content', array( __CLASS__, 'before_course_content' ) );
-
-		// Enqueue scripts and styles.
-		add_action( 'wp_enqueue_scripts', array( __CLASS__, 'enqueue_scripts_styles' ) );
 	}
 
 	/**
@@ -61,6 +52,7 @@ class IB_Educator_Main {
 			'cash'          => 'IB_Educator_Gateway_Cash',
 			'check'         => 'IB_Educator_Gateway_Check',
 			'bank-transfer' => 'IB_Educator_Gateway_Bank_Transfer',
+			'free'          => 'IB_Educator_Gateway_Free',
 		) );
 
 		// Get the list of enabled gateways.
@@ -68,13 +60,17 @@ class IB_Educator_Main {
 
 		if ( ! is_admin() || ! current_user_can( 'manage_educator' ) ) {
 			$gateways_options = get_option( 'ibedu_payment_gateways', array() );
-			$enabled_gateways = array();
+			$enabled_gateways = array(
+				'free',
+			);
 
 			foreach ( $gateways_options as $gateway_id => $options ) {
 				if ( isset( $options[ 'enabled' ] ) && 1 == $options[ 'enabled' ] ) {
 					$enabled_gateways[] = $gateway_id;
 				}
 			}
+
+			$enabled_gateways = apply_filters( 'ib_educator_enabled_gateways', $enabled_gateways );
 		}
 
 		$loaded_gateway = null;
@@ -85,7 +81,9 @@ class IB_Educator_Main {
 				continue;
 			}
 
-			$gateway_file = IBEDUCATOR_PLUGIN_DIR . 'includes/gateways/' . strtolower( str_replace( '_', '-', substr( $gateway, 20 ) ) ) . '/' . strtolower( str_replace( '_', '-', $gateway ) ) . '.php';
+			$gateway_file = IBEDUCATOR_PLUGIN_DIR . 'includes/gateways/'
+						  . strtolower( str_replace( '_', '-', substr( $gateway, 20 ) ) ) . '/'
+						  . strtolower( str_replace( '_', '-', $gateway ) ) . '.php';
 
 			if ( is_readable( $gateway_file ) ) {
 				require_once $gateway_file;
@@ -115,6 +113,7 @@ class IB_Educator_Main {
 		add_rewrite_endpoint( 'edu-action', EP_PAGES | EP_PERMALINK );
 		add_rewrite_endpoint( 'edu-message', EP_PAGES | EP_PERMALINK );
 		add_rewrite_endpoint( 'edu-request', EP_ROOT );
+		add_rewrite_endpoint( 'edu-membership', EP_PAGES );
 	}
 
 	/**
@@ -124,7 +123,7 @@ class IB_Educator_Main {
 		// Register post type for courses.
 		register_post_type(
 			'ib_educator_course',
-			array(
+			apply_filters( 'ib_educator_cpt_course', array(
 				'labels'              => array(
 					'name'          => __( 'Courses', 'ibeducator' ),
 					'singular_name' => __( 'Course', 'ibeducator' ),
@@ -144,19 +143,19 @@ class IB_Educator_Main {
 				'rewrite'             => array( 'slug' => 'courses' ),
 				'query_var'           => 'course',
 				'can_export'          => true,
-			)
+			) )
 		);
 
 		// Register post type for lessons.
 		register_post_type(
 			'ib_educator_lesson',
-			array(
+			apply_filters( 'ib_educator_cpt_lesson', array(
 				'labels'              => array(
 					'name'          => __( 'Lessons', 'ibeducator' ),
 					'singular_name' => __( 'Lesson', 'ibeducator' ),
 				),
 				'public'              => true,
-				'exclude_from_search' => true,
+				'exclude_from_search' => false,
 				'publicly_queryable'  => true,
 				'show_ui'             => true,
 				'show_in_nav_menus'   => false,
@@ -170,32 +169,56 @@ class IB_Educator_Main {
 				'rewrite'             => array( 'slug' => 'lessons' ),
 				'query_var'           => 'lesson',
 				'can_export'          => true,
-			)
+			) )
+		);
+
+		// Register post type for memberships.
+		register_post_type(
+			'ib_edu_membership',
+			apply_filters( 'ib_educator_cpt_membership', array(
+				'label'               => __( 'Membership Levels', 'ibeducator' ),
+				'labels'              => array(
+					'name'               => __( 'Membership Levels', 'ibeducator' ),
+					'singular_name'      => __( 'Membership Level', 'ibeducator' ),
+					'add_new_item'       => __( 'Add New Membership Level', 'ibeducator' ),
+					'edit_item'          => __( 'Edit Membership Level', 'ibeducator' ),
+					'new_item'           => __( 'New Membership Level', 'ibeducator' ),
+					'view_item'          => __( 'View Membership Level', 'ibeducator' ),
+					'search_items'       => __( 'Search Membership Levels', 'ibeducator' ),
+					'not_found'          => __( 'No membership levels found', 'ibeducator' ),
+					'not_found_in_trash' => __( 'No membership levels found in Trash', 'ibeducator' ),
+				),
+				'public'              => true,
+				'show_ui'             => true,
+				'show_in_menu'        => 'ib_educator_admin',
+				'exclude_from_search' => true,
+				'capability_type'     => 'ib_edu_membership',
+				'map_meta_cap'        => true,
+				'hierarchical'        => false,
+				'supports'            => array( 'title', 'editor', 'thumbnail', 'excerpt', 'page-attributes' ),
+				'has_archive'         => false,
+				'rewrite'             => array( 'slug' => 'membership' ),
+				'query_var'           => 'membership',
+				'can_export'          => true,
+			) )
 		);
 
 		// Register course taxonomy.
-		register_taxonomy( 'ib_educator_category', 'ib_educator_course', array(
-			'label'             => __( 'Course Categories', 'ibeducator' ),
-			'public'            => true,
-			'show_ui'           => true,
-			'show_in_nav_menus' => true,
-			'hierarchical'      => true,
-			'rewrite'           => array( 'slug' => 'course-category' ),
-			'capabilities'      => array(
-				'assign_terms' => 'edit_ib_educator_courses',
-			),
-		) );
-	}
-
-	/**
-	 * Enqueue scripts and styles.
-	 */
-	public static function enqueue_scripts_styles() {
-		$default_stylesheet = apply_filters( 'ib_educator_stylesheet', true );
-
-		if ( $default_stylesheet ) {
-			wp_enqueue_style( 'ib-educator-base', IBEDUCATOR_PLUGIN_URL . 'css/base.css' );
-		}
+		register_taxonomy(
+			'ib_educator_category',
+			'ib_educator_course',
+			apply_filters( 'ib_educator_ct_category', array(
+				'label'             => __( 'Course Categories', 'ibeducator' ),
+				'public'            => true,
+				'show_ui'           => true,
+				'show_in_nav_menus' => true,
+				'hierarchical'      => true,
+				'rewrite'           => array( 'slug' => 'course-category' ),
+				'capabilities'      => array(
+					'assign_terms' => 'edit_ib_educator_courses',
+				),
+			) )
+		);
 	}
 
 	/**
@@ -231,6 +254,22 @@ class IB_Educator_Main {
 
 			case 'payment':
 				IB_Educator_Actions::payment();
+				break;
+
+			case 'join':
+				IB_Educator_Actions::join();
+				break;
+
+			case 'resume-entry':
+				IB_Educator_Actions::resume_entry();
+				break;
+
+			case 'pause-membership':
+				IB_Educator_Actions::pause_membership();
+				break;
+
+			case 'resume-membership':
+				IB_Educator_Actions::resume_membership();
 				break;
 		}
 	}
@@ -302,6 +341,25 @@ class IB_Educator_Main {
 	}
 
 	/**
+	 * Enqueue scripts and styles.
+	 */
+	public static function enqueue_scripts_styles() {
+		if ( apply_filters( 'ib_educator_stylesheet', true ) ) {
+			wp_enqueue_style( 'ib-educator-base', IBEDUCATOR_PLUGIN_URL . 'css/base.css' );
+
+			switch ( get_template() ) {
+				case 'twentyfourteen':
+					wp_enqueue_style( 'ib-educator-twentyfourteen', IBEDUCATOR_PLUGIN_URL . 'css/twentyfourteen.css' );
+					break;
+
+				case 'twentyfifteen':
+					wp_enqueue_style( 'ib-educator-twentyfifteen', IBEDUCATOR_PLUGIN_URL . 'css/twentyfifteen.css' );
+					break;
+			}
+		}
+	}
+
+	/**
 	 * Action hook: before main loop.
 	 */
 	public static function action_before_main_loop( $where = '' ) {
@@ -312,6 +370,13 @@ class IB_Educator_Main {
 				echo '<div id="main-content" class="main-content"><div id="primary" class="content-area"><div id="content" class="site-content" role="main">';
 
 				if ( 'archive' != $where ) echo '<div class="ib-edu-twentyfourteen">';
+
+				break;
+
+			case 'twentyfifteen':
+				echo '<div id="primary" class="content-area"><main id="main" class="site-main" role="main">';
+
+				if ( 'archive' != $where ) echo '<div class="ib-edu-twentyfifteen">';
 
 				break;
 		}
@@ -326,6 +391,13 @@ class IB_Educator_Main {
 		switch ( $template ) {
 			case 'twentyfourteen':
 				echo '</div></div></div>';
+
+				if ( 'archive' != $where ) echo '</div>';
+
+				break;
+
+			case 'twentyfifteen':
+				echo '</main></div>';
 
 				if ( 'archive' != $where ) echo '</div>';
 

@@ -45,6 +45,8 @@ class IB_Educator_Email {
 	 * @param array $vars
 	 */
 	public function parse_subject( $vars ) {
+		if ( empty( $vars ) ) return;
+		
 		foreach ( $vars as $key => $value ) {
 			$this->subject = str_replace( '{' . $key . '}', $value, $this->subject );
 		}

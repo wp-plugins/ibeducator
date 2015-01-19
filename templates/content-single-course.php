@@ -1,5 +1,7 @@
 <?php
-	$api = IB_Educator::get_instance();
+$api = IB_Educator::get_instance();
+$user_id = get_current_user_id();
+$course_id = get_the_ID();
 ?>
 <article id="course-<?php the_ID(); ?>" <?php post_class( 'ib-edu-course-single' ); ?>>
 	<h1 class="course-title entry-title"><?php the_title(); ?></h1>
@@ -8,13 +10,13 @@
 
 	<div class="course-content entry-content">
 		<?php
-			$status = '';
+			$access_status = '';
 
-			if ( is_user_logged_in() ) {
-				$status = $api->get_access_status( get_the_ID(), get_current_user_id() );
+			if ( $user_id ) {
+				$access_status = $api->get_access_status( $course_id, $user_id );
 			}
-
-			switch ( $status ) {
+			
+			switch ( $access_status ) {
 				case 'inprogress':
 					echo '<div class="ib-edu-message info">' . __( 'You are registered for this course.', 'ibeducator' ) . '</div>';
 					break;
@@ -27,18 +29,8 @@
 					echo '<div class="ib-edu-message info">' . __( 'Your payment for this course is pending.', 'ibeducator' ) . '</div>';
 					break;
 
-				//case 'course_complete':
-				//case 'forbidden':
 				default:
-					$price = ib_edu_get_course_price( get_the_ID() );
-
-					if ( ! $price ) $price = 0;
-					?>
-					<div class="ib-edu-course-price">
-						<span class="price"><?php echo ( 0 == $price ) ? __( 'Free', 'ibeducator' ) : ib_edu_format_course_price( $price ); ?></span>
-						<a href="<?php echo esc_url( ib_edu_get_endpoint_url( 'edu-course', get_the_ID(), get_permalink( ib_edu_page_id( 'payment' ) ) ) ); ?>" class="ib-edu-button"><?php _e( 'Register', 'ibeducator' ); ?></a>
-					</div>
-					<?php
+					echo ib_edu_get_price_widget( $course_id, $user_id );
 			}
 
 			do_action( 'ib_educator_before_course_content' );
@@ -48,7 +40,7 @@
 
 	<?php
 		$api = IB_Educator::get_instance();
-		$lessons_query = $api->get_lessons( get_the_ID() );
+		$lessons_query = $api->get_lessons( $course_id );
 	?>
 
 	<?php if ( $lessons_query && $lessons_query->have_posts() ) : ?>

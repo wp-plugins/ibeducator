@@ -1,34 +1,35 @@
 <?php
-	$entry_id = isset( $_GET['entry_id'] ) ? absint( $_GET['entry_id'] ) : 0;
+if ( ! defined( 'ABSPATH' ) ) exit;
 
-	if ( ! $entry_id ) return;
+$entry_id = isset( $_GET['entry_id'] ) ? absint( $_GET['entry_id'] ) : 0;
 
-	$entry = IB_Educator_Entry::get_instance( $entry_id );
+if ( ! $entry_id ) return;
 
-	if ( ! $entry->ID ) return;
+$entry = IB_Educator_Entry::get_instance( $entry_id );
 
-	$api = IB_Educator::get_instance();
+if ( ! $entry->ID ) return;
 
-	// Verify capabilities.
-	if ( ! current_user_can( 'edit_ib_educator_course', $entry->course_id ) ) {
-		exit;
-	}
+// Verify capabilities.
+if ( ! current_user_can( 'edit_ib_educator_course', $entry->course_id ) ) {
+	echo '<p>' . __( 'Access denied', 'ibeducator' ) . '</p>';
+	exit;
+}
 
-	$quizzes = new WP_Query( array(
-		'post_type' => 'ib_educator_lesson',
-		'meta_query' => array(
-			'relation' => 'AND',
-			array( 'key' => '_ibedu_quiz', 'value' => 1, 'compare' => '=' ),
-			array( 'key' => '_ibedu_course', 'value' => $entry->course_id, 'compare' => '=' )
-		),
-		'orderby' => 'menu_order',
-		'order' => 'ASC',
-	) );
-
-	$suggested_grade = 0;
-	$num_quizzes = $quizzes->found_posts;
-	$student = get_user_by( 'id', $entry->user_id );
-	$course = get_post( $entry->course_id );
+$api = IB_Educator::get_instance();
+$quizzes = new WP_Query( array(
+	'post_type' => 'ib_educator_lesson',
+	'meta_query' => array(
+		'relation' => 'AND',
+		array( 'key' => '_ibedu_quiz', 'value' => 1, 'compare' => '=' ),
+		array( 'key' => '_ibedu_course', 'value' => $entry->course_id, 'compare' => '=' )
+	),
+	'orderby' => 'menu_order',
+	'order' => 'ASC',
+) );
+$suggested_grade = 0;
+$num_quizzes = $quizzes->found_posts;
+$student = get_user_by( 'id', $entry->user_id );
+$course = get_post( $entry->course_id );
 ?>
 <div id="ib-edu-progress" class="wrap">
 	<h2><?php _e( 'Progress', 'ibeducator' ); ?></h2>
@@ -174,7 +175,10 @@
 			<div class="form-row">
 				<div class="label"><?php _e( 'Final Grade', 'ibeducator' ); ?></div>
 				<div class="field">
-					<a href="<?php echo admin_url( 'admin.php?page=ib_educator_entries&edu-action=edit-entry&entry_id=' . $entry_id ); ?>" target="_new"><?php echo ib_edu_format_grade( $entry->grade ); ?></a>
+					<?php echo ib_edu_format_grade( $entry->grade ); ?>
+					<a href="<?php echo esc_url( admin_url( 'admin.php?page=ib_educator_entries&edu-action=edit-entry&entry_id=' . $entry_id ) ); ?>">
+						<?php _e( 'Edit', 'ibeducator' ); ?>
+					</a>
 				</div>
 			</div>
 		</div>
