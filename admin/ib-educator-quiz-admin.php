@@ -5,19 +5,12 @@ class IB_Educator_Quiz_Admin {
 	 * Initialize the quiz admin.
 	 */
 	public static function init() {
-		// Enqueue scripts and stylesheets.
-		add_action( 'admin_enqueue_scripts', array( 'IB_Educator_Quiz_Admin', 'enqueue_scripts_styles' ), 9 );
-
-		// Add meta box.
-		add_action( 'add_meta_boxes', array( 'IB_Educator_Quiz_Admin', 'add_meta_boxes' ) );
-
-		// Indicate that the post has a quiz.
-		add_action( 'save_post', array( 'IB_Educator_Quiz_Admin', 'set_quiz' ), 10, 3 );
-
-		// AJAX actions.
-		add_action( 'wp_ajax_ibedu_quiz_question', array( 'IB_Educator_Quiz_Admin', 'quiz_question' ) );
-		add_action( 'wp_ajax_ibedu_sort_questions', array( 'IB_Educator_Quiz_Admin', 'sort_questions' ) );
-		add_action( 'wp_ajax_ibedu_quiz_grade', array( 'IB_Educator_Quiz_Admin', 'quiz_grade' ) );
+		add_action( 'admin_enqueue_scripts', array( __CLASS__, 'enqueue_scripts_styles' ), 9 );
+		add_action( 'add_meta_boxes', array( __CLASS__, 'add_meta_boxes' ) );
+		add_action( 'save_post', array( __CLASS__, 'set_quiz' ), 10, 3 );
+		add_action( 'wp_ajax_ibedu_quiz_question', array( __CLASS__, 'quiz_question' ) );
+		add_action( 'wp_ajax_ibedu_sort_questions', array( __CLASS__, 'sort_questions' ) );
+		add_action( 'wp_ajax_ibedu_quiz_grade', array( __CLASS__, 'quiz_grade' ) );
 	}
 
 	/**
@@ -54,7 +47,7 @@ class IB_Educator_Quiz_Admin {
 	 * @param WP_Post $post
 	 */
 	public static function quiz_meta_box( $post ) {
-		include( IBEDUCATOR_PLUGIN_DIR . 'admin/meta-boxes/quiz.php' );
+		include IBEDUCATOR_PLUGIN_DIR . 'admin/meta-boxes/quiz.php';
 	}
 
 	/**

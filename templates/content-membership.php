@@ -2,8 +2,9 @@
 $ms = IB_Educator_Memberships::get_instance();
 $membership_id = get_the_ID();
 $membership_meta = $ms->get_membership_meta( $membership_id );
+$classes = apply_filters( 'ib_educator_membership_classes', array( 'ib-edu-membership' ) );
 ?>
-<article class="ib-edu-membership">
+<article id="membership-<?php the_ID(); ?>" class="<?php echo esc_attr( implode( ' ', $classes ) ); ?>">
 	<h2><a href="<?php the_permalink(); ?>"><?php the_title(); ?></a></h2>
 
 	<div class="price">

@@ -4,7 +4,7 @@ Donate link: http://incrediblebytes.com
 Tags: learning management system, lms, learning, online courses
 Requires at least: 4.0
 Tested up to: 4.1
-Stable tag: 1.3.1
+Stable tag: 1.3.2
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -26,7 +26,9 @@ Features:
 * Create lecturers that can edit their courses and lessons.
 * Grade courses and quizzes.
 * Email notifications.
-* NEW: memberships feature.
+* NEW: the memberships feature.
+* NEW: the courses shortcode.
+* NEW: edit the slugs for the courses archive, courses, lessons archive, lessons and course category.
 
 == Installation ==
 
@@ -46,6 +48,18 @@ Coming soon.
 5. **Pages** - Assign the pages that will be used by the plugin.
 
 == Changelog ==
+
+= 1.3.2 =
+* Improved the user registration system/API (the payment page), added the user registration actions and filters. Some user registration form error messages have been changed (the payment page).
+* Added the [courses] shortcode.
+* Refactored the admin settings code.
+* Adding 'current-menu-item' class to a menu item that has URL of the courses archive.
+* Added the options to alter the courses and lessons slugs in Settings > Permalinks.
+* Don't pause the student's course entries when the current membership is extended with the same membership level.
+* Added the 'ib-edu-lesson-locked' to the single lesson's HTML container if the student did not register for the appropriate course.
+* Added the functions to get the adjacent lessons and their links: ib_edu_get_adjacent_lesson, ib_edu_get_adjacent_lesson_link.
+* Added the previous/next links to the single lesson template.
+* Added a couple of new action/filter hooks.
 
 = 1.3.1 =
 * Fixed the "Table 'wp_ibeducator_members' doesn't exist" error.

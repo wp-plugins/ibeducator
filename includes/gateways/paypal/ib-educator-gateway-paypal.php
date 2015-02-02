@@ -176,7 +176,6 @@ class IB_Educator_Gateway_Paypal extends IB_Educator_Payment_Gateway {
 					goToPayPal();
 				});
 			}
-			
 		})();</script>';
 	}
 

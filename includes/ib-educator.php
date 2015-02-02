@@ -777,6 +777,57 @@ class IB_Educator {
 			$entry_id
 		) );
 	}
+
+	/**
+	 * Get the course prerequisites.
+	 *
+	 * @param int $course_id
+	 * @return array
+	 */
+	public function get_prerequisites( $course_id ) {
+		$prerequisites = get_post_meta( $course_id, '_ib_educator_prerequisites', true );
+
+		if ( ! is_array( $prerequisites ) ) {
+			$prerequisites = array();
+		}
+
+		return $prerequisites;
+	}
+
+	/**
+	 * Check if a user has completed the required course prerequisites.
+	 *
+	 * @param int $course_id
+	 * @param int $user_id
+	 * @return bool
+	 */
+	public function check_prerequisites( $course_id, $user_id ) {
+		$prerequisites = $this->get_prerequisites( $course_id );
+
+		if ( empty( $prerequisites ) ) {
+			return true;
+		}
+
+		$completed_courses = $this->get_entries( array(
+			'user_id'      => $user_id,
+			'entry_status' => 'complete',
+		) );
+
+		if ( empty( $completed_courses ) ) {
+			// The user has no courses completed.
+			return false;
+		}
+
+		$prerequisites_satisfied = 0;
+
+		foreach ( $completed_courses as $entry ) {
+			if ( in_array( $entry->course_id, $prerequisites ) ) {
+				$prerequisites_satisfied += 1;
+			}
+		}
+
+		return ( $prerequisites_satisfied == count( $prerequisites ) );
+	}
 }
 
 class IBEdu_API {

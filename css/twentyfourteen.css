@@ -15,23 +15,25 @@ body .site-content .ib-edu-twentyfourteen .entry-content {
 
 .ib-edu-lesson,
 .ib-edu-memberships .ib-edu-membership {
-	border-bottom: 1px solid rgba(0, 0, 0, 0.1);
 	margin-bottom: 24px;
-	padding-bottom: 24px;
 }
 
-.ib-edu-lesson h1 {
-	font-size: 18px;
-	margin-top: 0;
+.ib-edu-memberships .membership-options {
+	margin-bottom: 24px;
 }
 
-.ib-edu-course .course-summary h1 a {
-	text-decoration: none;
+.ib-edu-course-single {
+	margin-top: 0 !important;
 }
 
 .ib-edu-course-single .course-content,
 .ib-edu-lesson-single .lesson-content {
 	padding-top: 12px;
+}
+
+.ib-edu-lesson h1 {
+	font-size: 18px;
+	margin-top: 0;
 }
 
 .ib-edu-course-difficulty {
@@ -49,6 +51,11 @@ body .site-content .ib-edu-twentyfourteen .entry-content {
 
 .ib-edu-memberships .price {
 	margin-bottom: 24px;
+}
+
+.ib-edu-membership h2 a,
+.ib-edu-courses-list h2 a {
+	text-decoration: none;
 }
 
 @media screen and (min-width: 594px) {

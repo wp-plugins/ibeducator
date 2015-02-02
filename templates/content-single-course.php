@@ -33,6 +33,17 @@ $course_id = get_the_ID();
 					echo ib_edu_get_price_widget( $course_id, $user_id );
 			}
 
+			// Output error messages.
+			$errors = ib_edu_message( 'course_join_errors' );
+
+			if ( $errors ) {
+				$messages = $errors->get_error_messages();
+
+				foreach ( $messages as $message ) {
+					echo '<div class="ib-edu-message error">' . $message . '</div>';
+				}
+			}
+
 			do_action( 'ib_educator_before_course_content' );
 			the_content();
 		?>

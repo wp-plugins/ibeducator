@@ -1,43 +1,72 @@
 <?php
 
 class IB_Educator_Install {
+	/**
+	 * @var string
+	 */
 	private $payments;
+
+	/**
+	 * @var string
+	 */
 	private $entries;
+
+	/**
+	 * @var string
+	 */
 	private $questions;
+
+	/**
+	 * @var string
+	 */
 	private $choices;
+
+	/**
+	 * @var string
+	 */
 	private $answers;
+
+	/**
+	 * @var string
+	 */
 	private $grades;
 
 	public function __construct() {
 		$tables = ib_edu_table_names();
-		$this->payments = $tables['payments'];
-		$this->entries = $tables['entries'];
+		$this->payments  = $tables['payments'];
+		$this->entries   = $tables['entries'];
 		$this->questions = $tables['questions'];
-		$this->choices = $tables['choices'];
-		$this->answers = $tables['answers'];
-		$this->grades = $tables['grades'];
-		$this->members = $tables['members'];
+		$this->choices   = $tables['choices'];
+		$this->answers   = $tables['answers'];
+		$this->grades    = $tables['grades'];
+		$this->members   = $tables['members'];
 	}
 
 	/**
 	 * Install.
 	 */
-	public function activate() {
+	public function activate( $inc_post_types = true, $inc_endpoints = true ) {
 		/*$current_version = get_option( 'ib_educator_version' );
 
 		if ( $current_version ) {
 			if ( version_compare( $current_version, '1.2.0', '<=' ) ) {}
 		}*/
 
-		// Setup database tables.
+		// Setup the database tables.
 		$this->setup_tables();
 
-		// Setup user roles and capabilities.
+		// Setup the user roles and capabilities.
 		$this->setup_roles();
 
-		// Add post types and endpoints to flush rewrite rules properly.
-		IB_Educator_Main::register_post_types();
-		IB_Educator_Main::add_rewrite_endpoints();
+		// Post types.
+		if ( $inc_post_types ) {
+			IB_Educator_Post_Types::register_post_types();
+			IB_Educator_Post_Types::register_taxonomies();
+		}
+		
+		if ( $inc_endpoints ) {
+			IB_Educator_Main::add_rewrite_endpoints();
+		}
 
 		// Setup email templates.
 		$this->setup_email_templates();
@@ -82,6 +111,11 @@ class IB_Educator_Install {
 		wp_clear_scheduled_hook( 'ib_educator_membership_notifications' );
 	}
 
+	/**
+	 * Get the capabilities for a post type.
+	 *
+	 * @return array
+	 */
 	public function get_post_type_caps() {
 		return array(
 			'edit_{post_type}',
@@ -207,7 +241,7 @@ CREATE TABLE {$this->members} (
   KEY user_id (user_id),
   KEY status (status),
   KEY expiration (expiration)
-) $charset_collate";
+) $charset_collate;";
 
 			require_once ABSPATH . 'wp-admin/includes/upgrade.php';
 			dbDelta( $sql );
@@ -234,6 +268,7 @@ CREATE TABLE {$this->members} (
 
 			// Assign capabilities to administrator.
 			$all_capabilities = $this->get_role_capabilities( 'administrator' );
+
 			foreach ( $all_capabilities as $cap_group ) {
 				foreach ( $cap_group as $cap ) {
 					$wp_roles->add_cap( 'administrator', $cap );
@@ -242,6 +277,7 @@ CREATE TABLE {$this->members} (
 
 			// Assign capabilities to lecturer.
 			$lecturer_capabilities = $this->get_role_capabilities( 'lecturer' );
+
 			foreach ( $lecturer_capabilities as $cap_group ) {
 				foreach ( $cap_group as $cap ) {
 					$wp_roles->add_cap( 'lecturer', $cap );
@@ -251,7 +287,7 @@ CREATE TABLE {$this->members} (
 	}
 
 	/**
-	 * Get capabilities per role.
+	 * Get the capabilities for a given role.
 	 *
 	 * @param string $role
 	 * @return array
