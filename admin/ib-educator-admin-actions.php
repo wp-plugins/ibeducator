@@ -12,6 +12,7 @@ class IB_Educator_Admin_Actions {
 			// Verify nonce.
 			check_admin_referer( 'ib_educator_edit_entry_' . $entry_id );
 			
+			$errors = new WP_Error();
 			$api = IB_Educator::get_instance();
 			$current_user_id = get_current_user_id();
 			$who = '';
@@ -52,12 +53,20 @@ class IB_Educator_Admin_Actions {
 
 			// Student ID.
 			if ( 'admin' == $who && isset( $_POST['student_id'] ) ) {
-				$entry->user_id = intval( $_POST['student_id'] );
+				if ( ! empty( $_POST['student_id'] ) ) {
+					$entry->user_id = intval( $_POST['student_id'] );
+				} else {
+					$errors->add( 'no_student', __( 'Please select a student.', 'ibeducator' ) );
+				}
 			}
 
 			// Course ID.
 			if ( 'admin' == $who && isset( $_POST['course_id'] ) ) {
-				$entry->course_id = intval( $_POST['course_id'] );
+				if ( ! empty( $_POST['course_id'] ) ) {
+					$entry->course_id = intval( $_POST['course_id'] );
+				} else {
+					$errors->add( 'no_course', __( 'Please select a course.', 'ibeducator' ) );
+				}
 			}		
 
 			// Entry status.
@@ -79,7 +88,28 @@ class IB_Educator_Admin_Actions {
 				}
 			}
 
-			if ( $entry->save() ) {
+			// Check the course prerequisites.
+			if ( ! isset( $_POST['ignore_prerequisites'] ) && ! $api->check_prerequisites( $entry->course_id, $entry->user_id ) ) {
+				$prerequisites_html = '';
+				$prerequisites = $api->get_prerequisites( $entry->course_id );
+				$courses = get_posts( array(
+					'post_type'   => 'ib_educator_course',
+					'post_status' => 'publish',
+					'include'     => $prerequisites,
+				) );
+
+				if ( ! empty( $courses ) ) {
+					foreach ( $courses as $course ) {
+						$prerequisites_html .= '<br><a href="' . esc_url( get_permalink( $course->ID ) ) . '">' . esc_html( $course->post_title ) . '</a>';
+					}
+				}
+
+				$errors->add( 'prerequisites', sprintf( __( 'You have to complete the prerequisites for this course: %s', 'ibeducator' ), $prerequisites_html ) );
+			}
+
+			if ( $errors->get_error_code() ) {
+				ib_edu_message( 'edit_entry_errors', $errors );
+			} elseif ( $entry->save() ) {
 				wp_redirect( admin_url( 'admin.php?page=ib_educator_entries&edu-action=edit-entry&entry_id=' . $entry->ID . '&edu-message=saved' ) );
 				exit;
 			}

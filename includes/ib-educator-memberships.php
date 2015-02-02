@@ -341,8 +341,11 @@ class IB_Educator_Memberships {
 		// Get membership meta.
 		$membership_meta = $this->get_membership_meta( $membership_id );
 
-		// Pause the course entries that were originated by the current membership.
-		$this->pause_membership_entries( $user_id );
+		// Pause the course entries that were originated by the current membership
+		// if the new membership differs.
+		if ( ! $user_membership || $membership_id != $user_membership['membership_id'] ) {
+			$this->pause_membership_entries( $user_id );
+		}
 
 		// Setup/update user's membership.
 		$expiration = 0;
@@ -615,31 +618,17 @@ class IB_Educator_Memberships_Run {
 	 * Initialize.
 	 */
 	public static function init() {
-		// Check if the user's membership has expired.
 		add_action( 'init', array( __CLASS__, 'check_user_membership' ) );
-
-		// Add price widget to the membership details page.
 		add_filter( 'the_content', array( __CLASS__, 'add_price_widget' ) );
-
-		// CRON: process the expired memberships.
 		add_action( 'ib_educator_expired_memberships', array( __CLASS__, 'process_expired_memberships' ) );
-
-		// CRON: send the membership expiration notifications.
 		add_action( 'ib_educator_membership_notifications', array( __CLASS__, 'send_expiration_notifications' ) );
-
-		// Add the price column to the memberships list in admin.
 		add_filter( 'manage_ib_edu_membership_posts_columns', array( __CLASS__, 'memberships_columns' ) );
 		add_filter( 'manage_ib_edu_membership_posts_custom_column', array( __CLASS__, 'memberships_column_output' ), 10, 2 );
-
 		add_action( 'deleted_user', array( __CLASS__, 'on_deleted_user' ) );
 
-		// TODO: REMOVE!
-		/*if ( isset( $_GET['test_cron'] ) ) {
-			wp_clear_scheduled_hook( 'ib_educator_expired_memberships' );
-			wp_schedule_event( time() + 20, 'daily', 'ib_educator_expired_memberships' );
-			wp_clear_scheduled_hook( 'ib_educator_membership_notifications' );
-			wp_schedule_event( time() + 20, 'daily', 'ib_educator_membership_notifications' );
-		}*/
+		if ( is_admin() ) {
+			add_action( 'pre_get_posts', array( __CLASS__, 'memberships_menu_order' ) );
+		}
 	}
 
 	/**
@@ -811,6 +800,18 @@ class IB_Educator_Memberships_Run {
 		$tables = ib_edu_table_names();
 		
 		$wpdb->delete( $tables['members'], array( 'user_id' => $user_id ), array( '%d' ) );
+	}
+
+	/**
+	 * Order memberships by menu_order of the memberships admin page.
+	 *
+	 * @param WP_Query $query
+	 */
+	public static function memberships_menu_order( $query ) {
+		if ( $query->is_main_query() && 'ib_edu_membership' == $query->query['post_type'] ) {
+			$query->set( 'orderby', 'menu_order' );
+			$query->set( 'order', 'ASC' );
+		}
 	}
 }
 

@@ -17,28 +17,24 @@ function ib_edu_get_settings() {
  * @return mixed
  */
 function ib_edu_get_option( $option_key, $option_section ) {
-	static $options = array();
+	$options = null;
 
-	if ( empty( $options[ $option_section ] ) ) {
-		$option = '';
+	switch ( $option_section ) {
+		case 'settings':
+			$options = get_option( 'ib_educator_settings' );
+			break;
 
-		switch ( $option_section ) {
-			case 'settings':
-				$option = 'ib_educator_settings';
-				break;
-			case 'email':
-				$option = 'ib_educator_email';
-				break;
-			case 'memberships':
-				$option = 'ib_educator_memberships';
-				break;
-		}
+		case 'email':
+			$options = get_option( 'ib_educator_email' );
+			break;
 
-		$options[ $option_section ] = get_option( $option, array() );
+		case 'memberships':
+			$options = get_option( 'ib_educator_memberships' );
+			break;
 	}
 
-	if ( isset( $options[ $option_section ][ $option_key ] ) ) {
-		return $options[ $option_section ][ $option_key ];
+	if ( is_array( $options ) && isset( $options[ $option_key ] ) ) {
+		return $options[ $option_key ];
 	}
 
 	return null;
@@ -517,6 +513,18 @@ function ib_edu_get_price_widget( $course_id, $user_id ) {
 	$ms = IB_Educator_Memberships::get_instance();
 	$membership_access = $ms->membership_can_access( $course_id, $user_id );
 
+	/**
+	 * Filter the course price widget.
+	 *
+	 * @since 1.3.2
+	 *
+	 * @param bool $membership_access Whether the user's current membership allows him/her to take the course.
+	 */
+	$output = apply_filters( 'ib_educator_course_price_widget', null, $membership_access );
+	if ( null !== $output ) {
+		return $output;
+	}
+
 	// Generate the widget.
 	$output = '<div class="ib-edu-course-price">';
 
@@ -536,6 +544,73 @@ function ib_edu_get_price_widget( $course_id, $user_id ) {
 
 	$output .= '</div>';
 	return $output;
+}
+
+/**
+ * Output the default page title based on the page context.
+ */
+function ib_edu_page_title() {
+	$title = '';
+
+	if ( is_post_type_archive( array( 'ib_educator_course', 'ib_educator_lesson' ) ) ) {
+		$title = post_type_archive_title( '', false );
+	} elseif ( is_tax() ) {
+		$title = single_term_title( '', false );
+	}
+
+	$title = apply_filters( 'ib_educator_page_title', $title );
+
+	echo $title;
+}
+
+/**
+ * Get the adjacent lesson.
+ *
+ * @param bool $previous
+ * @return mixed If global post object is not set returns null, if post is not found, returns empty string, else returns WP_Post.
+ */
+function ib_edu_get_adjacent_lesson( $previous = true ) {
+	global $wpdb;
+
+	if ( ! $lesson = get_post() ) {
+		return null;
+	}
+
+	$course_id = ib_edu_get_course_id( $lesson->ID );
+	$cmp = $previous ? '<' : '>';
+	$order = $previous ? 'DESC' : 'ASC';
+	$join = "INNER JOIN $wpdb->postmeta pm ON pm.post_id = p.ID";
+	$where = $wpdb->prepare( "WHERE p.post_type = 'ib_educator_lesson' AND p.post_status = 'publish' AND p.menu_order $cmp %d AND pm.meta_key = '_ibedu_course' AND pm.meta_value = %d", $lesson->menu_order, $course_id );
+	$sort = "ORDER BY p.menu_order $order";
+	$query = "SELECT p.ID FROM $wpdb->posts as p $join $where $sort LIMIT 1";
+	$result = $wpdb->get_var( $query );
+
+	if ( null === $result ) {
+		return '';
+	}
+
+	return get_post( $result );
+}
+
+/**
+ * Get the adjacent lesson's link.
+ *
+ * @param string $dir
+ * @param string $format
+ * @param string $title
+ * @return string
+ */
+function ib_edu_get_adjacent_lesson_link( $dir = 'previous', $format, $title ) {
+	$previous = ( 'previous' == $dir ) ? true : false;
+	
+	if ( ! $lesson = ib_edu_get_adjacent_lesson( $previous ) ) {
+		return '';
+	}
+
+	$url = apply_filters( "ib_educator_{$dir}_lesson_url", get_permalink( $lesson->ID ), get_the_ID() );
+	$title = str_replace( '%title', esc_html( $lesson->post_title ), $title );
+	$link = '<a href="' . esc_url( $url ) . '">' . $title . '</a>';
+	return str_replace( '%link', $link, $format );
 }
 
 /**

@@ -5,40 +5,51 @@ class IB_Educator_Admin {
 	 * Initialize admin.
 	 */
 	public static function init() {
-		// Enqueue scripts and stylesheets.
-		add_action( 'admin_enqueue_scripts', array( __CLASS__, 'enqueue_scripts_styles' ), 9 );
-
-		// Admin menu.
+		self::includes();
+		add_action( 'current_screen', array( __CLASS__, 'maybe_includes' ) );
 		add_action( 'admin_menu', array( __CLASS__, 'admin_menu' ), 9 );
-
-		// Process admin actions.
 		add_action( 'admin_init', array( __CLASS__, 'admin_actions' ) );
-
-		// AJAX actions.
+		add_action( 'admin_enqueue_scripts', array( __CLASS__, 'enqueue_scripts_styles' ), 9 );
 		add_action( 'wp_ajax_ib_educator_delete_payment', array( __CLASS__, 'admin_payments_delete' ) );
 		add_action( 'wp_ajax_ib_educator_delete_entry', array( __CLASS__, 'admin_entries_delete' ) );
+	}
 
-		add_action( 'pre_get_posts', array( __CLASS__, 'memberships_menu_order' ) );
-
-		// Setup the autocomplete form field.
+	/**
+	 * Include the necessary files.
+	 */
+	public static function includes() {
 		require_once IBEDUCATOR_PLUGIN_DIR . 'admin/ib-educator-autocomplete.php';
-		IB_Educator_Autocomplete::init();
-
-		// Add various enhancements for the admin screens of courses, lessons, etc.
-		require_once( IBEDUCATOR_PLUGIN_DIR . 'admin/custom-post-columns.php' );
-		IB_Educator_Custom_Post_Columns::init();
-
-		// Setup educator admin settings.
-		require_once( IBEDUCATOR_PLUGIN_DIR . 'admin/ib-educator-admin-settings.php' );
-		IB_Educator_Admin_Settings::init();
-
-		// Meta boxes.
+		require_once IBEDUCATOR_PLUGIN_DIR . 'admin/ib-educator-admin-post-types.php';
 		require_once IBEDUCATOR_PLUGIN_DIR . 'admin/ib-educator-admin-meta.php';
-		IB_Educator_Admin_Meta::init();
-
-		// Setup educator quiz admin.
 		require_once IBEDUCATOR_PLUGIN_DIR . 'admin/ib-educator-quiz-admin.php';
+		require_once IBEDUCATOR_PLUGIN_DIR . 'admin/settings/ib-educator-admin-settings.php';
+		require_once IBEDUCATOR_PLUGIN_DIR . 'admin/settings/ib-educator-general-settings.php';
+		require_once IBEDUCATOR_PLUGIN_DIR . 'admin/settings/ib-educator-payment-settings.php';
+		require_once IBEDUCATOR_PLUGIN_DIR . 'admin/settings/ib-educator-email-settings.php';
+		require_once IBEDUCATOR_PLUGIN_DIR . 'admin/settings/ib-educator-memberships-settings.php';
+
+		new IB_Educator_General_Settings();
+		new IB_Educator_Payment_Settings();
+		new IB_Educator_Email_Settings();
+		new IB_Educator_Memberships_Settings();
+		IB_Educator_Autocomplete::init();
+		IB_Educator_Admin_Post_Types::init();
+		IB_Educator_Admin_Meta::init();
 		IB_Educator_Quiz_Admin::init();
+	}
+
+	/**
+	 * Include the files based on the current screen.
+	 *
+	 * @param WP_Screen $screen
+	 */
+	public static function maybe_includes( $screen ) {
+		switch ( $screen->id ) {
+			case 'options-permalink':
+				include IBEDUCATOR_PLUGIN_DIR . 'admin/settings/ib-educator-permalink-settings.php';
+				new IB_Educator_Permalink_Settings();
+				break;
+		}
 	}
 
 	/**
@@ -50,7 +61,7 @@ class IB_Educator_Admin {
 			__( 'Educator', 'ibeducator' ),
 			'manage_educator',
 			'ib_educator_admin',
-			array( 'IB_Educator_Admin_Settings', 'admin_index' ),
+			array( __CLASS__, 'settings_page' ),
 			IBEDUCATOR_PLUGIN_URL . '/admin/images/educator-icon.png'
 		);
 
@@ -101,10 +112,38 @@ class IB_Educator_Admin {
 	}
 
 	/**
-	 * Enqueue scripts and styles.
+	 * Output the settings page.
 	 */
-	public static function enqueue_scripts_styles() {
-		wp_enqueue_style( 'ib-educator-admin', IBEDUCATOR_PLUGIN_URL . 'admin/css/admin.css', array(), '1.0' );
+	public static function settings_page() {
+		$tab = isset( $_GET['tab'] ) ? $_GET['tab'] : '';
+		do_action( 'ib_educator_settings_page', $tab );
+	}
+
+	/**
+	 * Process the admin actions.
+	 */
+	public static function admin_actions() {
+		if ( isset( $_GET['edu-action'] ) ) {
+			require_once IBEDUCATOR_PLUGIN_DIR . 'admin/ib-educator-admin-actions.php';
+
+			switch ( $_GET['edu-action'] ) {
+				case 'edit-entry':
+					IB_Educator_Admin_Actions::edit_entry();
+					break;
+
+				case 'edit-payment':
+					IB_Educator_Admin_Actions::edit_payment();
+					break;
+
+				case 'edit-member':
+					IB_Educator_Admin_Actions::edit_member();
+					break;
+
+				case 'edit-payment-gateway':
+					IB_Educator_Admin_Actions::edit_payment_gateway();
+					break;
+			}
+		}
 	}
 
 	/**
@@ -151,37 +190,10 @@ class IB_Educator_Admin {
 	}
 
 	/**
-	 * Process admin actions.
+	 * Enqueue scripts and styles.
 	 */
-	public static function admin_actions() {
-		if ( isset( $_GET['edu-action'] ) ) {
-			require_once IBEDUCATOR_PLUGIN_DIR . 'admin/ib-educator-admin-actions.php';
-
-			switch ( $_GET['edu-action'] ) {
-				case 'edit-entry':
-					IB_Educator_Admin_Actions::edit_entry();
-					break;
-
-				case 'edit-payment':
-					IB_Educator_Admin_Actions::edit_payment();
-					break;
-
-				case 'edit-member':
-					IB_Educator_Admin_Actions::edit_member();
-					break;
-
-				case 'edit-payment-gateway':
-					IB_Educator_Admin_Actions::edit_payment_gateway();
-					break;
-			}
-		}
-	}
-
-	public static function memberships_menu_order( $query ) {
-		if ( $query->is_main_query() && 'ib_edu_membership' == $query->query['post_type'] ) {
-			$query->set( 'orderby', 'menu_order' );
-			$query->set( 'order', 'ASC' );
-		}
+	public static function enqueue_scripts_styles() {
+		wp_enqueue_style( 'ib-educator-admin', IBEDUCATOR_PLUGIN_URL . 'admin/css/admin.css', array(), '1.0' );
 	}
 
 	/**

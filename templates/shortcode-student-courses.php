@@ -126,7 +126,7 @@ if ( $courses || $pending_courses ) {
 		 */
 		if ( array_key_exists( 'paused', $courses['statuses'] ) ) {
 			echo '<h3>' . __( 'Paused', 'ibeducator' ) . '</h3>';
-			echo '<table class="ib-edu-courses ib-edu-courses-complete">';
+			echo '<table class="ib-edu-courses ib-edu-courses-paused">';
 			echo '<thead><tr><th style="width:20%;">' . __( 'Entry ID', 'ibeducator' ) . '</th><th style="width:50%;">' . __( 'Course', 'ibeducator' ) . '</th><th>' . __( 'Actions', 'ibeducator' ) . '</th></tr></thead>';
 			echo '<tbody>';
 			

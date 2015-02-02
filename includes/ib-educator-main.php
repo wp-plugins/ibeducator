@@ -1,36 +1,61 @@
 <?php
 
 class IB_Educator_Main {
+	/**
+	 * @var array
+	 */
 	protected static $gateways = array();
 
 	/**
 	 * Initialize.
 	 */
 	public static function init() {
-		add_action( 'init', array( __CLASS__, 'add_rewrite_endpoints' ) );
-		add_action( 'init', array( __CLASS__, 'register_post_types' ) );
-		add_action( 'init', array( __CLASS__, 'init_gateways' ) );
-
-		// Plugin textdomain.
 		add_action( 'plugins_loaded', array( __CLASS__, 'load_textdomain' ) );
-
-		// Process actions (e.g. enroll, payment).
+		add_action( 'init', array( __CLASS__, 'init_gateways' ) );
+		add_action( 'init', array( __CLASS__, 'add_rewrite_endpoints' ), 8 ); // Run before the plugin update.
 		add_action( 'template_redirect', array( __CLASS__, 'process_actions' ) );
-
-		// Override templates.
 		add_filter( 'template_include', array( __CLASS__, 'override_templates' ) );
-
-		// Verify permissions for various pages.
 		add_action( 'template_redirect', array( __CLASS__, 'protect_private_pages' ) );
-
-		// Enqueue scripts and styles.
 		add_action( 'wp_enqueue_scripts', array( __CLASS__, 'enqueue_scripts_styles' ) );
+		add_filter( 'wp_nav_menu_objects', array( __CLASS__, 'add_menu_classes' ) );
+
+		// Register form.
+		add_action( 'ib_educator_register_form', array( __CLASS__, 'register_form' ) );
+		add_filter( 'ib_educator_register_form_validate', array( __CLASS__, 'register_form_validate' ) );
+		add_filter( 'ib_educator_register_user_data', array( __CLASS__, 'register_user_data' ) );
 
 		// Add templating actions.
 		add_action( 'ib_educator_before_main_loop', array( __CLASS__, 'action_before_main_loop' ) );
 		add_action( 'ib_educator_after_main_loop', array( __CLASS__, 'action_after_main_loop' ) );
 		add_action( 'ib_educator_sidebar', array( __CLASS__, 'action_sidebar' ) );
 		add_action( 'ib_educator_before_course_content', array( __CLASS__, 'before_course_content' ) );
+	}
+
+	/**
+	 * Get the payment gateways objects.
+	 *
+	 * @return array
+	 */
+	public static function get_gateways() {
+		return self::$gateways;
+	}
+
+	/**
+	 * Plugin activation hook.
+	 */
+	public static function plugin_activation() {
+		require_once IBEDUCATOR_PLUGIN_DIR . 'includes/ib-educator-install.php';
+		$install = new IB_Educator_Install();
+		$install->activate();
+	}
+
+	/**
+	 * Plugin deactivation hook.
+	 */
+	public static function plugin_deactivation() {
+		require_once IBEDUCATOR_PLUGIN_DIR . 'includes/ib-educator-install.php';
+		$install = new IB_Educator_Install();
+		$install->deactivate();
 	}
 
 	/**
@@ -95,15 +120,6 @@ class IB_Educator_Main {
 	}
 
 	/**
-	 * Get payment gateways objects.
-	 *
-	 * @return array
-	 */
-	public static function get_gateways() {
-		return self::$gateways;
-	}
-
-	/**
 	 * Add rewrite endpoints.
 	 */
 	public static function add_rewrite_endpoints() {
@@ -117,129 +133,17 @@ class IB_Educator_Main {
 	}
 
 	/**
-	 * Register post types.
-	 */
-	public static function register_post_types() {
-		// Register post type for courses.
-		register_post_type(
-			'ib_educator_course',
-			apply_filters( 'ib_educator_cpt_course', array(
-				'labels'              => array(
-					'name'          => __( 'Courses', 'ibeducator' ),
-					'singular_name' => __( 'Course', 'ibeducator' ),
-				),
-				'public'              => true,
-				'exclude_from_search' => false,
-				'publicly_queryable'  => true,
-				'show_ui'             => true,
-				'show_in_nav_menus'   => true,
-				'show_in_menu'        => true,
-				'show_in_admin_bar'   => true,
-				'capability_type'     => 'ib_educator_course',
-				'map_meta_cap'        => true,
-				'hierarchical'        => false,
-				'supports'            => array( 'title', 'editor', 'author', 'thumbnail', 'excerpt', 'page-attributes' ),
-				'has_archive'         => true,
-				'rewrite'             => array( 'slug' => 'courses' ),
-				'query_var'           => 'course',
-				'can_export'          => true,
-			) )
-		);
-
-		// Register post type for lessons.
-		register_post_type(
-			'ib_educator_lesson',
-			apply_filters( 'ib_educator_cpt_lesson', array(
-				'labels'              => array(
-					'name'          => __( 'Lessons', 'ibeducator' ),
-					'singular_name' => __( 'Lesson', 'ibeducator' ),
-				),
-				'public'              => true,
-				'exclude_from_search' => false,
-				'publicly_queryable'  => true,
-				'show_ui'             => true,
-				'show_in_nav_menus'   => false,
-				'show_in_menu'        => true,
-				'show_in_admin_bar'   => true,
-				'capability_type'     => 'ib_educator_lesson',
-				'map_meta_cap'        => true,
-				'hierarchical'        => false,
-				'supports'            => array( 'title', 'editor', 'author', 'thumbnail', 'excerpt', 'page-attributes' ),
-				'has_archive'         => true,
-				'rewrite'             => array( 'slug' => 'lessons' ),
-				'query_var'           => 'lesson',
-				'can_export'          => true,
-			) )
-		);
-
-		// Register post type for memberships.
-		register_post_type(
-			'ib_edu_membership',
-			apply_filters( 'ib_educator_cpt_membership', array(
-				'label'               => __( 'Membership Levels', 'ibeducator' ),
-				'labels'              => array(
-					'name'               => __( 'Membership Levels', 'ibeducator' ),
-					'singular_name'      => __( 'Membership Level', 'ibeducator' ),
-					'add_new_item'       => __( 'Add New Membership Level', 'ibeducator' ),
-					'edit_item'          => __( 'Edit Membership Level', 'ibeducator' ),
-					'new_item'           => __( 'New Membership Level', 'ibeducator' ),
-					'view_item'          => __( 'View Membership Level', 'ibeducator' ),
-					'search_items'       => __( 'Search Membership Levels', 'ibeducator' ),
-					'not_found'          => __( 'No membership levels found', 'ibeducator' ),
-					'not_found_in_trash' => __( 'No membership levels found in Trash', 'ibeducator' ),
-				),
-				'public'              => true,
-				'show_ui'             => true,
-				'show_in_menu'        => 'ib_educator_admin',
-				'exclude_from_search' => true,
-				'capability_type'     => 'ib_edu_membership',
-				'map_meta_cap'        => true,
-				'hierarchical'        => false,
-				'supports'            => array( 'title', 'editor', 'thumbnail', 'excerpt', 'page-attributes' ),
-				'has_archive'         => false,
-				'rewrite'             => array( 'slug' => 'membership' ),
-				'query_var'           => 'membership',
-				'can_export'          => true,
-			) )
-		);
-
-		// Register course taxonomy.
-		register_taxonomy(
-			'ib_educator_category',
-			'ib_educator_course',
-			apply_filters( 'ib_educator_ct_category', array(
-				'label'             => __( 'Course Categories', 'ibeducator' ),
-				'public'            => true,
-				'show_ui'           => true,
-				'show_in_nav_menus' => true,
-				'hierarchical'      => true,
-				'rewrite'           => array( 'slug' => 'course-category' ),
-				'capabilities'      => array(
-					'assign_terms' => 'edit_ib_educator_courses',
-				),
-			) )
-		);
-	}
-
-	/**
 	 * Process actions.
 	 */
 	public static function process_actions() {
-		if ( ! isset( $GLOBALS['wp_query']->post ) ) {
+		if ( ! isset( $GLOBALS['wp_query']->post )
+			|| ! isset( $GLOBALS['wp_query']->post->ID )
+			|| ! isset( $GLOBALS['wp_query']->query_vars['edu-action'] ) ) {
 			return;
 		}
 
-		$post_id = isset( $GLOBALS['wp_query']->post->ID ) ? $GLOBALS['wp_query']->post->ID : null;
-
-		if ( ! $post_id ) {
-			return;
-		}
-
-		$action = isset( $GLOBALS['wp_query']->query_vars['edu-action'] ) ? $GLOBALS['wp_query']->query_vars['edu-action'] : '';
-
-		if ( empty( $action ) ) {
-			return;
-		}
+		$post_id = $GLOBALS['wp_query']->post->ID;
+		$action = $GLOBALS['wp_query']->query_vars['edu-action'];
 
 		require_once IBEDUCATOR_PLUGIN_DIR . 'includes/ib-educator-actions.php';
 
@@ -323,24 +227,6 @@ class IB_Educator_Main {
 	}
 
 	/**
-	 * Plugin activation hook.
-	 */
-	public static function plugin_activation() {
-		require_once( IBEDUCATOR_PLUGIN_DIR . 'includes/ib-educator-install.php' );
-		$install = new IB_Educator_Install();
-		$install->activate();
-	}
-
-	/**
-	 * Plugin deactivation hook.
-	 */
-	public static function plugin_deactivation() {
-		require_once( IBEDUCATOR_PLUGIN_DIR . 'includes/ib-educator-install.php' );
-		$install = new IB_Educator_Install();
-		$install->deactivate();
-	}
-
-	/**
 	 * Enqueue scripts and styles.
 	 */
 	public static function enqueue_scripts_styles() {
@@ -357,6 +243,134 @@ class IB_Educator_Main {
 					break;
 			}
 		}
+	}
+
+	/**
+	 * Add classes to menu items.
+	 *
+	 * @param array $items
+	 * @return array
+	 */
+	public static function add_menu_classes( $items ) {
+		$courses_url = get_post_type_archive_link( 'ib_educator_course' );
+
+		foreach ( $items as $key => $item ) {
+			if ( $item->url == $courses_url ) {
+				if ( is_singular( 'ib_educator_course' )
+					|| is_post_type_archive( 'ib_educator_course' )
+					|| is_tax( 'ib_educator_category' ) ) {
+					$items[ $key ]->classes[] = 'current-menu-item';
+				}
+
+				break;
+			}
+		}
+
+		return $items;
+	}
+
+	/**
+	 * Output default user register form.
+	 *
+	 * @param array $error_codes
+	 */
+	public static function register_form( $error_codes ) {
+		$user_id = get_current_user_id();
+
+		if ( $user_id ) {
+			return;
+		}
+
+		foreach ( $error_codes as $error_code ) {
+			switch ( $error_code ) {
+				case 'account_info_empty':
+					$errors['account_username'] = true;
+					$errors['account_email'] = true;
+					break;
+
+				case 'invalid_username':
+				case 'existing_user_login':
+					$errors['account_username'] = true;
+					break;
+
+				case 'invalid_email':
+				case 'existing_user_email':
+					$errors['account_email'] = true;
+					break;
+			}
+		}
+		?>
+		<fieldset>
+			<legend><?php _e( 'Create an Account', 'ibeducator' ); ?></legend>
+
+			<div class="ib-edu-form-field<?php if ( isset( $errors['account_username'] ) ) echo ' error'; ?>">
+				<label for="ib-edu-username"><?php _e( 'Username', 'ibeducator' ); ?> <span class="required">*</span></label>
+				<div class="ib-edu-form-control">
+					<input type="text" id="ib-edu-username" name="account_username" value="<?php if ( ! empty( $_POST['account_username'] ) ) echo esc_attr( $_POST['account_username'] ); ?>">
+				</div>
+			</div>
+
+			<div class="ib-edu-form-field<?php if ( isset( $errors['account_email'] ) ) echo ' error'; ?>">
+				<label for="ib-edu-email"><?php _e( 'Email', 'ibeducator' ); ?> <span class="required">*</span></label>
+				<div class="ib-edu-form-control">
+					<input type="text" id="ib-edu-email" name="account_email" value="<?php if ( ! empty( $_POST['account_email'] ) ) echo esc_attr( $_POST['account_email'] ); ?>">
+				</div>
+			</div>
+		</fieldset>
+		<?php
+	}
+
+	/**
+	 * Validate the default user registration form.
+	 *
+	 * @param WP_Error $errors
+	 * @return WP_Error
+	 */
+	public static function register_form_validate( $errors ) {
+		$user_id = get_current_user_id();
+
+		if ( $user_id ) {
+			return $errors;
+		}
+
+		if ( ! empty( $_POST['account_username'] ) ) {
+			if ( ! validate_username( $_POST['account_username'] ) ) {
+				$errors->add( 'invalid_username', __( 'Please check if you entered your username correctly.', 'ibeducator' ) );
+			}
+		} else {
+			$errors->add( 'account_info_empty', __( 'Please enter your username and email.', 'ibeducator' ) );
+		}
+
+		// Get account username.
+		if ( ! empty( $_POST['account_email'] ) ) {
+			if ( ! is_email( $_POST['account_email'] ) ) {
+				$errors->add( 'invalid_email', __( 'Please check if you entered your email correctly.', 'ibeducator' ) );
+			}
+		} elseif ( ! $errors->get_error_message( 'account_info_empty' ) ) {
+			$errors->add( 'account_info_empty', __( 'Please enter your username and email.', 'ibeducator' ) );
+		}
+
+		return $errors;
+	}
+
+	/**
+	 * Filter the default user registration data.
+	 *
+	 * @param array $data
+	 * @return array
+	 */
+	public static function register_user_data( $data ) {
+		if ( ! empty( $_POST['account_username'] ) ) {
+			$data['user_login'] = $_POST['account_username'];
+		}
+
+		if ( ! empty( $_POST['account_email'] ) ) {
+			$data['user_email'] = $_POST['account_email'];
+		}
+
+		$data['user_pass'] = wp_generate_password( 12, false );
+
+		return $data;
 	}
 
 	/**

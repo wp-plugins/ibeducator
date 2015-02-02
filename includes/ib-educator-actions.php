@@ -178,63 +178,80 @@ class IB_Educator_Actions {
 
 		$post = get_post( $post_id );
 
-		if ( ! $post ) return;
+		if ( ! $post ) {
+			return;
+		}
 
-		// Create an account.
-		$errors = array();
-		$username = '';
-		$email = '';
-		$payment_method = '';
 		$user_id = get_current_user_id();
+		$errors = new WP_Error();
 
-		// Get account username.
-		if ( ! isset( $_POST['account_username'] ) || empty( $_POST['account_username'] ) ) {
-			if ( ! $user_id ) {
-				$errors[] = 'account_info_empty';
+		// Check the course prerequisites.
+		if ( 'course' == $payment_type ) {
+			$api = IB_Educator::get_instance();
+
+			if ( ! $api->check_prerequisites( $post_id, $user_id ) ) {
+				$prerequisites_html = '';
+				$prerequisites = $api->get_prerequisites( $post_id );
+				$courses = get_posts( array(
+					'post_type'   => 'ib_educator_course',
+					'post_status' => 'publish',
+					'include'     => $prerequisites,
+				) );
+
+				if ( ! empty( $courses ) ) {
+					foreach ( $courses as $course ) {
+						$prerequisites_html .= '<br><a href="' . esc_url( get_permalink( $course->ID ) ) . '">' . esc_html( $course->post_title ) . '</a>';
+					}
+				}
+
+				$errors->add( 'prerequisites', sprintf( __( 'You have to complete the prerequisites for this course: %s', 'ibeducator' ), $prerequisites_html ) );
+				ib_edu_message( 'payment_errors', $errors );
+				return;
 			}
-		} else {
-			$username = $_POST['account_username'];
 		}
-
-		// Get account email.
-		if ( ! isset( $_POST['account_email'] ) || empty( $_POST['account_email'] ) ) {
-			if ( ! $user_id && ! in_array( 'account_info_empty', $errors ) ) {
-				$errors[] = 'account_info_empty';
-			}
-		} else {
-			$email = $_POST['account_email'];
-		}
-
-		// Get payment method.
+		
+		// Get the payment method.
+		$payment_method = '';
 		$gateways = IB_Educator_Main::get_gateways();
 		
 		if ( ! isset( $_POST['payment_method'] ) || ! array_key_exists( $_POST['payment_method'], $gateways ) ) {
-			$errors[] = 'empty_payment_method';
+			$errors->add( 'empty_payment_method', __( 'Please select a payment method.', 'ibeducator' ) );
 		} else {
 			$payment_method = $_POST['payment_method'];
 		}
 
+		/**
+		 * Filter the validation of the payment form.
+		 *
+		 * @param WP_Error $errors
+		 */
+		$errors = apply_filters( 'ib_educator_register_form_validate', $errors );
+
 		// Attempt to register the user.
-		if ( ! $user_id && $username && $email ) {
-			$user_id = register_new_user( $username, $email );
-
-			if ( is_wp_error( $user_id ) ) {
-				$errors[] = $user_id->get_error_code();
-			} else {
-				// Log the user in.
-				wp_set_auth_cookie( $user_id );
-
-				// Set the user's role to student.
-				$student = get_user_by( 'id', $user_id );
-				$student->remove_role( 'subscriber' );
-				$student->add_role( 'student' );
-			}
-		}
-
-		// Any errors?
-		if ( ! empty( $errors ) ) {
+		if ( $errors->get_error_code() ) {
 			ib_edu_message( 'payment_errors', $errors );
 			return;
+		} elseif ( ! $user_id ) {
+			$user_data = apply_filters( 'ib_educator_register_user_data', array( 'role' => 'student' ) );
+			$user_id = wp_insert_user( $user_data );
+
+			if ( is_wp_error( $user_id ) ) {
+				ib_edu_message( 'payment_errors', $user_id );
+				return;
+			} else {
+				// Setup the password change nag.
+				update_user_option( $user_id, 'default_password_nag', true, true );
+
+				// Send the new user notifications.
+				wp_new_user_notification( $user_id, $user_data['user_pass'] );
+
+				do_action( 'ib_educator_new_student', $user_id );
+
+				// Log the user in.
+				wp_set_auth_cookie( $user_id );
+			}
+		} else {
+			do_action( 'ib_educator_update_student', $user_id );
 		}
 
 		$can_pay = true;
@@ -247,13 +264,9 @@ class IB_Educator_Actions {
 		}
 
 		if ( $can_pay ) {
-			// The course is not free.
 			$gateway = $gateways[ $payment_method ];
 			$result = $gateway->process_payment( $post_id, $user_id, $payment_type );
-
-			// Redirect.
 			wp_safe_redirect( $result['redirect'] );
-
 			exit;
 		}
 	}
@@ -268,20 +281,52 @@ class IB_Educator_Actions {
 
 		// Get the current user id.
 		$user_id = get_current_user_id();
-		if ( ! $user_id ) return;
+
+		if ( ! $user_id ) {
+			return;
+		}
 
 		// Get course id.
 		$course_id = get_the_ID();
-		if ( ! $course_id ) return;
+
+		if ( ! $course_id ) {
+			return;
+		}
 
 		// Get course.
 		$course = get_post( $course_id );
-		if ( ! $course || 'ib_educator_course' != $course->post_type ) return;
+
+		if ( ! $course || 'ib_educator_course' != $course->post_type ) {
+			return;
+		}
 
 		$api = IB_Educator::get_instance();
+		$errors = new WP_Error();
+
+		// Check the course prerequisites.
+		if ( ! $api->check_prerequisites( $course_id, $user_id ) ) {
+			$prerequisites_html = '';
+			$prerequisites = $api->get_prerequisites( $course_id );
+			$courses = get_posts( array(
+				'post_type'   => 'ib_educator_course',
+				'post_status' => 'publish',
+				'include'     => $prerequisites,
+			) );
+
+			if ( ! empty( $courses ) ) {
+				foreach ( $courses as $course ) {
+					$prerequisites_html .= '<br><a href="' . esc_url( get_permalink( $course->ID ) ) . '">' . esc_html( $course->post_title ) . '</a>';
+				}
+			}
+
+			$errors->add( 'prerequisites', sprintf( __( 'You have to complete the prerequisites for this course: %s', 'ibeducator' ), $prerequisites_html ) );
+			ib_edu_message( 'course_join_errors', $errors );
+			return;
+		}
 
 		// Make sure the user can join this course.
 		$ms = IB_Educator_Memberships::get_instance();
+
 		if ( ! $ms->membership_can_access( $course_id, $user_id ) ) {
 			return;
 		}
@@ -293,7 +338,9 @@ class IB_Educator_Actions {
 			'entry_status' => 'inprogress',
 		) );
 
-		if ( ! empty( $entries ) ) return;
+		if ( ! empty( $entries ) ) {
+			return;
+		}
 
 		$user_membership = $ms->get_user_membership( $user_id );
 

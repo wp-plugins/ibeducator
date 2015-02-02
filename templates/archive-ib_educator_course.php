@@ -11,7 +11,7 @@
 
 <header class="page-header">
 	<h1 class="page-title">
-		<?php _e( 'Courses', 'ibeducator' ); ?>
+		<?php ib_edu_page_title(); ?>
 	</h1>
 </header>
 

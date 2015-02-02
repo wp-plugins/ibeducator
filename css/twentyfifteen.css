@@ -1,10 +1,12 @@
 .course-title,
 .lesson-title,
-#ib-edu-breadcrumbs {
+#ib-edu-breadcrumbs,
+.ib-edu-lesson-nav {
 	padding: 0 7.6923%;
 }
 
-.ib-edu-lessons {
+.ib-edu-lessons,
+.ib-edu-lesson-nav {
 	padding: 0 7.6923% 7.6923%;
 }
 
@@ -50,14 +52,29 @@ body .lesson-title {
 	margin-bottom: .2em;
 }
 
+.ib-edu-memberships h2 a,
+.ib-edu-courses-list h2 a {
+	border-bottom: 0;
+}
+
+.ib-edu-courses-list .course-image + .course-header h2 {
+	margin-top: 0;
+}
+
+body .ib-edu-course-single.has-post-thumbnail {
+	padding-top: 7.6923%;
+}
+
 @media screen and (min-width: 38.75em) {
 	.course-title,
 	.lesson-title,
-	#ib-edu-breadcrumbs {
+	#ib-edu-breadcrumbs,
+	.ib-edu-lesson-nav {
 		padding: 0 9.0909%;
 	}
 
-	.ib-edu-lessons {
+	.ib-edu-lessons,
+	.ib-edu-lesson-nav {
 		padding: 0 9.0909% 9.0909%;
 	}
 }
@@ -101,11 +118,13 @@ body .lesson-title {
 @media screen and (min-width: 59.6875em) {
 	.course-title,
 	.lesson-title,
-	#ib-edu-breadcrumbs {
+	#ib-edu-breadcrumbs,
+	.ib-edu-lesson-nav {
 		padding: 0 10%;
 	}
 
-	.ib-edu-lessons {
+	.ib-edu-lessons,
+	.ib-edu-lesson-nav {
 		padding: 0 10% 10%;
 	}
 
@@ -123,6 +142,10 @@ body .lesson-title {
 		line-height: 1.3636;
 		/*margin-top: 2.1818em;*/
 		margin-bottom: 1.0909em;
+	}
+
+	body .ib-edu-course-single.has-post-thumbnail {
+		margin-top: 8.3333%;
 	}
 }
 
@@ -164,11 +187,13 @@ body .lesson-title {
 @media print {
 	.course-title,
 	.lesson-title,
-	#ib-edu-breadcrumbs {
+	#ib-edu-breadcrumbs,
+	.ib-edu-lesson-nav {
 		padding: 0;
 	}
 
-	.ib-edu-lessons {
+	.ib-edu-lessons,
+	.ib-edu-lesson-nav {
 		padding: 0 0 7.6923%;
 	}
 }

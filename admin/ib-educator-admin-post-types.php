@@ -1,36 +1,15 @@
 <?php
 
-class IB_Educator_Custom_Post_Columns {
+class IB_Educator_Admin_Post_Types {
 	/**
 	 * Initialize.
 	 */
 	public static function init() {
-		// Order lessons by menu_order in lessons list admin screen.
-		add_action( 'pre_get_posts', array( __CLASS__, 'lessons_menu_order' ) );
-
-		// Add the course column name to lessons list admin screen.
 		add_filter( 'manage_ib_educator_lesson_posts_columns', array( __CLASS__, 'lessons_columns' ) );
-
-		// Add the course column content to lessons list admin screen.
 		add_filter( 'manage_ib_educator_lesson_posts_custom_column', array( __CLASS__, 'lessons_column_output' ), 10, 2 );
-
-		// Add filters controls to the lessons list admin screen.
 		add_filter( 'restrict_manage_posts', array( __CLASS__, 'lessons_add_filters' ) );
-
-		// Filter lessons list admin screen (by course).
 		add_filter( 'pre_get_posts', array( __CLASS__, 'lessons_parse_filters' ) );
-	}
-
-	/**
-	 * Modify lessons order in the admin panel.
-	 *
-	 * @param WP_Query $query
-	 */
-	public static function lessons_menu_order( $query ) {
-		if ( $query->is_main_query() && 'ib_educator_lesson' == $query->query['post_type'] ) {
-			$query->set( 'orderby', 'menu_order' );
-			$query->set( 'order', 'ASC' );
-		}
+		add_action( 'pre_get_posts', array( __CLASS__, 'lessons_menu_order' ) );
 	}
 
 	/**
@@ -120,6 +99,18 @@ class IB_Educator_Custom_Post_Columns {
 					)
 				) );
 			}
+		}
+	}
+
+	/**
+	 * Order the lessons on the lessons admin screen by menu_order.
+	 *
+	 * @param WP_Query $query
+	 */
+	public static function lessons_menu_order( $query ) {
+		if ( $query->is_main_query() && 'ib_educator_lesson' == $query->query['post_type'] ) {
+			$query->set( 'orderby', 'menu_order' );
+			$query->set( 'order', 'ASC' );
 		}
 	}
 }
