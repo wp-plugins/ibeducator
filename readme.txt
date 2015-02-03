@@ -4,7 +4,7 @@ Donate link: http://incrediblebytes.com
 Tags: learning management system, lms, learning, online courses
 Requires at least: 4.0
 Tested up to: 4.1
-Stable tag: 1.3.2
+Stable tag: 1.3.3
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -48,6 +48,10 @@ Coming soon.
 5. **Pages** - Assign the pages that will be used by the plugin.
 
 == Changelog ==
+
+= 1.3.3 =
+* CRITICAL security fix. This update fixes the issue where the lesson content was visible to unregistered visitors in the lessons feed, the lessons archive and the search page.
+* Please apply this update as soon as possible.
 
 = 1.3.2 =
 * Improved the user registration system/API (the payment page), added the user registration actions and filters. Some user registration form error messages have been changed (the payment page).

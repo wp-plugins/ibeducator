@@ -2,11 +2,17 @@
 
 class IB_Educator_Post_Types {
 	/**
+	 * @var null|array
+	 */
+	protected static $current_user_courses = null;
+
+	/**
 	 * Initialize.
 	 */
 	public static function init() {
 		add_action( 'init', array( __CLASS__, 'register_post_types' ), 8 ); // Run before the plugin update.
 		add_action( 'init', array( __CLASS__, 'register_taxonomies' ), 8 ); // Run before the plugin update.
+		add_action( 'the_content', array( __CLASS__, 'lock_lessons' ) );
 	}
 
 	/**
@@ -128,5 +134,39 @@ class IB_Educator_Post_Types {
 				),
 			) )
 		);
+	}
+
+	/**
+	 * Lock the lesson content.
+	 *
+	 * @param string $content
+	 * @return string
+	 */
+	public static function lock_lessons( $content ) {
+		global $wpdb, $post;
+
+		if ( 'ib_educator_lesson' == get_post_type() && ! is_singular( 'ib_educator_lesson' ) ) {
+			$user_id = get_current_user_id();
+
+			if ( $user_id && null === self::$current_user_courses ) {
+				$tables = ib_edu_table_names();
+				self::$current_user_courses = $wpdb->get_col( $wpdb->prepare(
+					"SELECT course_id FROM {$tables['entries']} WHERE user_id = %d AND entry_status = 'inprogress'",
+					$user_id
+				) );
+			}
+
+			if ( ! self::$current_user_courses || ! in_array( ib_edu_get_course_id(), self::$current_user_courses ) ) {
+				$more_index = strpos( $content, '<span id="more-' );
+
+				if ( false !== $more_index ) {
+					$content = force_balance_tags( substr( $content, 0, $more_index ) );
+				} elseif ( false === strpos( $content, 'class="more-link">' ) ) {
+					$content = esc_html( $post->post_excerpt );
+				}
+			}
+		}
+
+		return $content;
 	}
 }
