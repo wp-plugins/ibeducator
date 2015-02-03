@@ -55,7 +55,7 @@ Coming soon.
 == Changelog ==
 
 = 1.3.3 =
-* IMPORTANT security fix. This update fixes the issue where the lesson content was visible to unregistered visitors in the lessons rss/atom feed, the lessons archive and the search page. On the lessons archive and the search page it was visible only when the lesson didn't have the <!--more--> tag.
+* IMPORTANT security fix. This update fixes the issue where the lesson content was visible to unregistered visitors in the lessons rss/atom feed, the lessons archive and the search page. On the lessons archive and the search page it was visible only when the lesson didn't have the "more" tag (&lt;!--more--&gt;).
 * Please make sure to update the lessons' excerpts and add the more tag in appropriate places (please read http://incrediblebytes.com/educator-wp-plugin-might-need-update-lessons/).
 * Please apply this update as soon as possible.
 
