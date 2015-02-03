@@ -29,6 +29,8 @@ Features:
 * Memberships.
 * NEW: the courses shortcode.
 * NEW: edit the slugs for the courses archive, courses, lessons archive, lessons and course category.
+* NEW: course prerequisite.
+* NEW: course/membership payment action and filter hooks.
 
 == Installation ==
 
@@ -41,11 +43,14 @@ Coming soon.
 
 == Screenshots ==
 
-1. **Overview** - The plugin adds "Courses", "Lessons" and "Educator" sections to the admin menu.
-2. **Course price** - The course price field can be found on the course edit screen. Set this to 0 if you want to offer the course for free.
-3. **Select a course** - Assign each lesson to one of the courses.
-4. **Quiz** - Quiz UI is located on the edit lesson screen.
-5. **Pages** - Assign the pages that will be used by the plugin.
+1. **Quiz**
+2. **Course Entries**
+3. **Members**
+4. **Membership Levels Page**
+5. **Payments**
+6. **Student's Progress Page**
+7. **Plugin Settings**
+8. **Course Settings**
 
 == Changelog ==
 
