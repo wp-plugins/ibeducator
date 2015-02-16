@@ -33,6 +33,17 @@ if ( current_user_can( 'manage_educator' ) ) {
 	echo '<p>' . __( 'Access denied', 'ibeducator' ) . '</p>';
 	return;
 }
+
+// @TODO: get ids of entries with some quizzes ready.
+$entry_ids = array();
+
+if ( $entries['rows'] ) {
+	foreach ( $entries['rows'] as $entry ) {
+		$entry_ids[] = $entry->ID;
+	}
+}
+
+$pending_quiz_entries = $api->check_quiz_pending( $entry_ids );
 ?>
 <div class="wrap">
 	<h2>
@@ -108,7 +119,16 @@ if ( current_user_can( 'manage_educator' ) ) {
 		<tr<?php if ( 0 == $i % 2 ) echo ' class="alternate"'; ?> data-id="<?php echo absint( $entry->ID ); ?>">
 			<td><?php echo absint( $entry->ID ); ?></td>
 			<td>
-				<span class="row-title"><?php echo esc_html( $course_title ); ?></span>
+				<span class="row-title">
+					<?php
+						echo esc_html( $course_title );
+
+						if ( in_array( $entry->ID, $pending_quiz_entries ) ) {
+							echo ' (' . __( 'quiz pending', 'ibeducator' ) . ')';
+						}
+					?>
+				</span>
+
 				<div class="row-actions">
 					<span class="edit">
 						<a class="ib-edu-item-edit" href="<?php echo esc_url( $edit_url ); ?>"><?php _e( 'Edit', 'ibeducator' ); ?></a> |

@@ -78,6 +78,7 @@ class IB_Educator_Main {
 			'check'         => 'IB_Educator_Gateway_Check',
 			'bank-transfer' => 'IB_Educator_Gateway_Bank_Transfer',
 			'free'          => 'IB_Educator_Gateway_Free',
+			'stripe'        => 'IB_Educator_Gateway_Stripe',
 		) );
 
 		// Get the list of enabled gateways.

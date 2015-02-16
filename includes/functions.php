@@ -1,7 +1,7 @@
 <?php
 
 /**
- * Get Educator's settings.
+ * Get the plugin's settings.
  *
  * @return array
  */
@@ -10,7 +10,7 @@ function ib_edu_get_settings() {
 }
 
 /**
- * Get the Educator WP option.
+ * Get the plugin's option.
  *
  * @param string $option_key
  * @param string $option_section
@@ -623,9 +623,9 @@ function ib_edu_get_adjacent_lesson_link( $dir = 'previous', $format, $title ) {
 function _ib_edu_deprecated_function( $function, $version, $replacement = null ) {
 	if ( WP_DEBUG && current_user_can( 'manage_options' ) ) {
 		if ( ! is_null( $replacement ) ) {
-			trigger_error( sprintf( __('%1$s is <strong>deprecated</strong> since Educator WP version %2$s! Use %3$s instead.'), $function, $version, $replacement ) );
+			trigger_error( sprintf( __('%1$s is <strong>deprecated</strong> since Educator version %2$s! Use %3$s instead.'), $function, $version, $replacement ) );
 		} else {
-			trigger_error( sprintf( __('%1$s is <strong>deprecated</strong> since Educator WP version %2$s with no alternative available.'), $function, $version ) );
+			trigger_error( sprintf( __('%1$s is <strong>deprecated</strong> since Educator version %2$s with no alternative available.'), $function, $version ) );
 		}
 	}
 }

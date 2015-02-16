@@ -18,6 +18,7 @@ if ( ! current_user_can( 'edit_ib_educator_course', $entry->course_id ) ) {
 $api = IB_Educator::get_instance();
 $quizzes = new WP_Query( array(
 	'post_type' => 'ib_educator_lesson',
+	'posts_per_page' => -1,
 	'meta_query' => array(
 		'relation' => 'AND',
 		array( 'key' => '_ibedu_quiz', 'value' => 1, 'compare' => '=' ),

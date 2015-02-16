@@ -1,22 +1,22 @@
-=== Educator WP ===
+=== Educator ===
 Contributors: dmytro.d
-Donate link: http://incrediblebytes.com
+Donate link: http://educatorplugin.com
 Tags: learning management system, lms, learning, online courses
 Requires at least: 4.0
 Tested up to: 4.1
-Stable tag: 1.3.4
+Stable tag: 1.3.5
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
-Hi! Welcome to educator WP, the brand new, powerful and easy to use Learning Management System plugin for WordPress.
+Hi! Educator is simple learning management system plugin for WordPress.
 
 == Description ==
 
-This plugin allows you to offer courses online.
+You can use this plugin to offer online courses on your WordPress website.
 
-Documentation: http://incrediblebytes.com/documents/plugins/educator-wp/
+Documentation: http://educatorplugin.com/
 
-How this plugin works: http://incrediblebytes.com/document/how-educator-wp-works/
+Learn how this plugin works: http://educatorplugin.com/how-educator-works/
 
 Features:
 
@@ -54,6 +54,11 @@ Coming soon.
 
 == Changelog ==
 
+= 1.3.5 =
+* Added the beta version of the Stripe payment gateway. It's a beta version, so please test it before using it on production.
+* Lecturers can see which entries have the quizzes that are ready to be graded. The text "quiz pending" is added to the entry row on the Entries admin page.
+* Added the "ib_educator_access_status" filter.
+
 = 1.3.4 =
 * Improved the lesson content restriction even further.
 * Added a filter to the "rss_use_excerpt" option (the setting "For each article in a feed, show" in Settings &raquo; Reading) such that it returns 1 for lessons.
@@ -61,7 +66,7 @@ Coming soon.
 
 = 1.3.3 =
 * IMPORTANT security fix. This update fixes the issue where the lesson content was visible to unregistered visitors in the lessons rss/atom feed, the lessons archive and the search page. On the lessons archive and the search page it was visible only when the lesson didn't have the "more" tag (&lt;!--more--&gt;).
-* Please make sure to update the lessons' excerpts and add the more tag in appropriate places (please read http://incrediblebytes.com/educator-wp-plugin-might-need-update-lessons/).
+* Please make sure to update the lessons' excerpts and add the more tag in appropriate places (please read http://educatorplugin.com/create-a-lesson/).
 * Please apply this update as soon as possible.
 
 = 1.3.2 =
@@ -116,7 +121,7 @@ Coming soon.
 * Autocomplete for the 'Course' and 'Student' fields in "Edit Payment" and "Edit Entry" forms.
 * Namespaced settings_errors() on settings pages to prevent non-relevant errors from showing up.
 * Added capabilities of authors to lecturers (edit_posts, delete_posts) so they can create posts, but not publish them. They will be able to edit their own posts only.
-* Fixed bug when Educator WP created many entries for one payments due to multiple IPN responses from PayPal with status "Complete".
+* Fixed bug when Educator created many entries for one payment due to multiple IPN responses from PayPal with status "Complete".
 * Added date column to the Entries page.
 * Bug fixes and improvements.
 
@@ -124,7 +129,7 @@ Coming soon.
 * Did more code refactoring and fixed a couple of bugs.
 * Custom post types are now called more descriptively: ib_educator_course, ib_educator_lesson.
 * Archive templates are called: archive-ib_educator_lesson.php, archive-ib_educator_course.php, single-ib_educator_lesson.php, single-ib_educator_course.php
-* Accepted a convention for CSS classes and IDs: ib-edu-[html_class_name] or ib-edu-[html_id] (IncredibleBytes - Educator (ib-edu)).
+* Accepted a convention for CSS classes and IDs: ib-edu-[html_class_name] or ib-edu-[html_id] (IB - Educator (ib-edu)).
 * Added currency settings (symbol, position) and updated settings page (select pages in "General" settings tab now).
 * If your currency is not on the list, there is a way to add it.
 * Fixed a PayPal IPN bug.
@@ -138,10 +143,9 @@ Coming soon.
 * Fixed a couple of bugs.
 * Added ability to assign courses to categories.
 * Added difficulty levels: beginner, intermediate, advanced.
-* Many changes to API functions, actions and filters. Please refer to the documentation (http://incrediblebytes.com/educator-wp-documentation/).
+* Many changes to API functions, actions and filters. Please refer to the documentation (http://educatorplugin.com/).
 * API (functions, actions and filters) is almost stable.
 * Code refactoring.
-* PLEASE HAVE A LOOK AT http://incrediblebytes.com/update-educator-wp/ before updating.
 
 = 0.9.0 =
 * Beta version release.

@@ -15,7 +15,7 @@ class IB_Educator_Permalink_Settings extends IB_Educator_Admin_Settings {
 	public function register_settings() {
 		add_settings_section(
 			'ib_educator_permalink_settings', // id
-			__( 'Educator WP Permalink Settings', 'ibeducator' ),
+			__( 'Educator Permalink Settings', 'ibeducator' ),
 			array( $this, 'section_description' ),
 			'permalink' // page
 		);
