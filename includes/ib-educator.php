@@ -77,7 +77,7 @@ class IB_Educator {
 			$status = ( $has_complete ) ? 'course_complete' : 'forbidden';
 		}
 
-		return $status;
+		return apply_filters( 'ib_educator_access_status', $status, $course_id, $user_id );
 	}
 
 	/**
@@ -776,6 +776,24 @@ class IB_Educator {
 			$lesson_id,
 			$entry_id
 		) );
+	}
+
+	/**
+	 * Get the entries with ungraded quizzes.
+	 *
+	 * @param array $ids
+	 * @return array
+	 */
+	public function check_quiz_pending( $ids ) {
+		global $wpdb;
+
+		foreach ( $ids as $key => $id ) {
+			$ids[ $key ] = absint( $id );
+		}
+
+		$ids = implode( ',', $ids );
+		$entries = $wpdb->get_col( "SELECT entry_id FROM $this->grades WHERE status = 'pending' AND entry_id IN ($ids) GROUP BY entry_id" );
+		return $entries;
 	}
 
 	/**
