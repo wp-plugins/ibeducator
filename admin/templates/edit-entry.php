@@ -116,8 +116,14 @@
 			<div class="ib-edu-label"><label><?php _e( 'Student', 'ibeducator' ); ?></label></div>
 			<div class="ib-edu-control">
 				<div class="ib-edu-autocomplete">
-					<input type="hidden" name="student_id" class="ib-edu-autocomplete-value" value="<?php if ( $student ) echo intval( $student->ID ); ?>">
-					<input type="text" id="entry-student-id" class="regular-text" autocomplete="off" value="<?php if ( $student ) echo esc_attr( $student->display_name ); ?>"<?php if ( 'admin' != $who ) echo ' disabled="disabled"'; ?>>
+					<input
+						type="text"
+						name="student_id"
+						id="entry-student-id"
+						class="regular-text"
+						autocomplete="off"
+						value="<?php if ( $student ) echo intval( $student->ID ); ?>"
+						data-label="<?php if ( $student ) echo esc_attr( $student->display_name ); ?>"<?php if ( 'admin' != $who ) echo ' disabled="disabled"'; ?>>
 				</div>
 			</div>
 		</div>
@@ -126,8 +132,14 @@
 			<div class="ib-edu-label"><label><?php _e( 'Course', 'ibeducator' ); ?></label></div>
 			<div class="ib-edu-control">
 				<div class="ib-edu-autocomplete">
-					<input type="hidden" name="course_id" class="ib-edu-autocomplete-value" value="<?php if ( $course ) echo intval( $course->ID ); ?>">
-					<input type="text" id="entry-course-id" class="regular-text" autocomplete="off" value="<?php if ( $course ) echo esc_attr( $course->post_title ); ?>" <?php if ( 'admin' != $who ) echo ' disabled="disabled"'; ?>>
+					<input
+						type="text"
+						name="course_id"
+						id="entry-course-id"
+						class="regular-text"
+						autocomplete="off"
+						value="<?php if ( $course ) echo intval( $course->ID ); ?>"
+						data-label="<?php if ( $course ) echo esc_attr( $course->post_title ); ?>"<?php if ( 'admin' != $who ) echo ' disabled="disabled"'; ?>>
 				</div>
 			</div>
 		</div>
@@ -206,14 +218,20 @@ jQuery(document).ready(function() {
 	});
 
 	ibEducatorAutocomplete(document.getElementById('entry-student-id'), {
+		key: 'id',
+		value: 'name',
+		searchBy: 'name',
 		nonce: jQuery('#autocomplete-nonce').val(),
-		url: '<?php echo admin_url( 'admin-ajax.php' ); ?>',
+		url: <?php echo json_encode( admin_url( 'admin-ajax.php' ) ); ?>,
 		entity: 'user'
 	});
 
 	ibEducatorAutocomplete(document.getElementById('entry-course-id'), {
+		key: 'id',
+		value: 'title',
+		searchBy: 'title',
 		nonce: jQuery('#autocomplete-nonce').val(),
-		url: '<?php echo admin_url( 'admin-ajax.php' ); ?>',
+		url: <?php echo json_encode( admin_url( 'admin-ajax.php' ) ); ?>,
 		entity: 'course'
 	});
 });

@@ -33,17 +33,22 @@ class IB_Educator_Install {
 
 	public function __construct() {
 		$tables = ib_edu_table_names();
-		$this->payments  = $tables['payments'];
-		$this->entries   = $tables['entries'];
-		$this->questions = $tables['questions'];
-		$this->choices   = $tables['choices'];
-		$this->answers   = $tables['answers'];
-		$this->grades    = $tables['grades'];
-		$this->members   = $tables['members'];
+		$this->payments      = $tables['payments'];
+		$this->entries       = $tables['entries'];
+		$this->questions     = $tables['questions'];
+		$this->choices       = $tables['choices'];
+		$this->answers       = $tables['answers'];
+		$this->grades        = $tables['grades'];
+		$this->members       = $tables['members'];
+		$this->tax_rates     = $tables['tax_rates'];
+		$this->payment_lines = $tables['payment_lines'];
 	}
 
 	/**
 	 * Install.
+	 *
+	 * @param bool $inc_post_types
+	 * @param bool $inc_endpoints
 	 */
 	public function activate( $inc_post_types = true, $inc_endpoints = true ) {
 		/*$current_version = get_option( 'ib_educator_version' );
@@ -58,14 +63,18 @@ class IB_Educator_Install {
 		// Setup the user roles and capabilities.
 		$this->setup_roles();
 
-		// Post types.
-		if ( $inc_post_types ) {
-			IB_Educator_Post_Types::register_post_types();
-			IB_Educator_Post_Types::register_taxonomies();
-		}
-		
-		if ( $inc_endpoints ) {
-			IB_Educator_Main::add_rewrite_endpoints();
+		// Post types and taxonomies.
+		if ( $inc_post_types || $inc_endpoints ) {
+			if ( $inc_post_types ) {
+				IB_Educator_Post_Types::register_post_types();
+				IB_Educator_Post_Types::register_taxonomies();
+			}
+
+			if ( $inc_endpoints ) {
+				IB_Educator_Main::add_rewrite_endpoints();
+			}
+
+			flush_rewrite_rules();
 		}
 
 		// Setup email templates.
@@ -74,13 +83,13 @@ class IB_Educator_Install {
 		// Schedule cron events.
 		$this->schedule_events();
 
+		// Setup tax settings.
+		$this->setup_taxes();
+
 		/**
 		 * Plugin activation hook.
 		 */
 		do_action( 'ib_educator_activation' );
-
-		// Flush rewrite rules.
-		flush_rewrite_rules();
 
 		// Update the plugin version in database.
 		update_option( 'ib_educator_version', IBEDUCATOR_VERSION );
@@ -94,6 +103,9 @@ class IB_Educator_Install {
 		flush_rewrite_rules();
 	}
 
+	/**
+	 * Schedule CRON events.
+	 */
 	public function schedule_events() {
 		// CRON: process expired memberships.
 		if ( ! wp_next_scheduled( 'ib_educator_expired_memberships' ) ) {
@@ -106,6 +118,9 @@ class IB_Educator_Install {
 		}
 	}
 
+	/**
+	 * Remove scheduled CRON events.
+	 */
 	public function remove_scheduled_events() {
 		wp_clear_scheduled_hook( 'ib_educator_expired_memberships' );
 		wp_clear_scheduled_hook( 'ib_educator_membership_notifications' );
@@ -155,7 +170,7 @@ class IB_Educator_Install {
 			}
 
 			// Entries and payments.
-			$sql = "CREATE TABLE {$this->entries} (
+			$sql = "CREATE TABLE $this->entries (
   ID bigint(20) unsigned NOT NULL auto_increment,
   course_id bigint(20) unsigned NOT NULL,
   user_id bigint(20) unsigned NOT NULL,
@@ -169,7 +184,7 @@ class IB_Educator_Install {
   PRIMARY KEY  (ID),
   KEY record_status (entry_status)
 ) $charset_collate;
-CREATE TABLE {$this->payments} (
+CREATE TABLE $this->payments (
   ID bigint(20) unsigned NOT NULL auto_increment,
   parent_id bigint(20) unsigned NOT NULL,
   user_id bigint(20) unsigned NOT NULL,
@@ -180,18 +195,51 @@ CREATE TABLE {$this->payments} (
   payment_status varchar(20) NOT NULL,
   txn_id varchar(20) NOT NULL default '',
   amount decimal(8, 2) NOT NULL,
+  tax decimal(10, 4) NOT NULL default 0.0000,
   currency char(3) NOT NULL,
   payment_date datetime NOT NULL default '0000-00-00 00:00:00',
+  first_name varchar(255) NOT NULL default '',
+  last_name varchar(255) NOT NULL default '',
+  address varchar(255) NOT NULL default '',
+  address_2 varchar(255) NOT NULL default '',
+  city varchar(255) NOT NULL default '',
+  state varchar(255) NOT NULL default '',
+  postcode varchar(32) NOT NULL default '',
+  country char(2) NOT NULL default '',
+  ip varbinary(16) NOT NULL default '',
   PRIMARY KEY  (ID),
   KEY user_id (user_id),
   KEY course_id (course_id),
   KEY object_id (object_id),
   KEY parent_id (parent_id),
   KEY txn_id (txn_id)
-) $charset_collate;";
-
-			// Quiz.
-			$sql .= "CREATE TABLE {$this->questions} (
+) $charset_collate;
+CREATE TABLE $this->payment_lines (
+  ID bigint(20) unsigned NOT NULL auto_increment,
+  payment_id bigint(20) unsigned NOT NULL,
+  object_id bigint(20) unsigned NOT NULL,
+  line_type enum('','tax','item') NOT NULL default '',
+  amount decimal(10, 4) NOT NULL default 0.0000,
+  tax decimal(10, 4) NOT NULL default 0.0000,
+  name text NOT NULL,
+  PRIMARY KEY  (ID),
+  KEY payment_id (payment_id),
+  KEY line_type (line_type)
+) $charset_collate;
+CREATE TABLE $this->tax_rates (
+  ID mediumint unsigned NOT NULL auto_increment,
+  tax_class varchar(128) NOT NULL,
+  name varchar(128) NOT NULL,
+  country char(2) NOT NULL,
+  state varchar(128) NOT NULL,
+  rate decimal(6,4) NOT NULL,
+  priority mediumint unsigned NOT NULL default 0,
+  rate_order mediumint unsigned NOT NULL default 0,
+  PRIMARY KEY  (ID),
+  KEY tax_class (tax_class),
+  KEY rate_order (rate_order)
+) $charset_collate;
+CREATE TABLE $this->questions (
   ID bigint(20) unsigned NOT NULL auto_increment,
   lesson_id bigint(20) unsigned NOT NULL,
   question text default NULL,
@@ -200,7 +248,7 @@ CREATE TABLE {$this->payments} (
   PRIMARY KEY  (ID),
   KEY lesson_id (lesson_id)
 ) $charset_collate;
-CREATE TABLE {$this->choices} (
+CREATE TABLE $this->choices (
   ID bigint(20) unsigned NOT NULL auto_increment,
   question_id bigint(20) unsigned NOT NULL,
   choice_text text default NULL,
@@ -210,7 +258,7 @@ CREATE TABLE {$this->choices} (
   KEY question_id (question_id),
   KEY menu_order (menu_order)
 ) $charset_collate;
-CREATE TABLE {$this->answers} (
+CREATE TABLE $this->answers (
   ID bigint(20) unsigned NOT NULL auto_increment,
   question_id bigint(20) unsigned NOT NULL,
   entry_id bigint(20) unsigned NOT NULL,
@@ -220,7 +268,7 @@ CREATE TABLE {$this->answers} (
   PRIMARY KEY  (ID),
   KEY entry_id (entry_id)
 ) $charset_collate;
-CREATE TABLE {$this->grades} (
+CREATE TABLE $this->grades (
   ID bigint(20) unsigned NOT NULL auto_increment,
   lesson_id bigint(20) unsigned NOT NULL,
   entry_id bigint(20) unsigned NOT NULL,
@@ -230,7 +278,7 @@ CREATE TABLE {$this->grades} (
   KEY lesson_id (lesson_id),
   KEY entry_id (entry_id)
 ) $charset_collate;
-CREATE TABLE {$this->members} (
+CREATE TABLE $this->members (
   ID bigint(20) unsigned NOT NULL auto_increment,
   user_id bigint(20) unsigned NOT NULL,
   membership_id bigint(20) unsigned NOT NULL,
@@ -433,5 +481,22 @@ Best regards,
 Administration',
 			) );
 		}
+	}
+
+	/**
+	 * Setup default tax settings.
+	 */
+	public function setup_taxes() {
+		$classes = get_option( 'ib_educator_tax_classes' );
+
+		if ( ! is_array( $classes ) ) {
+			$classes = array();
+		}
+
+		if ( ! isset( $classes['default'] ) ) {
+			$classes['default'] = 'Default';
+		}
+
+		update_option( 'ib_educator_tax_classes', $classes );
 	}
 }

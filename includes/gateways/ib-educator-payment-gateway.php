@@ -1,10 +1,29 @@
 <?php
 
 abstract class IB_Educator_Payment_Gateway {
+	/**
+	 * @var string
+	 */
 	protected $id = '';
+
+	/**
+	 * @var string
+	 */
 	protected $title = '';
+
+	/**
+	 * @var array
+	 */
 	protected $options = array();
+
+	/**
+	 * @var array
+	 */
 	protected $values = array();
+
+	/**
+	 * @var bool
+	 */
 	protected $editable = true;
 
 	/**
@@ -34,10 +53,20 @@ abstract class IB_Educator_Payment_Gateway {
 		return $this->get_option( 'default' );
 	}
 
+	/**
+	 * Is the current enabled?
+	 *
+	 * @return int
+	 */
 	public function is_enabled() {
 		return $this->get_option( 'enabled' );
 	}
 
+	/**
+	 * Is the current gateway editable?
+	 *
+	 * @return bool
+	 */
 	public function is_editable() {
 		return $this->editable;
 	}
@@ -123,15 +152,22 @@ abstract class IB_Educator_Payment_Gateway {
 			return;
 		}
 
-		require_once( IBEDUCATOR_PLUGIN_DIR . 'includes/ib-educator-form.php' );
+		require_once IBEDUCATOR_PLUGIN_DIR . 'includes/ib-educator-form.php';
+
+		$form = new IB_Educator_Form();
+		$form->add_field_class( 'ib-edu-field' );
+		$form->set_decorator( 'label_before', '<div class="ib-edu-label">' );
+		$form->set_decorator( 'label_after', '</div>' );
+		$form->set_decorator( 'control_before', '<div class="ib-edu-control">' );
+		$form->set_decorator( 'control_after', '</div>' );
 
 		foreach ( $this->options as $name => $data ) {
-			$method_name = 'field_' . $data['type'];
-
-			if ( method_exists( 'IB_Educator_Form', $method_name ) ) {
-				echo call_user_func_array( array( 'IB_Educator_Form', $method_name ), array( 'ibedu_' . $this->id . '_' . $name, $this->get_option( $name ), $data ) );
-			}
+			$data['name'] = 'ibedu_' . $this->id . '_' . $name;
+			$form->set_value( $data['name'], $this->get_option( $name ) );
+			$form->add( $data );
 		}
+
+		$form->display();
 	}
 	
 	/**
@@ -147,9 +183,82 @@ abstract class IB_Educator_Payment_Gateway {
 	/**
 	 * Process payment.
 	 *
-	 * @param int $course_id
+	 * @param int $object_id ID of the object the payment is to be associated with.
+	 * @param int $user_id
+	 * @param string $payment_type
 	 */
-	public function process_payment( $course_id, $user_id, $payment_type ) {}
+	public function process_payment( $object_id, $user_id, $payment_type, $atts = array() ) {}
+
+	/**
+	 * Create payment.
+	 *
+	 * @param int $object_id ID of the object the payment is to be associated with.
+	 * @param int $user_id
+	 * @param string $payment_type
+	 * @return IB_Educator_Payment
+	 */
+	public function create_payment( $object_id, $user_id, $payment_type, $atts = array() ) {
+		$payment = IB_Educator_Payment::get_instance();
+		$payment->user_id = $user_id;
+		$payment->payment_type = $payment_type;
+		$payment->payment_status = 'pending';
+		$payment->payment_gateway = $this->get_id();
+		$payment->currency = ib_edu_get_currency();
+
+		if ( 'course' == $payment_type ) {
+			$payment->course_id = $object_id;
+			$payment->amount = ib_edu_get_course_price( $object_id );
+		} elseif ( 'membership' == $payment_type ) {
+			$payment->object_id = $object_id;
+			$payment->amount = IB_Educator_Memberships::get_instance()->get_price( $object_id );
+		}
+
+		$tax_data = null;
+
+		if ( ib_edu_collect_billing_data( $object_id ) ) {
+			// Save billing data.
+			$billing = get_user_meta( $user_id, '_ib_educator_billing', true );
+
+			if ( ! is_array( $billing ) ) {
+				$billing = array();
+			}
+
+			$payment->first_name = get_user_meta( $user_id, 'first_name', true );
+			$payment->last_name  = get_user_meta( $user_id, 'last_name', true );
+			$payment->address    = isset( $billing['address'] ) ? $billing['address'] : '';
+			$payment->address_2  = isset( $billing['address_2'] ) ? $billing['address_2'] : '';
+			$payment->city       = isset( $billing['city'] ) ? $billing['city'] : '';
+			$payment->state      = isset( $billing['state'] ) ? $billing['state'] : '';
+			$payment->postcode   = isset( $billing['postcode'] ) ? $billing['postcode'] : '';
+			$payment->country    = isset( $billing['country'] ) ? $billing['country'] : '';
+
+			// Calculate tax.
+			$edu_tax = IB_Educator_Tax::get_instance();
+			$tax_data = $edu_tax->calculate_tax( $edu_tax->get_tax_class_for( $object_id ), $payment->amount, $payment->country, $payment->state );
+			$payment->tax = $tax_data['tax'];
+			$payment->amount = $tax_data['total'];
+		}
+		
+		if ( ! empty( $atts['ip'] ) ) {
+			$payment->ip = $atts['ip'];
+		}
+		
+		$payment->save();
+
+		// Save tax data.
+		if ( $tax_data ) {
+			foreach ( $tax_data['taxes'] as $tax ) {
+				$payment->update_line( array(
+					'object_id' => $tax->ID,
+					'line_type' => 'tax',
+					'amount'    => $tax->amount,
+					'name'      => $tax->name,
+				) );
+			}
+		}
+
+		return $payment;
+	}
 
 	/**
 	 * Get the url to the "thank you" page.

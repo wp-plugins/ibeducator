@@ -25,11 +25,13 @@ class IB_Educator_Admin {
 		require_once IBEDUCATOR_PLUGIN_DIR . 'admin/settings/ib-educator-admin-settings.php';
 		require_once IBEDUCATOR_PLUGIN_DIR . 'admin/settings/ib-educator-general-settings.php';
 		require_once IBEDUCATOR_PLUGIN_DIR . 'admin/settings/ib-educator-payment-settings.php';
+		require_once IBEDUCATOR_PLUGIN_DIR . 'admin/settings/ib-educator-taxes-settings.php';
 		require_once IBEDUCATOR_PLUGIN_DIR . 'admin/settings/ib-educator-email-settings.php';
 		require_once IBEDUCATOR_PLUGIN_DIR . 'admin/settings/ib-educator-memberships-settings.php';
 
 		new IB_Educator_General_Settings();
 		new IB_Educator_Payment_Settings();
+		new IB_Educator_Taxes_Settings();
 		new IB_Educator_Email_Settings();
 		new IB_Educator_Memberships_Settings();
 		IB_Educator_Autocomplete::init();
@@ -194,6 +196,12 @@ class IB_Educator_Admin {
 	 */
 	public static function enqueue_scripts_styles() {
 		wp_enqueue_style( 'ib-educator-admin', IBEDUCATOR_PLUGIN_URL . 'admin/css/admin.css', array(), '1.0' );
+
+		$screen = get_current_screen();
+
+		if ( $screen && 'educator_page_ib_educator_payments' == $screen->id ) {
+			wp_enqueue_script( 'ib-educator-edit-payment', IBEDUCATOR_PLUGIN_URL . 'admin/js/edit-payment.js', array( 'jquery' ), '1.0.0', true );
+		}
 	}
 
 	/**

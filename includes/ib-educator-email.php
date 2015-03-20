@@ -1,11 +1,29 @@
 <?php
 
 class IB_Educator_Email {
+	/**
+	 * @var string
+	 */
 	protected $template = '';
+
+	/**
+	 * @var array
+	 */
 	protected $to = array();
+
+	/**
+	 * @var string
+	 */
 	protected $subject = '';
+
+	/**
+	 * @var string
+	 */
 	protected $body = '';
 
+	/**
+	 * Constructor.
+	 */
 	public function __construct() {}
 
 	/**

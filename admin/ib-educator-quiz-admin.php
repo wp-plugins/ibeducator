@@ -261,6 +261,7 @@ class IB_Educator_Quiz_Admin {
 
 				// Verify nonce.
 				$input = json_decode( file_get_contents( 'php://input' ) );
+				
 				if ( ! isset( $input->_wpnonce ) || ! wp_verify_nonce( $input->_wpnonce, 'ibedu_quiz_' . $question->lesson_id ) ) {
 					status_header( 403 );
 					exit;

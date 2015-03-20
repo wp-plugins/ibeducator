@@ -109,7 +109,43 @@ class IB_Educator_General_Settings extends IB_Educator_Admin_Settings {
 			)
 		);
 
-		// General settings.
+		// Selling settings.
+		add_settings_section(
+			'ib_educator_selling', // id
+			__( 'Selling', 'ibeducator' ),
+			array( $this, 'section_description' ),
+			'ib_educator_general' // page
+		);
+
+		// Location.
+		add_settings_field(
+			'ib_educator_location',
+			__( 'Location', 'ibeducator' ),
+			array( $this, 'setting_location' ),
+			'ib_educator_general', // page
+			'ib_educator_selling', // section
+			array(
+				'name'           => 'location',
+				'settings_group' => 'ib_educator_settings',
+				'description'    => __( 'The location where you sell from.', 'ibeducator' ),
+			)
+		);
+
+		// Save customers' IP.
+		add_settings_field(
+			'ib_educator_payment_ip',
+			__( 'Store customers&apos; IPs on purchases', 'ibeducator' ),
+			array( $this, 'setting_checkbox' ),
+			'ib_educator_general', // page
+			'ib_educator_selling', // section
+			array(
+				'name'           => 'payment_ip',
+				'settings_group' => 'ib_educator_settings',
+				'default'        => 0,
+			)
+		);
+
+		// Currency settings.
 		add_settings_section(
 			'ib_educator_currency', // id
 			__( 'Currency', 'ibeducator' ),
@@ -251,6 +287,14 @@ class IB_Educator_General_Settings extends IB_Educator_Admin_Settings {
  				case 'decimal_point':
  				case 'thousands_sep':
  					$clean[ $key ] = preg_replace( '/[^,. ]/', '', $value );
+ 					break;
+
+ 				case 'location':
+ 					$clean[ $key ] = sanitize_text_field( $value );
+ 					break;
+
+ 				case 'payment_ip':
+ 					$clean[ $key ] = ( 1 != $value ) ? 0 : 1;
  					break;
 			}
 		}

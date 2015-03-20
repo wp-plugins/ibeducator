@@ -161,6 +161,11 @@ class IB_Educator_Admin_Actions {
 				$payment->object_id = $_POST['object_id'];
 			}
 
+			// Tax.
+			if ( isset( $_POST['tax'] ) && is_numeric( $_POST['tax'] ) ) {
+				$payment->tax = $_POST['tax'];
+			}
+
 			// Amount.
 			if ( isset( $_POST['amount'] ) && is_numeric( $_POST['amount'] ) ) {
 				$payment->amount = $_POST['amount'];
@@ -185,12 +190,70 @@ class IB_Educator_Admin_Actions {
 				$payment->payment_gateway = sanitize_title( $_POST['payment_gateway'] );
 			}
 
+			// First Name.
+			if ( isset( $_POST['first_name'] ) ) {
+				$payment->first_name = sanitize_text_field( $_POST['first_name'] );
+			}
+
+			// Last Name.
+			if ( isset( $_POST['last_name'] ) ) {
+				$payment->last_name = sanitize_text_field( $_POST['last_name'] );
+			}
+
+			// Address.
+			if ( isset( $_POST['address'] ) ) {
+				$payment->address = sanitize_text_field( $_POST['address'] );
+			}
+
+			// Address Line 2.
+			if ( isset( $_POST['address_2'] ) ) {
+				$payment->address_2 = sanitize_text_field( $_POST['address_2'] );
+			}
+
+			// City.
+			if ( isset( $_POST['city'] ) ) {
+				$payment->city = sanitize_text_field( $_POST['city'] );
+			}
+
+			// Postcode.
+			if ( isset( $_POST['postcode'] ) ) {
+				$payment->postcode = sanitize_text_field( $_POST['postcode'] );
+			}
+
+			// State / Province.
+			if ( isset( $_POST['state'] ) ) {
+				$payment->state = sanitize_text_field( $_POST['state'] );
+			}
+
+			// Country.
+			if ( isset( $_POST['country'] ) ) {
+				$payment->country = sanitize_text_field( $_POST['country'] );
+			}
+
 			if ( ! empty( $errors ) ) {
 				ib_edu_message( 'edit_payment_errors', $errors );
 				return;
 			}
 
 			if ( $payment->save() ) {
+				// Update payment meta.
+				if ( isset( $_POST['line_id'] ) && is_array( $_POST['line_id'] ) ) {
+					foreach ( $_POST['line_id'] as $key => $line_id ) {
+						if ( ! is_numeric( $line_id ) ) {
+							continue;
+						}
+
+						$payment->update_line( array(
+							'ID'        => $line_id,
+							'object_id' => isset( $_POST['line_object_id'][ $key ] ) ? intval( $_POST['line_object_id'][ $key ] ) : 0,
+							'line_type' => isset( $_POST['line_type'][ $key ] ) ? sanitize_text_field( $_POST['line_type'][ $key ] ) : '',
+							'amount'    => isset( $_POST['line_amount'][ $key ] ) ? sanitize_text_field( $_POST['line_amount'][ $key ] ) : 0.0,
+							'tax'       => isset( $_POST['line_tax'][ $key ] ) ? sanitize_text_field( $_POST['line_tax'][ $key ] ) : 0.0,
+							'name'      => isset( $_POST['line_name'][ $key ] ) ? sanitize_text_field( $_POST['line_name'][ $key ] ) : '',
+						) );
+					}
+				}
+
 				$api = IB_Educator::get_instance();
 				$entry_saved = true;
 
@@ -280,8 +343,8 @@ class IB_Educator_Admin_Actions {
 
 			$ms = IB_Educator_Memberships::get_instance();
 			$member_id = isset( $_GET['id'] ) ? intval( $_GET['id'] ) : 0;
-			$user_membership = ( $member_id ) ? $ms->get_user_membership( $member_id ) : null;
 			$data = array();
+			$errors = array();
 
 			if ( isset( $_POST['user_id'] ) ) {
 				$data['user_id'] = intval( $_POST['user_id'] );
@@ -313,14 +376,29 @@ class IB_Educator_Admin_Actions {
 				}
 			}
 
+			// UNIQUE memberships only.
+			if ( ! $member_id && ! empty( $data['user_id'] ) ) {
+				$user_membership = $ms->get_user_membership( $data['user_id'] );
+				
+				if ( ! empty( $user_membership ) ) {
+					$errors[] = 'member_exists';
+				}
+			}
+
+			if ( ! empty( $errors ) ) {
+				ib_edu_message( 'edit_member_errors', $errors );
+				return;
+			}
+
+			$user_membership = ( $member_id ) ? $ms->get_user_membership( $member_id ) : null;
 			$data['ID'] = ( $user_membership ) ? $user_membership['ID'] : 0;
 			$data['ID'] = $ms->update_user_membership( $data );
 
-			if ( 'paused' == $data['status'] || 'expired' == $data['status'] ) {
+			if ( 'expired' == $data['status'] ) {
 				$ms->pause_membership_entries( $data['user_id'] );
 			}
 
-			wp_redirect( admin_url( 'admin.php?page=ib_educator_members&edu-action=edit-member&id=' . intval( $member_id ) . '&edu-message=saved' ) );
+			wp_redirect( admin_url( 'admin.php?page=ib_educator_members&edu-action=edit-member&id=' . intval( $data['user_id'] ) . '&edu-message=saved' ) );
 			exit;
 		}
 	}

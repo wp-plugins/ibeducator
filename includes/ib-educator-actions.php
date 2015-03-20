@@ -225,14 +225,14 @@ class IB_Educator_Actions {
 		 *
 		 * @param WP_Error $errors
 		 */
-		$errors = apply_filters( 'ib_educator_register_form_validate', $errors );
+		$errors = apply_filters( 'ib_educator_register_form_validate', $errors, $post );
 
 		// Attempt to register the user.
 		if ( $errors->get_error_code() ) {
 			ib_edu_message( 'payment_errors', $errors );
 			return;
 		} elseif ( ! $user_id ) {
-			$user_data = apply_filters( 'ib_educator_register_user_data', array( 'role' => 'student' ) );
+			$user_data = apply_filters( 'ib_educator_register_user_data', array( 'role' => 'student' ), $post );
 			$user_id = wp_insert_user( $user_data );
 
 			if ( is_wp_error( $user_id ) ) {
@@ -245,13 +245,13 @@ class IB_Educator_Actions {
 				// Send the new user notifications.
 				wp_new_user_notification( $user_id, $user_data['user_pass'] );
 
-				do_action( 'ib_educator_new_student', $user_id );
+				do_action( 'ib_educator_new_student', $user_id, $post );
 
 				// Log the user in.
 				wp_set_auth_cookie( $user_id );
 			}
 		} else {
-			do_action( 'ib_educator_update_student', $user_id );
+			do_action( 'ib_educator_update_student', $user_id, $post );
 		}
 
 		$can_pay = true;
@@ -264,9 +264,27 @@ class IB_Educator_Actions {
 		}
 
 		if ( $can_pay ) {
-			$gateway = $gateways[ $payment_method ];
-			$result = $gateway->process_payment( $post_id, $user_id, $payment_type );
+			// Process payment.
+			$atts = array();
+
+			if ( ib_edu_get_option( 'payment_ip', 'settings' ) ) {
+				$atts['ip'] = $_SERVER['REMOTE_ADDR'];
+			}
+			
+			$result = $gateways[ $payment_method ]->process_payment( $post_id, $user_id, $payment_type, $atts );
+			
+			/**
+			 * Fires when the payment record has been created.
+			 *
+			 * The payment may not be confirmed yet.
+			 *
+			 * @param null|IB_Educator_Payment
+			 */
+			do_action( 'ib_educator_payment_processed', ( isset( $result['payment'] ) ? $result['payment'] : null ) );
+
+			// Go to the next step(e.g. thank you page).
 			wp_safe_redirect( $result['redirect'] );
+			
 			exit;
 		}
 	}

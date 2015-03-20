@@ -147,7 +147,7 @@ class IB_Educator_Post_Types {
 	public static function lock_lessons( $content ) {
 		global $wpdb, $post;
 
-		if ( 'ib_educator_lesson' == get_post_type() && ! is_singular( 'ib_educator_lesson' ) ) {
+		if ( 'ib_educator_lesson' == get_post_type() ) {
 			$user_id = get_current_user_id();
 
 			if ( $user_id && null === self::$current_user_courses ) {

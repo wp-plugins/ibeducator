@@ -20,7 +20,7 @@ $courses = get_posts( array( 'post_type' => 'ib_educator_course', 'posts_per_pag
 (function($) {
 	var selectCourse = $('#ib-educator-course');
 
-	// Make sure the user selects a course.
+	// Make sure that user selects a course.
 	$('form#post').on('submit', function(e) {
 		if (selectCourse.val() == '') {
 			e.preventDefault();
