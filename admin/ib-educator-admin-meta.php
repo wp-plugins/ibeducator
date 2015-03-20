@@ -68,6 +68,15 @@ class IB_Educator_Admin_Meta {
 	}
 
 	/**
+	 * Save tax data for a course or membership.
+	 */
+	protected static function save_tax_data( $post_id ) {
+		if ( isset( $_POST['_ib_educator_tax_class'] ) ) {
+			update_post_meta( $post_id, '_ib_educator_tax_class', sanitize_text_field( $_POST['_ib_educator_tax_class'] ) );
+		}
+	}
+
+	/**
 	 * Save course meta box.
 	 *
 	 * @param int $post_id
@@ -108,6 +117,8 @@ class IB_Educator_Admin_Meta {
 
 			update_post_meta( $post_id, '_ib_educator_prerequisites', $prerequisites );
 		}
+
+		self::save_tax_data( $post_id );
 	}
 
 	/**
@@ -182,5 +193,7 @@ class IB_Educator_Admin_Meta {
 		}
 
 		update_post_meta( $post_id, '_ib_educator_membership', $meta );
+
+		self::save_tax_data( $post_id );
 	}
 }

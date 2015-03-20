@@ -15,7 +15,7 @@ class IB_Educator_Autocomplete {
 	public static function enqueue_scripts_styles() {
 		$screen = get_current_screen();
 
-		if ( $screen && in_array( $screen->id, array( 'educator_page_ib_educator_payments', 'educator_page_ib_educator_entries', 'educator_page_ib_educator_members' ) ) ) {
+		if ( $screen && in_array( $screen->id, array( 'toplevel_page_ib_educator_admin', 'educator_page_ib_educator_payments', 'educator_page_ib_educator_entries', 'educator_page_ib_educator_members' ) ) ) {
 			wp_enqueue_script( 'ib-educator-autocomplete', IBEDUCATOR_PLUGIN_URL . 'admin/js/autocomplete.js', array( 'jquery' ), '1.0' );
 		}
 	}
@@ -24,6 +24,7 @@ class IB_Educator_Autocomplete {
 	 * AJAX: autocomplete.
 	 */
 	public static function ajax_autocomplete() {
+		// Check capability.
 		if ( ! current_user_can( 'manage_educator' ) ) {
 			exit;
 		}
@@ -58,7 +59,10 @@ class IB_Educator_Autocomplete {
 
 				if ( ! empty( $user_query->results ) ) {
 					foreach ( $user_query->results as $user ) {
-						$response[ $user->ID ] = esc_html( $user->display_name );
+						$response[] = array(
+							'id'   => intval( $user->ID ),
+							'name' => esc_html( $user->display_name . ' (' . $user->user_nicename . ')' ),
+						);
 					}
 				}
 				break;
@@ -82,7 +86,11 @@ class IB_Educator_Autocomplete {
 				if ( $posts_query->have_posts() ) {
 					while ( $posts_query->have_posts() ) {
 						$posts_query->the_post();
-						$response[ get_the_ID() ] = get_the_title();
+
+						$response[] = array(
+							'id'   => get_the_ID(),
+							'title' => get_the_title(),
+						);
 					}
 
 					wp_reset_postdata();

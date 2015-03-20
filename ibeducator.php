@@ -7,7 +7,7 @@ Plugin Name: Educator
 Plugin URI: http://educatorplugin.com/
 Description: Offer courses to students online.
 Author: dmytro.d
-Version: 1.3.5
+Version: 1.4.0
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 Text Domain: ibeducator
@@ -31,8 +31,8 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 
 if ( ! defined( 'ABSPATH' ) ) exit;
 
-define( 'IBEDUCATOR_VERSION', '1.3.5' );
-define( 'IBEDUCATOR_DB_VERSION', '1.3.0' );
+define( 'IBEDUCATOR_VERSION', '1.4.0' );
+define( 'IBEDUCATOR_DB_VERSION', '1.4.0' );
 define( 'IBEDUCATOR_PLUGIN_DIR', plugin_dir_path( __FILE__ ) );
 define( 'IBEDUCATOR_PLUGIN_URL', plugin_dir_url( __FILE__ ) );
 
@@ -42,6 +42,7 @@ register_deactivation_hook( __FILE__, array( 'IB_Educator_Main', 'plugin_deactiv
 require_once IBEDUCATOR_PLUGIN_DIR . 'includes/objects/ib-educator-payment.php';
 require_once IBEDUCATOR_PLUGIN_DIR . 'includes/objects/ib-educator-entry.php';
 require_once IBEDUCATOR_PLUGIN_DIR . 'includes/objects/ib-educator-question.php';
+require_once IBEDUCATOR_PLUGIN_DIR . 'includes/ib-educator-countries.php';
 require_once IBEDUCATOR_PLUGIN_DIR . 'includes/ib-educator-post-types.php';
 require_once IBEDUCATOR_PLUGIN_DIR . 'includes/ib-educator.php';
 require_once IBEDUCATOR_PLUGIN_DIR . 'includes/ib-educator-view.php';
@@ -50,6 +51,9 @@ require_once IBEDUCATOR_PLUGIN_DIR . 'includes/ib-educator-memberships.php';
 require_once IBEDUCATOR_PLUGIN_DIR . 'includes/ib-educator-main.php';
 require_once IBEDUCATOR_PLUGIN_DIR . 'includes/ib-educator-request.php';
 require_once IBEDUCATOR_PLUGIN_DIR . 'includes/shortcodes.php';
+require_once IBEDUCATOR_PLUGIN_DIR . 'includes/ib-educator-tax.php';
+require_once IBEDUCATOR_PLUGIN_DIR . 'includes/ib-educator-account.php';
+require_once IBEDUCATOR_PLUGIN_DIR . 'includes/ib-educator-ajax-actions.php';
 
 // Setup the post types and taxonomies.
 IB_Educator_Post_Types::init();
@@ -57,11 +61,17 @@ IB_Educator_Post_Types::init();
 // Setup Educator.
 IB_Educator_Main::init();
 
+// Ajax actions.
+IB_Educator_AJAX_Actions::init();
+
+// Setup account processing (e.g. payment form).
+IB_Educator_Account::init();
+
 // Parse incoming requests (e.g. PayPal IPN).
 IB_Educator_Request::init();
 
 if ( is_admin() ) {
-	// Setup educator admin.
+	// Setup the Educator's admin.
 	require_once IBEDUCATOR_PLUGIN_DIR . 'admin/ib-educator-admin.php';
 	IB_Educator_Admin::init();
 

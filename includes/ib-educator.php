@@ -47,8 +47,8 @@ class IB_Educator {
 	public function get_access_status( $course_id, $user_id ) {
 		global $wpdb;
 		$status = '';
-		$sql = "SELECT ee.course_id, ee.user_id, ep.payment_status, ee.entry_status FROM {$this->entries} ee
-			LEFT JOIN {$this->payments} ep ON ep.ID=ee.payment_id
+		$sql = "SELECT ee.course_id, ee.user_id, ep.payment_status, ee.entry_status FROM $this->entries ee
+			LEFT JOIN $this->payments ep ON ep.ID=ee.payment_id
 			WHERE ee.course_id=%d AND ee.user_id=%d";
 		$results = $wpdb->get_results( $wpdb->prepare( $sql, $course_id, $user_id ) );
 		$has_complete = false;
@@ -58,15 +58,15 @@ class IB_Educator {
 			foreach ( $results as $result ) {
 				if ( 'complete' == $result->entry_status ) {
 					$has_complete = true;
-				} else if ( 'cancelled' == $result->entry_status ) {
+				} elseif ( 'cancelled' == $result->entry_status ) {
 					$has_cancelled = true;
 				} else {
 					// Found payment/entry record that is not complete nor cancelled.
 					if ( 'pending' == $result->entry_status ) {
 						$status = 'pending_entry';
-					} if ( 'inprogress' == $result->entry_status ) {
+					} elseif ( 'inprogress' == $result->entry_status ) {
 						$status = 'inprogress';
-					} else if ( 'pending' == $result->payment_status ) {
+					} elseif ( 'pending' == $result->payment_status ) {
 						$status = 'pending_payment';
 					}
 				}
@@ -99,17 +99,30 @@ class IB_Educator {
 	 * @return IB_Educator_Payment
 	 */
 	public function add_payment( $data ) {
-		// Record payment.
 		$payment = IB_Educator_Payment::get_instance();
-		if ( ! empty( $data['course_id'] ) ) $payment->course_id = $data['course_id'];
+
+		if ( ! empty( $data['course_id'] ) ) {
+			$payment->course_id = $data['course_id'];
+		}
+		
 		$payment->user_id = $data['user_id'];
-		if ( ! empty( $data['object_id'] ) ) $payment->object_id = $data['object_id'];
+		
+		if ( ! empty( $data['object_id'] ) ) {
+			$payment->object_id = $data['object_id'];
+		}
+		
 		$payment->payment_type = $data['payment_type'];
 		$payment->payment_gateway = $data['payment_gateway'];
 		$payment->payment_status = $data['payment_status'];
 		$payment->amount = $data['amount'];
 		$payment->currency = $data['currency'];
+
+		if ( ! empty( $data['tax'] ) ) {
+			$payment->tax = $data['tax'];
+		}
+		
 		$payment->save();
+
 		return $payment;
 	}
 
@@ -845,6 +858,95 @@ class IB_Educator {
 		}
 
 		return ( $prerequisites_satisfied == count( $prerequisites ) );
+	}
+
+	/**
+	 * Setup payment item (e.g. course, membership).
+	 *
+	 * @param IB_Educator_Payment $payment
+	 */
+	public function setup_payment_item( $payment ) {
+		if ( 'course' == $payment->payment_type ) {
+			// Setup course entry.
+			$entry = $this->get_entry( array( 'payment_id' => $payment->ID ) );
+
+			if ( ! $entry ) {
+				$entry = IB_Educator_Entry::get_instance();
+				$entry->course_id = $payment->course_id;
+				$entry->user_id = $payment->user_id;
+				$entry->payment_id = $payment->ID;
+				$entry->entry_status = 'inprogress';
+				$entry->entry_date = date( 'Y-m-d H:i:s' );
+				$entry->save();
+
+				// Send notification email to the student.
+				$student = get_user_by( 'id', $payment->user_id );
+				$course = get_post( $payment->course_id, OBJECT, 'display' );
+
+				if ( $student && $course ) {
+					ib_edu_send_notification(
+						$student->user_email,
+						'student_registered',
+						array(
+							'course_title' => $course->post_title,
+						),
+						array(
+							'student_name'   => $student->display_name,
+							'course_title'   => $course->post_title,
+							'course_excerpt' => $course->post_excerpt,
+						)
+					);
+				}
+			}
+		} elseif ( 'membership' == $payment->payment_type ) {
+			// Setup membership.
+			$ms = IB_Educator_Memberships::get_instance();
+			$ms->setup_membership( $payment->user_id, $payment->object_id );
+
+			$student = get_user_by( 'id', $payment->user_id );
+			$membership = $ms->get_membership( $payment->object_id );
+
+			if ( $student && $membership ) {
+				$user_membership = $ms->get_user_membership( $student->ID );
+				$membership_meta = $ms->get_membership_meta( $membership->ID );
+				$expiration = ( $user_membership ) ? $user_membership['expiration'] : 0;
+
+				ib_edu_send_notification(
+					$student->user_email,
+					'membership_register',
+					array(),
+					array(
+						'student_name' => $student->display_name,
+						'membership'   => $membership->post_title,
+						'expiration'   => ( $expiration ) ? date_i18n( get_option( 'date_format' ), $expiration ) : __( 'None', 'ibeducator' ),
+						'price'        => $ms->format_price( $membership_meta['price'], $membership_meta['duration'], $membership_meta['period'], false ),
+					)
+				);
+			}
+		}
+	}
+
+	/**
+	 * Get billing data for a user.
+	 *
+	 * @param int $user_id
+	 * @return array
+	 */
+	public function get_billing_data( $user_id ) {
+		$billing = get_user_meta( $user_id, '_ib_educator_billing', true );
+
+		if ( ! is_array( $billing ) ) {
+			$billing = array(
+				'address'    => '',
+				'address_2'  => '',
+				'city'       => '',
+				'state'      => '',
+				'postcode'   => '',
+				'country'    => '',
+			);
+		}
+
+		return $billing;
 	}
 }
 

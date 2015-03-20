@@ -1,3 +1,25 @@
+/* General ---------------*/
+.ib-edu-sort-y {
+	color: #999;
+	cursor: move;
+	height: 100%;
+	text-align: center;
+	width: 100%;
+}
+
+.ib-edu-sort-y:hover {
+	color: #999;
+}
+
+.ib-edu-action {
+	text-decoration: none;
+}
+
+/* Meta ---------------*/
+.ib-edu-meta th {
+	text-align: left;
+}
+
 /* Tabs ---------------*/
 .ib-edu-tabs {
 	margin-left: -20px;
@@ -31,6 +53,7 @@
 .ib-edu-field:after {
 	clear: both;
 	content: '';
+	display: block;
 	height: 0;
 	overflow: hidden;
 }
@@ -90,27 +113,97 @@
 
 /* Autocomplete ---------------*/
 .ib-edu-autocomplete {
-	display: inline-block;
+	display: block;
+	max-width: 250px;
+}
+
+.ib-edu-autocomplete.open > a {
+	border-color: #aaa;
+	border-bottom-color: transparent;
+}
+
+.ib-edu-autocomplete.disabled > a {
+	color: #999;
+	cursor: default;
+}
+
+.ib-edu-autocomplete > a:after,
+.ib-edu-autocomplete-choices .choices-filter:after {
+	color: #999;
+	display: block;
+	font-family: 'dashicons';
+	position: absolute;
+	top: 5px;
+	right: 5px;
+}
+
+.ib-edu-autocomplete > a:focus,
+.ib-edu-autocomplete-choices .choices-filter input:focus {
+	box-shadow: none;
+}
+
+.ib-edu-autocomplete > a {
+	background-color: #fff;
+	border: 1px solid #ddd;
+	color: #333;
+	display: block;
+	padding: 5px 10px;
+	position: relative;
+	text-decoration: none;
+}
+
+.ib-edu-autocomplete > a:after {
+	content: '\f140';
 }
 
 .ib-edu-autocomplete-choices {
-	max-height: 200px;
-	overflow: auto;
+	border: 1px solid #aaa;
+	border-top: 0;
+	display: none;
+	margin: -1px 0 0 0;
 	position: absolute;
 	z-index: 100;
 }
 
-.ib-edu-autocomplete-choices a {
-	background-color: #fff;
-	border: 1px solid #ddd;
-	border-top: 0;
-	cursor: pointer;
-	display: block;
-	padding: 7px 10px;
+.ib-edu-autocomplete-choices .choices-filter {
+	position: relative;
 }
 
-.ib-edu-autocomplete-choices a:first-child {
+.ib-edu-autocomplete-choices .choices-filter input {
+	border-left: 0;
+	border-right: 0;
+	margin: 0;
+	padding: 4px 10px;
+	width: 100%;
+}
+
+.ib-edu-autocomplete-choices .choices-filter input:focus {
+	border-color: #aaa;
+}
+
+.ib-edu-autocomplete-choices .choices-filter:after {
+	content: '\f179';
+}
+
+.ib-edu-autocomplete-choices .choices {
+	max-height: 209px;
+	overflow: auto;
+}
+
+.ib-edu-autocomplete-choices .choices a {
+	background-color: #fff;
 	border-top: 1px solid #ddd;
+	cursor: pointer;
+	display: block;
+	padding: 8px 10px;
+}
+
+.ib-edu-autocomplete-choices .choices a:first-child {
+	border-top: 0;
+}
+
+.ib-edu-autocomplete-choices .choices .level-1 {
+	padding-left: 25px;
 }
 
 /* Offers form ---------------*/
@@ -394,6 +487,47 @@
 
 #ib-edu-progress .quiz.open .handle:before {
 	content: '\f142';
+}
+
+/* Tables */
+.edu-table {
+	border-collapse: collapse;
+	margin: 0 0 1em;
+}
+
+.edu-table th,
+.edu-table td {
+	background-color: #fff;
+	border: 1px solid #e5e5e5;
+	padding: 8px;
+	text-align: left;
+	width: auto;
+
+	/*behavior inside form table*/
+	display: table-cell;
+}
+
+.edu-table input.error {
+	border-color: red;
+}
+
+/* Tax rates app */
+.edu-tax-rates-table {
+	width: 100%;
+}
+
+.edu-tax-rates-table td.handle {padding: 0; width: 4%;}
+.edu-tax-rates-table .ib-edu-sort-y {line-height: 44px;}
+.edu-tax-rates-table td.country {width: 24%;}
+.edu-tax-rates-table td.state {width: 24%;}
+.edu-tax-rates-table td.name {width: 14%;}
+.edu-tax-rates-table td.rate {width: 9%;}
+.edu-tax-rates-table td.priority {width: 9%;}
+.edu-tax-rates-table td.options {width: 16%;}
+
+.edu-tax-rates-table td.rate input,
+.edu-tax-rates-table td.priority input {
+	width: 70px;
 }
 
 @media screen and (max-width: 782px) {

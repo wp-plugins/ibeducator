@@ -19,11 +19,6 @@ class IB_Educator_Main {
 		add_action( 'wp_enqueue_scripts', array( __CLASS__, 'enqueue_scripts_styles' ) );
 		add_filter( 'wp_nav_menu_objects', array( __CLASS__, 'add_menu_classes' ) );
 
-		// Register form.
-		add_action( 'ib_educator_register_form', array( __CLASS__, 'register_form' ) );
-		add_filter( 'ib_educator_register_form_validate', array( __CLASS__, 'register_form_validate' ) );
-		add_filter( 'ib_educator_register_user_data', array( __CLASS__, 'register_user_data' ) );
-
 		// Add templating actions.
 		add_action( 'ib_educator_before_main_loop', array( __CLASS__, 'action_before_main_loop' ) );
 		add_action( 'ib_educator_after_main_loop', array( __CLASS__, 'action_after_main_loop' ) );
@@ -73,12 +68,24 @@ class IB_Educator_Main {
 		require_once IBEDUCATOR_PLUGIN_DIR . 'includes/gateways/ib-educator-payment-gateway.php';
 
 		$gateways = apply_filters( 'ib_educator_payment_gateways', array(
-			'paypal'        => 'IB_Educator_Gateway_Paypal',
-			'cash'          => 'IB_Educator_Gateway_Cash',
-			'check'         => 'IB_Educator_Gateway_Check',
-			'bank-transfer' => 'IB_Educator_Gateway_Bank_Transfer',
-			'free'          => 'IB_Educator_Gateway_Free',
-			'stripe'        => 'IB_Educator_Gateway_Stripe',
+			'paypal'        => array(
+				'class' => 'IB_Educator_Gateway_Paypal',
+			),
+			'cash'          => array(
+				'class' => 'IB_Educator_Gateway_Cash',
+			),
+			'check'         => array(
+				'class' => 'IB_Educator_Gateway_Check',
+			),
+			'bank-transfer' => array(
+				'class' => 'IB_Educator_Gateway_Bank_Transfer',
+			),
+			'free'          => array(
+				'class' => 'IB_Educator_Gateway_Free',
+			),
+			'stripe'        => array(
+				'class' => 'IB_Educator_Gateway_Stripe',
+			),
 		) );
 
 		// Get the list of enabled gateways.
@@ -86,12 +93,10 @@ class IB_Educator_Main {
 
 		if ( ! is_admin() || ! current_user_can( 'manage_educator' ) ) {
 			$gateways_options = get_option( 'ibedu_payment_gateways', array() );
-			$enabled_gateways = array(
-				'free',
-			);
+			$enabled_gateways = array( 'free' );
 
 			foreach ( $gateways_options as $gateway_id => $options ) {
-				if ( isset( $options[ 'enabled' ] ) && 1 == $options[ 'enabled' ] ) {
+				if ( isset( $options['enabled'] ) && 1 == $options['enabled'] ) {
 					$enabled_gateways[] = $gateway_id;
 				}
 			}
@@ -99,22 +104,21 @@ class IB_Educator_Main {
 			$enabled_gateways = apply_filters( 'ib_educator_enabled_gateways', $enabled_gateways );
 		}
 
-		$loaded_gateway = null;
-		$gateway_file = null;
-
 		foreach ( $gateways as $gateway_id => $gateway ) {
 			if ( null !== $enabled_gateways && ! in_array( $gateway_id, $enabled_gateways ) ) {
 				continue;
 			}
 
-			$gateway_file = IBEDUCATOR_PLUGIN_DIR . 'includes/gateways/'
-						  . strtolower( str_replace( '_', '-', substr( $gateway, 20 ) ) ) . '/'
-						  . strtolower( str_replace( '_', '-', $gateway ) ) . '.php';
+			if ( ! isset( $gateway['file'] ) ) {
+				$gateway['file'] = IBEDUCATOR_PLUGIN_DIR . 'includes/gateways/'
+								 . strtolower( str_replace( '_', '-', substr( $gateway['class'], 20 ) ) ) . '/'
+								 . strtolower( str_replace( '_', '-', $gateway['class'] ) ) . '.php';
+			}
 
-			if ( is_readable( $gateway_file ) ) {
-				require_once $gateway_file;
+			if ( is_readable( $gateway['file'] ) ) {
+				require_once $gateway['file'];
 
-				$loaded_gateway = new $gateway();
+				$loaded_gateway = new $gateway['class']();
 				self::$gateways[ $loaded_gateway->get_id() ] = $loaded_gateway;
 			}
 		}
@@ -244,6 +248,16 @@ class IB_Educator_Main {
 					break;
 			}
 		}
+
+		if ( ib_edu_is_payment() ) {
+			// Scripts for the payment page.
+			wp_enqueue_script( 'ib-educator-payment', IBEDUCATOR_PLUGIN_URL . 'js/payment.js', array( 'jquery' ), '1.0.0', true );
+			wp_localize_script( 'ib-educator-payment', 'eduPaymentVars', array(
+				'ajaxurl'          => admin_url( 'admin-ajax.php' ),
+				'nonce'            => wp_create_nonce( 'ib_educator_ajax' ),
+				'get_states_nonce' => wp_create_nonce( 'ib_edu_get_states' )
+			) );
+		}
 	}
 
 	/**
@@ -268,110 +282,6 @@ class IB_Educator_Main {
 		}
 
 		return $items;
-	}
-
-	/**
-	 * Output default user register form.
-	 *
-	 * @param array $error_codes
-	 */
-	public static function register_form( $error_codes ) {
-		$user_id = get_current_user_id();
-
-		if ( $user_id ) {
-			return;
-		}
-
-		foreach ( $error_codes as $error_code ) {
-			switch ( $error_code ) {
-				case 'account_info_empty':
-					$errors['account_username'] = true;
-					$errors['account_email'] = true;
-					break;
-
-				case 'invalid_username':
-				case 'existing_user_login':
-					$errors['account_username'] = true;
-					break;
-
-				case 'invalid_email':
-				case 'existing_user_email':
-					$errors['account_email'] = true;
-					break;
-			}
-		}
-		?>
-		<fieldset>
-			<legend><?php _e( 'Create an Account', 'ibeducator' ); ?></legend>
-
-			<div class="ib-edu-form-field<?php if ( isset( $errors['account_username'] ) ) echo ' error'; ?>">
-				<label for="ib-edu-username"><?php _e( 'Username', 'ibeducator' ); ?> <span class="required">*</span></label>
-				<div class="ib-edu-form-control">
-					<input type="text" id="ib-edu-username" name="account_username" value="<?php if ( ! empty( $_POST['account_username'] ) ) echo esc_attr( $_POST['account_username'] ); ?>">
-				</div>
-			</div>
-
-			<div class="ib-edu-form-field<?php if ( isset( $errors['account_email'] ) ) echo ' error'; ?>">
-				<label for="ib-edu-email"><?php _e( 'Email', 'ibeducator' ); ?> <span class="required">*</span></label>
-				<div class="ib-edu-form-control">
-					<input type="text" id="ib-edu-email" name="account_email" value="<?php if ( ! empty( $_POST['account_email'] ) ) echo esc_attr( $_POST['account_email'] ); ?>">
-				</div>
-			</div>
-		</fieldset>
-		<?php
-	}
-
-	/**
-	 * Validate the default user registration form.
-	 *
-	 * @param WP_Error $errors
-	 * @return WP_Error
-	 */
-	public static function register_form_validate( $errors ) {
-		$user_id = get_current_user_id();
-
-		if ( $user_id ) {
-			return $errors;
-		}
-
-		if ( ! empty( $_POST['account_username'] ) ) {
-			if ( ! validate_username( $_POST['account_username'] ) ) {
-				$errors->add( 'invalid_username', __( 'Please check if you entered your username correctly.', 'ibeducator' ) );
-			}
-		} else {
-			$errors->add( 'account_info_empty', __( 'Please enter your username and email.', 'ibeducator' ) );
-		}
-
-		// Get account username.
-		if ( ! empty( $_POST['account_email'] ) ) {
-			if ( ! is_email( $_POST['account_email'] ) ) {
-				$errors->add( 'invalid_email', __( 'Please check if you entered your email correctly.', 'ibeducator' ) );
-			}
-		} elseif ( ! $errors->get_error_message( 'account_info_empty' ) ) {
-			$errors->add( 'account_info_empty', __( 'Please enter your username and email.', 'ibeducator' ) );
-		}
-
-		return $errors;
-	}
-
-	/**
-	 * Filter the default user registration data.
-	 *
-	 * @param array $data
-	 * @return array
-	 */
-	public static function register_user_data( $data ) {
-		if ( ! empty( $_POST['account_username'] ) ) {
-			$data['user_login'] = $_POST['account_username'];
-		}
-
-		if ( ! empty( $_POST['account_email'] ) ) {
-			$data['user_email'] = $_POST['account_email'];
-		}
-
-		$data['user_pass'] = wp_generate_password( 12, false );
-
-		return $data;
 	}
 
 	/**

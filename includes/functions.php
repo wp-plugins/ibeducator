@@ -24,6 +24,10 @@ function ib_edu_get_option( $option_key, $option_section ) {
 			$options = get_option( 'ib_educator_settings' );
 			break;
 
+		case 'taxes':
+			$options = get_option( 'ib_educator_taxes' );
+			break;
+
 		case 'email':
 			$options = get_option( 'ib_educator_email' );
 			break;
@@ -109,6 +113,7 @@ function ib_edu_get_course_price( $course_id ) {
 function ib_edu_get_currencies() {
 	return apply_filters( 'ib_educator_currencies', array(
 		'AUD' => __( 'Australian Dollars', 'ibeducator' ),
+		'AZN' => __( 'Azerbaijani Manat', 'ibeducator' ),
 		'BRL' => __( 'Brazilian Real', 'ibeducator' ),
 		'CAD' => __( 'Canadian Dollars', 'ibeducator' ),
 		'CNY' => __( 'Chinese Yuan', 'ibeducator' ),
@@ -355,7 +360,7 @@ function ib_edu_get_course_id( $lesson_id = null ) {
  * Check if the current user can view the lesson.
  *
  * @param int $lesson_id
- * @return boolean
+ * @return bool
  */
 function ib_edu_student_can_study( $lesson_id ) {
 	if ( ! is_user_logged_in() ) {
@@ -440,13 +445,15 @@ function ib_edu_table_names() {
 	$prefix = $wpdb->prefix . 'ibeducator_';
 	
 	return array(
-		'payments'  => $prefix . 'payments',
-		'entries'   => $prefix . 'entries',
-		'questions' => $prefix . 'questions',
-		'choices'   => $prefix . 'choices',
-		'answers'   => $prefix . 'answers',
-		'grades'    => $prefix . 'grades',
-		'members'   => $prefix . 'members',
+		'payments'     => $prefix . 'payments',
+		'entries'      => $prefix . 'entries',
+		'questions'    => $prefix . 'questions',
+		'choices'      => $prefix . 'choices',
+		'answers'      => $prefix . 'answers',
+		'grades'       => $prefix . 'grades',
+		'members'      => $prefix . 'members',
+		'tax_rates'    => $prefix . 'tax_rates',
+		'payment_lines' => $prefix . 'payment_lines',
 	);
 }
 
@@ -454,7 +461,7 @@ function ib_edu_table_names() {
  * Can the current user edit a given lesson?
  *
  * @param int $lesson_id
- * @return boolean
+ * @return bool
  */
 function ib_edu_user_can_edit_lesson( $lesson_id ) {
 	if ( current_user_can( 'manage_educator' ) ) return true;
@@ -521,6 +528,7 @@ function ib_edu_get_price_widget( $course_id, $user_id ) {
 	 * @param bool $membership_access Whether the user's current membership allows him/her to take the course.
 	 */
 	$output = apply_filters( 'ib_educator_course_price_widget', null, $membership_access );
+	
 	if ( null !== $output ) {
 		return $output;
 	}
@@ -611,6 +619,74 @@ function ib_edu_get_adjacent_lesson_link( $dir = 'previous', $format, $title ) {
 	$title = str_replace( '%title', esc_html( $lesson->post_title ), $title );
 	$link = '<a href="' . esc_url( $url ) . '">' . $title . '</a>';
 	return str_replace( '%link', $link, $format );
+}
+
+/**
+ * Are we on the payment page?
+ *
+ * @return bool
+ */
+function ib_edu_is_payment() {
+	return is_page( ib_edu_page_id( 'payment' ) );
+}
+
+/**
+ * Find out whether to collect billing data or not.
+ *
+ * @param mixed $object
+ * @return bool
+ */
+function ib_edu_collect_billing_data( $object ) {
+	if ( is_numeric( $object ) ) {
+		$object = get_post( $object );
+	}
+
+	$result = false;
+
+	if ( $object ) {
+		$price = null;
+
+		if ( 'ib_edu_membership' == $object->post_type ) {
+			$price = IB_Educator_Memberships::get_instance()->get_price( $object->ID );
+		} elseif ( 'ib_educator_course' == $object->post_type ) {
+			$price = ib_edu_get_course_price( $object->ID );
+		}
+
+		if ( $price && ib_edu_get_option( 'enable', 'taxes' ) ) {
+			$result = true;
+		}
+	}
+
+	return $result;
+}
+
+/**
+ * Get the business location.
+ *
+ * @param string $part
+ * @return mixed
+ */
+function ib_edu_get_location( $part = null ) {
+	$result = array('', '');
+
+	if ( $location = ib_edu_get_option( 'location', 'settings' ) ) {
+		$delimiter = strpos( $location, ';' );
+
+		if ( false === $delimiter ) {
+			$result[0] = $location;
+		} else {
+			$result[0] = substr( $location, 0, $delimiter );
+			$result[1] = substr( $location, $delimiter + 1 );
+		}
+	}
+
+	if ( 'country' == $part ) {
+		return $result[0];
+	} elseif ( 'state' == $part ) {
+		return $result[1];
+	}
+
+	return $result;
 }
 
 /**

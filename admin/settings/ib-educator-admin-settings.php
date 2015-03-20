@@ -37,10 +37,17 @@ class IB_Educator_Admin_Settings {
 			$name = $args['name'];
 		}
 
-		if ( empty( $value ) && isset( $args['default'] ) ) $value = $args['default'];
+		if ( empty( $value ) && isset( $args['default'] ) ) {
+			$value = $args['default'];
+		}
+
 		$size = isset( $args['size'] ) ? ' size="' . intval( $args['size'] ) . '"' : '';
 
-		echo '<input type="text" name="' . esc_attr( $name ) . '" class="regular-text"' . $size . ' value="' . esc_attr( $value ) . '">';
+		if ( ! isset( $args['class'] ) ) {
+			$args['class'] = 'regular-text';
+		}
+
+		echo '<input type="text" name="' . esc_attr( $name ) . '" class="' . esc_attr( $args['class'] ) . '"' . $size . ' value="' . esc_attr( $value ) . '">';
 
 		if ( isset( $args['description'] ) ) {
 			echo '<p class="description">' . $args['description'] . '</p>';
@@ -79,10 +86,20 @@ class IB_Educator_Admin_Settings {
 	public function setting_select( $args ) {
 		if ( isset( $args['settings_group'] ) ) {
 			$settings = get_option( $args['settings_group'], array() );
-			$value = ! isset( $settings[ $args['name'] ] ) ? '' : $settings[ $args['name'] ];
+			
+			$value = '';
+
+			if ( ! isset( $settings[ $args['name'] ] ) ) {
+				if ( isset( $args['default'] ) ) {
+					$value = $args['default'];
+				}
+			} else {
+				$value = $settings[ $args['name'] ];
+			}
+			
 			$name = $args['settings_group'] . '[' . $args['name'] . ']';
 		} else {
-			$value = get_option( $args['name'] );
+			$value = get_option( $args['name'], isset( $args['default'] ) ? $args['default'] : '' );
 			$name = $args['name'];
 		}
 
@@ -124,5 +141,90 @@ class IB_Educator_Admin_Settings {
 		if ( isset( $args['description'] ) ) {
 			echo '<p class="description">' . $args['description'] . '</p>';
 		}
+	}
+
+	public function setting_location( $args ) {
+		if ( isset( $args['settings_group'] ) ) {
+			$settings = get_option( $args['settings_group'], array() );
+			$value = ! isset( $settings[ $args['name'] ] ) ? '' : $settings[ $args['name'] ];
+			$name = $args['settings_group'] . '[' . $args['name'] . ']';
+		} else {
+			$value = get_option( $args['name'] );
+			$name = $args['name'];
+		}
+		$edu_countries = IB_Educator_Countries::get_instance();
+		$countries = $edu_countries->get_countries();
+
+		$parts = explode( ';', $value );
+
+		if ( 2 == count( $parts ) ) {
+			$country = $parts[0];
+			$state = $parts[1];
+		} else {
+			$country = $value;
+			$state = '';
+		}
+		?>
+		<div class="ib-edu-autocomplete">
+			<input
+				type="text"
+				name="<?php echo esc_attr( $name ); ?>"
+				id="store-location"
+				class="regular-text"
+				autocomplete="off" 
+				value="<?php echo esc_attr( $value ); ?>"
+				data-label="<?php
+					if ( isset( $countries[ $country ] ) ) {
+						echo esc_attr( $countries[ $country ] );
+					}
+
+					$states = ! ( empty( $state ) ) ? $edu_countries->get_states( $country ) : array();
+
+					if ( isset( $states[ $state ] ) ) {
+						echo ' - ' . esc_attr( $states[ $state ] );
+					}
+				?>">
+		</div>
+
+		<?php
+			if ( isset( $args['description'] ) ) {
+				echo '<p class="description">' . $args['description'] . '</p>';
+			}
+		?>
+		<script>
+		(function($) {
+			'use strict';
+
+			ibEducatorAutocomplete(document.getElementById('store-location'), {
+				key: 'code',
+				value: 'country',
+				searchBy: 'country',
+				items: [
+					<?php
+						echo '{"code":"","country":"&nbsp;"}';
+
+						//$i = 0;
+
+						foreach ( $countries as $code => $country ) {
+							//if ( $i > 0 ) {echo ',';}
+
+							echo ',{"code":' . json_encode( esc_html( $code ) ) . ',"country":' . json_encode( esc_html( $country ) ) . '}';
+
+							$states = $edu_countries->get_states( $code );
+
+							if ( ! empty( $states ) ) {
+								foreach ( $states as $scode => $sname ) {
+									echo ',{"code":' . json_encode( esc_html( $code . ';' . $scode ) ) . ',"country":' . json_encode( esc_html( $country . ' - ' . $sname ) ) . ', "_lvl":1}';
+								}
+							}
+
+							//++$i;
+						}
+					?>
+				]
+			});
+		})(jQuery);
+		</script>
+		<?php
 	}
 }

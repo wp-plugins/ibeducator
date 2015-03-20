@@ -40,6 +40,24 @@ if ( ! $user_membership ) {
 		}
 	?></h2>
 
+	<?php
+		$errors = ib_edu_message( 'edit_member_errors' );
+
+		if ( $errors ) {
+			echo '<div class="error below-h2"><ul>';
+
+			foreach ( $errors as $error ) {
+				switch ( $error ) {
+					case 'member_exists':
+						echo '<li>' . __( 'The membership for this student already exists.', 'ibeducator' ) . '</li>';
+						break;
+				}
+			}
+
+			echo '</ul></div>';
+		}
+	?>
+
 	<?php if ( isset( $_GET['edu-message'] ) && 'saved' == $_GET['edu-message'] ) : ?>
 	<div id="message" class="updated below-h2">
 		<p><?php _e( 'Member updated.', 'ibeducator' ); ?></p>
@@ -65,7 +83,14 @@ if ( ! $user_membership ) {
 			<div class="ib-edu-control">
 				<div class="ib-edu-autocomplete">
 					<input type="hidden" name="user_id" class="ib-edu-autocomplete-value" value="<?php echo intval( $user_membership['user_id'] ); ?>">
-					<input type="text" id="member-id" class="regular-text" autocomplete="off" value="<?php echo esc_attr( $username ); ?>"<?php if ( $user_membership['ID'] ) echo ' disabled="disabled"'; ?>>
+					<input
+						type="text"
+						id="member-id"
+						name="user_id"
+						class="regular-text"
+						autocomplete="off"
+						value="<?php echo intval( $user_membership['user_id'] ); ?>"
+						data-label="<?php echo esc_attr( $username ); ?>"<?php if ( $user_membership['ID'] ) echo ' disabled="disabled"'; ?>>
 				</div>
 			</div>
 		</div>
@@ -119,16 +144,6 @@ if ( ! $user_membership ) {
 			</div>
 		</div>
 
-		<!--<div class="ib-edu-field">
-			<div class="ib-edu-label"><label for="membership-paused"><?php //_e( 'Paused Date', 'ibeducator' ); ?></label></div>
-			<div class="ib-edu-control">
-				<input type="text" id="membership-paused" name="paused" value="<?php //echo ( ! empty( $user_membership['paused'] ) ) ? esc_attr( date( 'Y-m-d H:i:s', $user_membership['paused'] ) ) : '0000-00-00 00:00:00'; ?>">
-				<div class="description">
-					<?php //_e( 'Enter the date like yyyy-mm-dd hh:mm:ss', 'ibeducator' ); ?>
-				</div>
-			</div>
-		</div>-->
-
 		<?php
 			$payments = $api->get_payments( array(
 				'payment_type' => 'membership',
@@ -159,8 +174,11 @@ if ( ! $user_membership ) {
 <script>
 jQuery(document).ready(function() {
 	ibEducatorAutocomplete(document.getElementById('member-id'), {
+		key: 'id',
+		value: 'name',
+		searchBy: 'name',
 		nonce: jQuery('#autocomplete-nonce').val(),
-		url: '<?php echo admin_url( 'admin-ajax.php' ); ?>',
+		url: <?php echo json_encode( admin_url( 'admin-ajax.php' ) ); ?>,
 		entity: 'user'
 	});
 });

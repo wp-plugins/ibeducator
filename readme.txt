@@ -4,11 +4,11 @@ Donate link: http://educatorplugin.com
 Tags: learning management system, lms, learning, online courses
 Requires at least: 4.0
 Tested up to: 4.1
-Stable tag: 1.3.5
+Stable tag: 1.4.0
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
-Hi! Educator is simple learning management system plugin for WordPress.
+Educator is a simple learning management system plugin for WordPress.
 
 == Description ==
 
@@ -27,10 +27,11 @@ Features:
 * Grade courses and quizzes.
 * Email notifications.
 * Memberships.
-* NEW: the courses shortcode.
-* NEW: edit the slugs for the courses archive, courses, lessons archive, lessons and course category.
-* NEW: course prerequisite.
-* NEW: course/membership payment action and filter hooks.
+* The courses shortcode.
+* Edit the slugs for the courses archive, courses, lessons archive, lessons and course category.
+* Course prerequisite.
+* Course/membership payment action and filter hooks.
+* NEW: taxes feature. Because it is a new feature, please test it carefully before using.
 
 == Installation ==
 
@@ -53,6 +54,27 @@ Coming soon.
 8. **Course Settings**
 
 == Changelog ==
+
+= 1.4.0 =
+* Refactored the payment system. Now, developers can create custom payment gateways.
+* Added the taxes feature. Because it is a new feature, please test it carefully before using.
+  - Added the "Taxes" tab to the settings page.
+  - Enable/disable taxes.
+  - Enter prices inclusive of taxes or exclusive.
+  - Manage tax rates.
+* Added new settings to the Educator > Settings, General.
+  - Location.
+  - Store customers' IPs on purchases.
+* Added billing info on the payment page if taxes are enabled.
+  - First name, last name, address, city, state, postcode, country.
+* Modified the following pages:
+  - Payment page (Modified the HTML output).
+  - Payment thank you page (Modified the HTML output and improved the payment summary display).
+* Improved the autocomplete fields (for example, "Student" and "Course" select fields on the "Edit Payment" admin page).
+* The flush_rewrite_rules function is not called on every plugin update anymore. It's called on plugin activation/deactivation only.
+* Improvements to the get_access_status method from IB_Educator class. If entry is pending and payment is pending, the status should be "pending_entry".
+* Modified "ib_educator_register_form" action hook. Now, it receives WP_Error object instead of an array of error codes as the first argument.
+* Code refactoring.
 
 = 1.3.5 =
 * Added the beta version of the Stripe payment gateway. It's a beta version, so please test it before using it on production.
