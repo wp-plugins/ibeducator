@@ -349,7 +349,9 @@ function ib_edu_get_access_status_message( $access_status ) {
  */
 function ib_edu_get_course_id( $lesson_id = null ) {
 	// Is this function called inside the loop?
-	if ( ! $lesson_id ) $lesson_id = get_the_ID();
+	if ( ! $lesson_id ) {
+		$lesson_id = get_the_ID();
+	}
 
 	$course_id = get_post_meta( $lesson_id, '_ibedu_course', true );
 	
@@ -363,17 +365,24 @@ function ib_edu_get_course_id( $lesson_id = null ) {
  * @return bool
  */
 function ib_edu_student_can_study( $lesson_id ) {
-	if ( ! is_user_logged_in() ) {
-		return false;
-	}
+	// Get lesson's access option.
+	$access = get_post_meta( $lesson_id, '_ib_educator_access', true );
 
-	$course_id = ib_edu_get_course_id( $lesson_id );
-
-	if ( $course_id ) {
-		$access_status = IB_Educator::get_instance()->get_access_status( $course_id, get_current_user_id() );
-
-		if ( in_array( $access_status, array( 'inprogress', 'course_complete' ) ) ) {
+	if ( 'public' == $access ) {
+		return true;
+	} elseif ( is_user_logged_in() ) {
+		if ( 'logged_in' == $access ) {
 			return true;
+		}
+
+		$course_id = ib_edu_get_course_id( $lesson_id );
+
+		if ( $course_id ) {
+			$access_status = IB_Educator::get_instance()->get_access_status( $course_id, get_current_user_id() );
+
+			if ( in_array( $access_status, array( 'inprogress', 'course_complete' ) ) ) {
+				return true;
+			}
 		}
 	}
 
@@ -513,12 +522,19 @@ function ib_edu_has_quiz( $lesson_id ) {
  * Get HTML for the course price widget.
  *
  * @param int $course_id
+ * @param int $user_id
+ * @param string $before
+ * @param string $after
  * @return string
  */
-function ib_edu_get_price_widget( $course_id, $user_id ) {
+function ib_edu_get_price_widget( $course_id, $user_id, $before = '<div class="ib-edu-course-price">', $after = '</div>' ) {
+	// Registration allowed?
+	if ( 'closed' == ib_edu_registration( $course_id ) ) {
+		return '';
+	}
+
 	// Check membership.
-	$ms = IB_Educator_Memberships::get_instance();
-	$membership_access = $ms->membership_can_access( $course_id, $user_id );
+	$membership_access = IB_Educator_Memberships::get_instance()->membership_can_access( $course_id, $user_id );
 
 	/**
 	 * Filter the course price widget.
@@ -527,14 +543,14 @@ function ib_edu_get_price_widget( $course_id, $user_id ) {
 	 *
 	 * @param bool $membership_access Whether the user's current membership allows him/her to take the course.
 	 */
-	$output = apply_filters( 'ib_educator_course_price_widget', null, $membership_access );
+	$output = apply_filters( 'ib_educator_course_price_widget', null, $membership_access, $course_id, $user_id );
 	
 	if ( null !== $output ) {
 		return $output;
 	}
 
 	// Generate the widget.
-	$output = '<div class="ib-edu-course-price">';
+	$output = $before;
 
 	if ( $membership_access ) {
 		$register_url = ib_edu_get_endpoint_url( 'edu-action', 'join', get_permalink( $course_id ) );
@@ -550,7 +566,7 @@ function ib_edu_get_price_widget( $course_id, $user_id ) {
 				. '" class="ib-edu-button">' . __( 'Register', 'ibeducator' ) . '</a>';
 	}
 
-	$output .= '</div>';
+	$output .= $after;
 	return $output;
 }
 
@@ -687,6 +703,16 @@ function ib_edu_get_location( $part = null ) {
 	}
 
 	return $result;
+}
+
+/**
+ * Get registration status for a given course.
+ *
+ * @param int $course_id
+ * @return string
+ */
+function ib_edu_registration( $course_id ) {
+	return get_post_meta( $course_id, '_ib_educator_register', true );
 }
 
 /**
